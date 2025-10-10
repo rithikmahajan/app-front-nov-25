@@ -1,0 +1,13 @@
+{
+  "ignore_dirs": [
+    "node_modules/react-native/ReactCommon",
+    "node_modules/react-native/React/Base",
+    "node_modules/react-native/ReactAndroid",
+    "node_modules/react-native/third-party",
+    "ios/Pods",
+    "ios/build",
+    "android/build",
+    "android/.gradle",
+    ".git"
+  ]
+}

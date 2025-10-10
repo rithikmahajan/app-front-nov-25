@@ -1,0 +1,73 @@
+# Resolve react_native_pods.rb with node to allow for hoisting
+def node_require(script)
+  require Pod::Executable.execute_command('node', ['-p',
+    "require.resolve(
+      '#{script}',
+      {paths: [process.argv[1]]},
+    )", __dir__]).strip
+end
+
+node_require('react-native/scripts/react_native_pods.rb')
+node_require('react-native-permissions/scripts/setup.rb')
+
+project 'Yoraa.xcodeproj'
+
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+# Setup permissions for react-native-permissions
+setup_permissions([
+  'Camera',
+  'Microphone',
+  'SpeechRecognition',
+])
+
+# Firebase iOS SDK v9+ requires use_frameworks with static linkage
+use_frameworks! :linkage => :static
+
+# Enable Static Frameworks for Firebase
+$RNFirebaseAsStaticFramework = true
+
+# Enable modular headers for Firebase compatibility
+use_modular_headers!
+
+target 'YoraaApp' do
+  config = use_native_modules!
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+  )
+
+  # Add react-native-camera without subspecs to avoid MLKit conflicts
+  # The scanner functionality will work with basic camera features
+
+  post_install do |installer|
+    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false,
+      # :ccache_enabled => true
+    )
+    
+    # Fix for Hermes dSYM generation
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        # Ensure debug information format is set to dwarf-with-dsym for release builds
+        if config.name == 'Release'
+          config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
+          config.build_settings['GENERATE_DSYM'] = 'YES'
+        end
+        
+        # Specific fix for Hermes framework
+        if target.name == 'hermes-engine'
+          config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
+          config.build_settings['GENERATE_DSYM'] = 'YES'
+          config.build_settings['STRIP_INSTALLED_PRODUCT'] = 'NO'
+        end
+      end
+    end
+  end
+end

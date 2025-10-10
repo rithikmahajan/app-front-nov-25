@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Include app data files -->
+    <include domain="file" path="."/>
+    <!-- Exclude specific device preferences if they exist -->
+</full-backup-content>

@@ -1,0 +1,232 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Build and export IPA for App Store"
+  lane :release do
+    # Clear derived data
+    clear_derived_data
+
+    # Install CocoaPods dependencies
+    cocoapods(
+      clean_install: true,
+      podfile: "./Podfile"
+    )
+
+    # Increment build number
+    increment_build_number(
+      xcodeproj: "Yoraa.xcodeproj"
+    )
+
+    # Build the app
+    build_app(
+      workspace: "Yoraa.xcworkspace",
+      scheme: "YoraaApp",
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: {
+        method: "app-store",
+        teamID: "UX6XB9FMNN",
+        uploadBitcode: false,
+        uploadSymbols: true,
+        compileBitcode: false,
+        destination: "export",
+        signingStyle: "automatic"
+      },
+      output_directory: "./ios-builds",
+      output_name: "YoraaApp-release.ipa"
+    )
+
+    UI.success("✅ iOS production build completed successfully!")
+    UI.message("📱 IPA file location: ./ios-builds/YoraaApp-release.ipa")
+  end
+
+  desc "Build and upload to App Store Connect"
+  lane :upload do
+    # Clear derived data
+    clear_derived_data
+
+    # Install CocoaPods dependencies
+    cocoapods(
+      clean_install: true,
+      podfile: "./Podfile"
+    )
+
+    # Increment build number
+    increment_build_number(
+      xcodeproj: "Yoraa.xcodeproj"
+    )
+
+    # Build and upload to App Store Connect
+    build_app(
+      workspace: "Yoraa.xcworkspace",
+      scheme: "YoraaApp",
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: {
+        method: "app-store",
+        teamID: "UX6XB9FMNN",
+        uploadBitcode: false,
+        uploadSymbols: true,
+        compileBitcode: false,
+        destination: "upload",
+        signingStyle: "automatic"
+      }
+    )
+
+    # Upload to App Store Connect
+    upload_to_app_store(
+      skip_waiting_for_build_processing: true,
+      skip_metadata: true,
+      skip_screenshots: true
+    )
+
+    UI.success("✅ iOS app uploaded to App Store Connect successfully!")
+  end
+
+  desc "Build for TestFlight distribution"
+  lane :beta do
+    # Clear derived data
+    clear_derived_data
+
+    # Install CocoaPods dependencies
+    cocoapods(
+      clean_install: true,
+      podfile: "./Podfile"
+    )
+
+    # Increment build number
+    increment_build_number(
+      xcodeproj: "Yoraa.xcodeproj"
+    )
+
+    # Build and upload to TestFlight
+    build_app(
+      workspace: "Yoraa.xcworkspace",
+      scheme: "YoraaApp",
+      configuration: "Release",
+      export_method: "app-store",
+      include_symbols: true,
+      include_bitcode: false,
+      export_options: {
+        method: "app-store",
+        teamID: "UX6XB9FMNN",
+        uploadBitcode: false,
+        uploadSymbols: true,
+        compileBitcode: false,
+        destination: "upload",
+        signingStyle: "automatic",
+        stripSwiftSymbols: false
+      }
+    )
+
+    # Upload to TestFlight
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
+
+    UI.success("✅ iOS app uploaded to TestFlight successfully!")
+  end
+
+  desc "Build Ad Hoc distribution"
+  lane :adhoc do
+    # Clear derived data
+    clear_derived_data
+
+    # Install CocoaPods dependencies
+    cocoapods(
+      clean_install: true,
+      podfile: "./Podfile"
+    )
+
+    # Build the app
+    build_app(
+      workspace: "Yoraa.xcworkspace",
+      scheme: "YoraaApp",
+      configuration: "Release",
+      export_method: "ad-hoc",
+      export_options: {
+        method: "ad-hoc",
+        teamID: "UX6XB9FMNN",
+        uploadBitcode: false,
+        uploadSymbols: true,
+        compileBitcode: false,
+        destination: "export",
+        signingStyle: "automatic"
+      },
+      output_directory: "./ios-builds",
+      output_name: "YoraaApp-adhoc.ipa"
+    )
+
+    UI.success("✅ iOS Ad Hoc build completed successfully!")
+    UI.message("📱 IPA file location: ./ios-builds/YoraaApp-adhoc.ipa")
+  end
+
+  desc "Clean build and derived data"
+  lane :clean do
+    clear_derived_data
+    
+    # Clean Xcode build
+    xcodebuild(
+      workspace: "Yoraa.xcworkspace",
+      scheme: "YoraaApp",
+      configuration: "Release",
+      clean: true
+    )
+
+    UI.success("✅ iOS project cleaned successfully!")
+  end
+
+  desc "Build development IPA with automatic signing"
+  lane :development do
+    # Clear derived data
+    clear_derived_data
+
+    # Install CocoaPods dependencies
+    cocoapods(
+      clean_install: true,
+      podfile: "./Podfile"
+    )
+
+    # Increment build number
+    increment_build_number(
+      xcodeproj: "Yoraa.xcodeproj"
+    )
+
+    # Build the app with development signing
+    build_app(
+      workspace: "Yoraa.xcworkspace",
+      scheme: "YoraaApp",
+      configuration: "Release",
+      export_method: "development",
+      export_options: {
+        method: "development",
+        teamID: "UX6XB9FMNN",
+        uploadBitcode: false,
+        uploadSymbols: true,
+        compileBitcode: false,
+        destination: "export",
+        signingStyle: "automatic"
+      },
+      output_directory: "./ios-builds",
+      output_name: "YoraaApp-development.ipa"
+    )
+
+    UI.success("✅ iOS development build completed successfully!")
+    UI.message("📱 IPA file location: ./ios-builds/YoraaApp-development.ipa")
+  end
+end

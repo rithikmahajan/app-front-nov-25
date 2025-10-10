@@ -1,0 +1,392 @@
+// Session Management Service - Handles persistent user authentication
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getAuth } from '@react-native-firebase/auth';
+import yoraaAPI from './yoraaAPI';
+
+class SessionManager {
+  constructor() {
+    this.sessionCheckListeners = [];
+    this.isInitialized = false;
+    this.currentSessionState = {
+      isAuthenticated: false,
+      userId: null,
+      email: null,
+      phone: null,
+      loginMethod: null,
+      sessionStartTime: null,
+      lastActivityTime: null
+    };
+  }
+
+  /**
+   * Initialize session manager - should be called when app starts
+   */
+  async initialize() {
+    try {
+      console.log('🔄 Initializing Session Manager...');
+      
+      // Check if user has valid session data
+      const sessionData = await this.getStoredSessionData();
+      
+      if (sessionData.isAuthenticated) {
+        console.log('📱 Found existing session, validating...');
+        
+        // Validate the session
+        const isValid = await this.validateStoredSession(sessionData);
+        
+        if (isValid) {
+          this.currentSessionState = sessionData;
+          await this.updateLastActivity();
+          console.log('✅ Session restored successfully');
+          
+          // Ensure backend is also authenticated
+          await this.ensureBackendAuthentication();
+        } else {
+          console.log('❌ Stored session invalid, clearing...');
+          await this.clearSession();
+        }
+      }
+      
+      this.isInitialized = true;
+      this.notifySessionListeners();
+      
+    } catch (error) {
+      console.error('❌ Session initialization failed:', error);
+      await this.clearSession();
+      this.isInitialized = true;
+    }
+  }
+
+  /**
+   * Create new session after successful login
+   */
+  async createSession(userInfo, loginMethod) {
+    try {
+      const sessionData = {
+        isAuthenticated: true,
+        userId: userInfo.uid || userInfo.id,
+        email: userInfo.email,
+        phone: userInfo.phoneNumber || userInfo.phone,
+        loginMethod: loginMethod, // 'email', 'phone', 'google', 'apple'
+        sessionStartTime: Date.now(),
+        lastActivityTime: Date.now(),
+        userData: userInfo
+      };
+
+      // Store session data
+      await AsyncStorage.setItem('sessionData', JSON.stringify(sessionData));
+      await AsyncStorage.setItem('isAuthenticated', 'true');
+      
+      this.currentSessionState = sessionData;
+      
+      console.log(`✅ Session created for user: ${userInfo.email || userInfo.phone} via ${loginMethod}`);
+      
+      this.notifySessionListeners();
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to create session:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Update last activity time to keep session alive
+   */
+  async updateLastActivity() {
+    try {
+      if (this.currentSessionState.isAuthenticated) {
+        this.currentSessionState.lastActivityTime = Date.now();
+        await AsyncStorage.setItem('sessionData', JSON.stringify(this.currentSessionState));
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to update last activity:', error);
+    }
+  }
+
+  /**
+   * Check if current session is valid
+   */
+  async isSessionValid() {
+    try {
+      console.log('🔍 Validating session...');
+      
+      if (!this.currentSessionState.isAuthenticated) {
+        console.log('❌ Session state shows not authenticated');
+        return false;
+      }
+
+      // Check if we have a session ID
+      const sessionId = await AsyncStorage.getItem('sessionId');
+      if (!sessionId) {
+        console.log('❌ No session ID found');
+        return false;
+      }
+
+      // Check if tokens exist
+      const userToken = await AsyncStorage.getItem('userToken');
+      if (!userToken) {
+        console.log('❌ No user token found');
+        return false;
+      }
+
+      // Check Firebase auth state
+      const authInstance = getAuth();
+      const firebaseUser = authInstance.currentUser;
+      if (!firebaseUser) {
+        console.log('⚠️ Session exists but Firebase user is null - clearing invalid session');
+        await this.clearSession();
+        return false;
+      }
+
+      // Check if backend is authenticated
+      const backendAuth = yoraaAPI.isAuthenticated();
+      if (!backendAuth) {
+        console.log('❌ Backend not authenticated');
+        // Try to re-authenticate with backend
+        try {
+          await this.ensureBackendAuthentication();
+          const isAuthenticated = yoraaAPI.isAuthenticated();
+          if (!isAuthenticated) {
+            console.log('❌ Failed to re-authenticate backend, clearing session');
+            await this.clearSession();
+            return false;
+          }
+          return true;
+        } catch (error) {
+          console.error('❌ Failed to re-authenticate backend:', error);
+          await this.clearSession();
+          return false;
+        }
+      }
+
+      console.log('✅ Session validation successful');
+      return true;
+    } catch (error) {
+      console.error('❌ Session validation error:', error);
+      await this.clearSession();
+      return false;
+    }
+  }
+
+  /**
+   * Get current session state
+   */
+  getSessionState() {
+    return { ...this.currentSessionState };
+  }
+
+  /**
+   * Check if user is authenticated
+   */
+  isAuthenticated() {
+    return this.currentSessionState.isAuthenticated;
+  }
+
+  /**
+   * Get stored session data from AsyncStorage
+   */
+  async getStoredSessionData() {
+    try {
+      const sessionDataStr = await AsyncStorage.getItem('sessionData');
+      const isAuthenticatedStr = await AsyncStorage.getItem('isAuthenticated');
+      
+      if (sessionDataStr && isAuthenticatedStr === 'true') {
+        return JSON.parse(sessionDataStr);
+      }
+      
+      return { isAuthenticated: false };
+    } catch (error) {
+      console.error('❌ Failed to get stored session:', error);
+      return { isAuthenticated: false };
+    }
+  }
+
+  /**
+   * Validate stored session data
+   */
+  async validateStoredSession(sessionData) {
+    try {
+      // Check if session data is complete
+      if (!sessionData.userId || (!sessionData.email && !sessionData.phone)) {
+        console.log('❌ Incomplete session data');
+        return false;
+      }
+
+      // Check if tokens exist
+      const userToken = await AsyncStorage.getItem('userToken');
+      if (!userToken) {
+        console.log('❌ No stored token found');
+        return false;
+      }
+
+      // Session is potentially valid
+      return true;
+    } catch (error) {
+      console.error('❌ Session validation error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Ensure backend is authenticated when Firebase user exists
+   */
+  async ensureBackendAuthentication() {
+    try {
+      const authInstance = getAuth();
+      const firebaseUser = authInstance.currentUser;
+      if (firebaseUser && !yoraaAPI.isAuthenticated()) {
+        console.log('🔄 Re-authenticating backend...');
+        const idToken = await firebaseUser.getIdToken(false);
+        await yoraaAPI.firebaseLogin(idToken);
+        console.log('✅ Backend re-authenticated');
+      }
+    } catch (error) {
+      console.error('❌ Backend re-authentication failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Clear session completely
+   */
+  async clearSession() {
+    try {
+      // Clear session state
+      this.currentSessionState = {
+        isAuthenticated: false,
+        userId: null,
+        email: null,
+        phone: null,
+        loginMethod: null,
+        sessionStartTime: null,
+        lastActivityTime: null
+      };
+
+      // Clear stored session data
+      await AsyncStorage.removeItem('sessionData');
+      await AsyncStorage.setItem('isAuthenticated', 'false');
+      
+      console.log('✅ Session cleared');
+      
+      this.notifySessionListeners();
+    } catch (error) {
+      console.error('❌ Failed to clear session:', error);
+    }
+  }
+
+  /**
+   * Complete logout - clears everything
+   */
+  async logout() {
+    try {
+      console.log('🔐 Starting session logout...');
+      
+      // Clear session
+      await this.clearSession();
+      
+      // The actual Firebase/backend logout is handled by the logout modal
+      // This just manages the session state
+      
+      console.log('✅ Session logout complete');
+      
+    } catch (error) {
+      console.error('❌ Session logout error:', error);
+    }
+  }
+
+  /**
+   * Add listener for session state changes
+   */
+  addSessionListener(listener) {
+    this.sessionCheckListeners.push(listener);
+    
+    // Return function to remove listener
+    return () => {
+      const index = this.sessionCheckListeners.indexOf(listener);
+      if (index > -1) {
+        this.sessionCheckListeners.splice(index, 1);
+      }
+    };
+  }
+
+  /**
+   * Notify all session listeners
+   */
+  notifySessionListeners() {
+    this.sessionCheckListeners.forEach(listener => {
+      try {
+        listener(this.currentSessionState);
+      } catch (error) {
+        console.error('❌ Session listener error:', error);
+      }
+    });
+  }
+
+  /**
+   * Auto-session refresh - call this periodically or on app focus
+   */
+  async refreshSession() {
+    try {
+      if (this.currentSessionState.isAuthenticated) {
+        const isValid = await this.isSessionValid();
+        
+        if (isValid) {
+          await this.updateLastActivity();
+          console.log('✅ Session refreshed');
+        } else {
+          console.log('❌ Session invalid during refresh, clearing...');
+          await this.clearSession();
+        }
+      }
+    } catch (error) {
+      console.error('❌ Session refresh error:', error);
+    }
+  }
+
+  /**
+   * Get session duration in minutes
+   */
+  getSessionDuration() {
+    if (!this.currentSessionState.sessionStartTime) {
+      return 0;
+    }
+    
+    return Math.floor((Date.now() - this.currentSessionState.sessionStartTime) / (1000 * 60));
+  }
+
+  /**
+   * Get time since last activity in minutes
+   */
+  getTimeSinceLastActivity() {
+    if (!this.currentSessionState.lastActivityTime) {
+      return 0;
+    }
+    
+    return Math.floor((Date.now() - this.currentSessionState.lastActivityTime) / (1000 * 60));
+  }
+
+  /**
+   * Debug method to log current session status
+   */
+  async debugSessionStatus() {
+    console.log('🔍 Session Debug Status:');
+    console.log('  - Is Initialized:', this.isInitialized);
+    console.log('  - Is Authenticated:', this.currentSessionState.isAuthenticated);
+    console.log('  - User ID:', this.currentSessionState.userId);
+    console.log('  - Email:', this.currentSessionState.email);
+    console.log('  - Phone:', this.currentSessionState.phone);
+    console.log('  - Login Method:', this.currentSessionState.loginMethod);
+    console.log('  - Session Duration (min):', this.getSessionDuration());
+    console.log('  - Last Activity (min ago):', this.getTimeSinceLastActivity());
+    
+    const isValid = await this.isSessionValid();
+    console.log('  - Session Valid:', isValid);
+    
+    const storedData = await this.getStoredSessionData();
+    console.log('  - Stored Session:', storedData.isAuthenticated);
+  }
+}
+
+// Export singleton instance
+export default new SessionManager();

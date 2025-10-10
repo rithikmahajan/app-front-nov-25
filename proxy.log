@@ -1,0 +1,4 @@
+🔄 Proxy server running on http://0.0.0.0:3001
+📱 iOS Simulator can access via: http://localhost:3001/api
+🌐 External access via: http://192.168.1.29:3001/api
+🎯 Proxying to: http://185.193.19.244:8000/api

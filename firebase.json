@@ -1,0 +1,43 @@
+{
+  "react-native": {
+    "android_task_executor_maximum_pool_size": 10,
+    "android_task_executor_keep_alive_seconds": 3,
+    "crashlytics_auto_collection_enabled": true,
+    "crashlytics_debug_enabled": true,
+    "crashlytics_is_error_generation_on_js_crash_enabled": true,
+    "crashlytics_javascript_exception_handler_chaining_enabled": true,
+    "app_data_collection_default_enabled": true,
+    "analytics_auto_collection_enabled": true,
+    "analytics_collection_deactivated": false,
+    "analytics_idfv_collection_enabled": true,
+    "google_analytics_adid_collection_enabled": true,
+    "google_analytics_ssaid_collection_enabled": true,
+    "perf_auto_collection_enabled": true,
+    "perf_collection_deactivated": false,
+    "messaging_auto_init_enabled": true,
+    "messaging_android_headless_task_timeout": 60000,
+    "messaging_android_notification_channel_id": "yoraa-notifications",
+    "messaging_ios_auto_register_for_remote_messages": true
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "functions": {
+    "predeploy": [
+      "npm --prefix \"$RESOURCE_DIR\" run lint",
+      "npm --prefix \"$RESOURCE_DIR\" run build"
+    ]
+  }
+}
