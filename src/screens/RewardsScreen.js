@@ -12,6 +12,7 @@ import {
 import { FontSizes, FontWeights, Spacing, BorderRadius, Shadows } from '../constants';
 import authManager from '../services/authManager';
 import { yoraaAPI } from '../services/yoraaAPI';
+import auth from '@react-native-firebase/auth';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -50,6 +51,25 @@ const RewardsScreen = ({ navigation, route }) => {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedRegion, setSelectedRegion] = useState('IN');
   const [selectedShoppingPreference, setSelectedShoppingPreference] = useState('Women');
+  const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+
+  // Check authentication status on component mount
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      const currentUser = auth().currentUser;
+      setIsUserAuthenticated(!!currentUser);
+    };
+
+    // Initial check
+    checkAuthStatus();
+
+    // Listen for auth state changes
+    const unsubscribe = auth().onAuthStateChanged((user) => {
+      setIsUserAuthenticated(!!user);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Handle navigation back from other screens with specific sub-tab
   useEffect(() => {
@@ -191,21 +211,23 @@ const RewardsScreen = ({ navigation, route }) => {
 
       {/* Static content below */}
       <View style={styles.staticContent}>
-        {/* Sign in and Create Account buttons */}
-        <View style={styles.authButtons}>
-          <TouchableOpacity 
-            style={styles.signInButton}
-            onPress={() => navigation && navigation.navigate('LoginAccountMobileNumber', { fromCheckout: route?.params?.fromCheckout })}
-          >
-            <Text style={styles.signInButtonText}>Sign In</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.createAccountButton}
-            onPress={() => navigation && navigation.navigate('CreateAccountMobileNumber', { fromCheckout: route?.params?.fromCheckout })}
-          >
-            <Text style={styles.createAccountButtonText}>Create Account</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Sign in and Create Account buttons - Only show for non-authenticated users */}
+        {!isUserAuthenticated && (
+          <View style={styles.authButtons}>
+            <TouchableOpacity 
+              style={styles.signInButton}
+              onPress={() => navigation && navigation.navigate('LoginAccountMobileNumber', { fromCheckout: route?.params?.fromCheckout })}
+            >
+              <Text style={styles.signInButtonText}>Sign In</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.createAccountButton}
+              onPress={() => navigation && navigation.navigate('CreateAccountMobileNumber', { fromCheckout: route?.params?.fromCheckout })}
+            >
+              <Text style={styles.createAccountButtonText}>Create Account</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Language and Region */}
         <View style={styles.preferencesSection}>

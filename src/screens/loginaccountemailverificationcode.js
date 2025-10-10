@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,26 +7,84 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  Alert,
 } from 'react-native';
 import GlobalBackButton from '../components/GlobalBackButton';
+import emailOTPService from '../services/emailOTPService';
+import auth from '@react-native-firebase/auth';
+import sessionManager from '../services/sessionManager';
 
 const LoginAccountEmailVerificationCode = ({ navigation, route }) => {
   const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
   const [resendTimer, setResendTimer] = useState(30);
+  const [isVerifying, setIsVerifying] = useState(false);
   const inputRefs = useRef([]);
+  
   const email = route?.params?.email || '';
+  const password = route?.params?.password || '';
+  const devOTP = route?.params?.devOTP; // For development testing only
 
-  const handleVerification = () => {
-    // Handle verification logic
+  // Start countdown timer
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendTimer]);
+
+  // Log dev OTP for testing (remove in production!)
+  useEffect(() => {
+    if (devOTP) {
+      console.log('🔑 DEV MODE - OTP for testing:', devOTP);
+      Alert.alert('Dev Mode', `OTP: ${devOTP}\n\nThis is only shown in development mode.`);
+    }
+  }, [devOTP]);
+
+  const handleVerification = async () => {
     const code = verificationCode.join('');
-    // Email verification logging removed for production
     
-    // Navigate to Terms and Conditions screen after successful email login verification
-    if (navigation) {
-      navigation.navigate('TermsAndConditions', { 
-        previousScreen: 'LoginAccountEmailVerificationCode',
-        fromCheckout: route?.params?.fromCheckout
-      });
+    if (code.length !== 6) {
+      Alert.alert('Error', 'Please enter the complete 6-digit code');
+      return;
+    }
+
+    setIsVerifying(true);
+
+    try {
+      console.log('🔍 Verifying OTP...');
+      
+      // Verify OTP
+      await emailOTPService.verifyOTP(email, code);
+      console.log('✅ OTP verified successfully');
+      
+      // Re-authenticate with Firebase
+      const userCredential = await auth().signInWithEmailAndPassword(email, password);
+      const user = userCredential.user;
+      console.log('✅ Firebase authentication successful');
+      
+      // Create session
+      await sessionManager.createSession({
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL
+      }, 'email');
+      
+      console.log('✅ Session created for email login');
+      
+      // Navigate to Terms and Conditions or main app
+      if (navigation) {
+        navigation.navigate('TermsAndConditions', { 
+          previousScreen: 'LoginAccountEmailVerificationCode',
+          fromCheckout: route?.params?.fromCheckout
+        });
+      }
+      
+    } catch (error) {
+      console.error('❌ Verification error:', error);
+      Alert.alert('Verification Failed', error.message || 'Invalid OTP. Please try again.');
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -49,11 +107,25 @@ const LoginAccountEmailVerificationCode = ({ navigation, route }) => {
     }
   };
 
-  const handleResendCode = () => {
-    // Handle resend code logic
-    // Resend email verification logging removed for production
-    setResendTimer(30);
-    // Reset timer countdown logic would go here
+  const handleResendCode = async () => {
+    try {
+      console.log('🔄 Resending OTP to:', email);
+      setResendTimer(30);
+      
+      const otpResponse = await emailOTPService.resendOTP(email);
+      
+      // Show dev OTP in development mode
+      if (otpResponse.devOTP) {
+        console.log('🔑 DEV MODE - New OTP:', otpResponse.devOTP);
+        Alert.alert('Dev Mode', `New OTP: ${otpResponse.devOTP}\n\nThis is only shown in development mode.`);
+      } else {
+        Alert.alert('Success', 'A new verification code has been sent to your email');
+      }
+      
+    } catch (error) {
+      console.error('❌ Resend OTP error:', error);
+      Alert.alert('Error', 'Failed to resend code. Please try again.');
+    }
   };
 
   const isCodeComplete = verificationCode.every(digit => digit !== '');
@@ -103,16 +175,16 @@ const LoginAccountEmailVerificationCode = ({ navigation, route }) => {
         <TouchableOpacity 
           style={[
             styles.verifyButton,
-            !isCodeComplete && styles.verifyButtonDisabled
+            (!isCodeComplete || isVerifying) && styles.verifyButtonDisabled
           ]} 
           onPress={handleVerification}
-          disabled={!isCodeComplete}
+          disabled={!isCodeComplete || isVerifying}
         >
           <Text style={[
             styles.verifyButtonText,
-            !isCodeComplete && styles.verifyButtonTextDisabled
+            (!isCodeComplete || isVerifying) && styles.verifyButtonTextDisabled
           ]}>
-            VERIFY & LOGIN
+            {isVerifying ? 'VERIFYING...' : 'VERIFY & LOGIN'}
           </Text>
         </TouchableOpacity>
 

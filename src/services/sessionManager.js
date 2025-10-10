@@ -116,14 +116,7 @@ class SessionManager {
         return false;
       }
 
-      // Check if we have a session ID
-      const sessionId = await AsyncStorage.getItem('sessionId');
-      if (!sessionId) {
-        console.log('❌ No session ID found');
-        return false;
-      }
-
-      // Check if tokens exist
+      // Check if tokens exist (sessionId is optional - only for chat)
       const userToken = await AsyncStorage.getItem('userToken');
       if (!userToken) {
         console.log('❌ No user token found');
@@ -154,6 +147,14 @@ class SessionManager {
           }
           return true;
         } catch (error) {
+          // Handle "no-current-user" errors gracefully
+          if (error.message?.includes('no-current-user') || 
+              error.message?.includes('User signed out') ||
+              error.message?.includes('No user currently signed in')) {
+            console.warn('⚠️ User signed out during session validation');
+            await this.clearSession();
+            return false;
+          }
           console.error('❌ Failed to re-authenticate backend:', error);
           await this.clearSession();
           return false;
@@ -235,11 +236,36 @@ class SessionManager {
     try {
       const authInstance = getAuth();
       const firebaseUser = authInstance.currentUser;
-      if (firebaseUser && !yoraaAPI.isAuthenticated()) {
+      
+      if (!firebaseUser) {
+        console.warn('⚠️ Cannot re-authenticate backend: No Firebase user');
+        throw new Error('No Firebase user available');
+      }
+      
+      if (!yoraaAPI.isAuthenticated()) {
         console.log('🔄 Re-authenticating backend...');
-        const idToken = await firebaseUser.getIdToken(false);
-        await yoraaAPI.firebaseLogin(idToken);
-        console.log('✅ Backend re-authenticated');
+        
+        // Double-check user is still signed in before getting token
+        const currentUser = authInstance.currentUser;
+        if (!currentUser) {
+          console.warn('⚠️ Firebase user signed out during backend auth attempt');
+          throw new Error('User signed out during authentication');
+        }
+        
+        try {
+          const idToken = await currentUser.getIdToken(false);
+          await yoraaAPI.firebaseLogin(idToken);
+          console.log('✅ Backend re-authenticated');
+        } catch (tokenError) {
+          // Handle the specific "no current user" error gracefully
+          if (tokenError.code === 'auth/no-current-user' || 
+              tokenError.message?.includes('no-current-user') ||
+              tokenError.message?.includes('No user currently signed in')) {
+            console.warn('⚠️ User signed out while getting ID token, skipping backend auth');
+            throw new Error('User signed out during authentication');
+          }
+          throw tokenError;
+        }
       }
     } catch (error) {
       console.error('❌ Backend re-authentication failed:', error);

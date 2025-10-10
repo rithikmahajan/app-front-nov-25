@@ -49,6 +49,15 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
       
       console.log('✅ Phone authentication successful:', user.uid);
       
+      // Wait a moment for Firebase auth state to fully propagate
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Verify user is still signed in
+      const currentUser = phoneAuthService.getCurrentUser();
+      if (!currentUser) {
+        throw new Error('Authentication failed. Please try again.');
+      }
+      
       // Create session for phone login
       await sessionManager.createSession({
         uid: user.uid,
@@ -81,7 +90,16 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
       
     } catch (error) {
       console.error('OTP verification error:', error);
-      Alert.alert('Error', error.message || 'Invalid verification code. Please try again.');
+      
+      // Handle specific authentication errors
+      let errorMessage = error.message || 'Invalid verification code. Please try again.';
+      
+      if (error.message?.includes('no-current-user') || 
+          error.message?.includes('No user currently signed in')) {
+        errorMessage = 'Authentication session expired. Please request a new OTP.';
+      }
+      
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
     }

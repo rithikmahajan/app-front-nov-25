@@ -16,6 +16,7 @@ import auth from '@react-native-firebase/auth';
 import appleAuthService from '../services/appleAuthService';
 import googleAuthService from '../services/googleAuthService';
 import sessionManager from '../services/sessionManager';
+import emailOTPService from '../services/emailOTPService';
 
 const LoginAccountEmail = ({ navigation, route }) => {
   const [isEmailSelected, setIsEmailSelected] = useState(true);
@@ -41,29 +42,31 @@ const LoginAccountEmail = ({ navigation, route }) => {
     try {
       console.log('🔐 Starting email login process...');
       
-      // Sign in with Firebase
-      const userCredential = await auth().signInWithEmailAndPassword(email, password);
+      // Trim email to remove any whitespace
+      const trimmedEmail = email.trim().toLowerCase();
+      
+      // Sign in with Firebase to validate credentials
+      const userCredential = await auth().signInWithEmailAndPassword(trimmedEmail, password);
       const user = userCredential.user;
       
-      console.log('✅ Firebase email login successful:', user.email);
+      console.log('✅ Firebase credentials validated for:', user.email);
       
-      // Create session - the AuthManager will handle backend authentication
-      await sessionManager.createSession({
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL
-      }, 'email');
+      // Sign out immediately - we'll sign in again after OTP verification
+      await auth().signOut();
+      console.log('🔒 Signed out - awaiting OTP verification');
       
-      console.log('✅ Session created for email login');
+      // Send OTP to email
+      const otpResponse = await emailOTPService.sendOTP(trimmedEmail);
+      console.log('📧 OTP sent to email');
       
-      Alert.alert('Success', `Welcome ${user.email}`);
-      
-      // Navigate to verification or main app
+      // Navigate to verification screen
       if (navigation && navigation.navigate) {
         navigation.navigate('LoginAccountEmailVerificationCode', { 
-          email,
-          fromCheckout: route?.params?.fromCheckout 
+          email: trimmedEmail,
+          password: password, // Pass password to re-authenticate after OTP
+          uid: user.uid,
+          fromCheckout: route?.params?.fromCheckout,
+          devOTP: otpResponse.devOTP // Remove in production!
         });
       }
       
@@ -78,6 +81,8 @@ const LoginAccountEmail = ({ navigation, route }) => {
         errorMessage = 'That email address is invalid!';
       } else if (error.code === 'auth/user-disabled') {
         errorMessage = 'This account has been disabled.';
+      } else if (error.message) {
+        errorMessage = error.message;
       }
 
       Alert.alert('Login Error', errorMessage);
@@ -181,6 +186,7 @@ const LoginAccountEmail = ({ navigation, route }) => {
         
       } catch (error) {
         console.error('Apple Sign In error:', error);
+        // Backend now automatically links accounts - no need to handle 409 conflicts
         Alert.alert('Error', error.message || 'Apple Sign In failed. Please try again.');
       } finally {
         setIsLoading(false);
@@ -264,6 +270,7 @@ const LoginAccountEmail = ({ navigation, route }) => {
         
       } catch (error) {
         console.error('Google Sign In error on', Platform.OS, ':', error);
+        // Backend now automatically links accounts - no need to handle 409 conflicts
         
         let errorMessage = error.message || 'Google Sign In failed. Please try again.';
         
@@ -356,7 +363,7 @@ const LoginAccountEmail = ({ navigation, route }) => {
               placeholder="Email"
               placeholderTextColor="#BDBCBC"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(text) => setEmail(text.trim().toLowerCase())}
               keyboardType="email-address"
               autoCapitalize="none"
             />
@@ -439,6 +446,7 @@ const LoginAccountEmail = ({ navigation, route }) => {
           </Text>
         </View>
       </ScrollView>
+
     </SafeAreaView>
   );
 };

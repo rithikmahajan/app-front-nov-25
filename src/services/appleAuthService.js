@@ -66,6 +66,7 @@ class AppleAuthService {
         
         await yoraaAPI.firebaseLogin(firebaseIdToken);
         console.log('✅ Successfully authenticated with Yoraa backend');
+        console.log('ℹ️ Note: If account exists with same email, backend automatically links providers');
       } catch (backendError) {
         console.warn('Backend authentication failed:', backendError);
         // Don't throw here - Firebase auth succeeded, backend auth is optional

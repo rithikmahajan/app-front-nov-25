@@ -73,6 +73,7 @@ class YoraaAPIService {
       const currentUser = auth().currentUser;
       
       if (!currentUser) {
+        console.warn('⚠️ Cannot get Firebase token - user not signed in');
         throw new Error('User not authenticated with Firebase');
       }
       
@@ -93,6 +94,15 @@ class YoraaAPIService {
       
       return idToken;
     } catch (error) {
+      // Handle user sign-out during token refresh gracefully
+      if (error.code === 'auth/no-current-user' || 
+          error.message?.includes('no-current-user') ||
+          error.message?.includes('User not authenticated')) {
+        console.warn('⚠️ User signed out during token refresh');
+        this.userToken = null;
+        throw error;
+      }
+      
       console.error('❌ Failed to get Firebase token:', error);
       throw new Error('Authentication failed. Please log in again.');
     }
@@ -308,6 +318,7 @@ class YoraaAPIService {
       
       if (response.success && response.data) {
         console.log('✅ Backend authentication successful');
+        console.log('ℹ️ Backend automatically links accounts with same email across different providers');
         
         // CRITICAL: Store the JWT token for future API calls
         const token = response.data.token;
@@ -339,6 +350,124 @@ class YoraaAPIService {
       }
     } catch (error) {
       console.error('❌ Backend authentication failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Link a new authentication provider to existing account
+   * Requires user to be authenticated
+   */
+  async linkAuthProvider(idToken) {
+    try {
+      console.log('🔗 Linking authentication provider...');
+      
+      if (!this.userToken) {
+        throw new Error('Must be authenticated to link providers');
+      }
+      
+      const response = await this.makeRequest(
+        '/api/auth/link-provider', 
+        'POST', 
+        { idToken }, 
+        true // Requires authentication
+      );
+      
+      if (response.success) {
+        console.log('✅ Provider linked successfully');
+        
+        // Update stored user data if provided
+        if (response.data?.user) {
+          await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+        }
+        
+        return response.data;
+      } else {
+        throw new Error(response.message || 'Failed to link provider');
+      }
+    } catch (error) {
+      console.error('❌ Failed to link provider:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get list of linked authentication providers
+   */
+  async getLinkedProviders() {
+    try {
+      console.log('📋 Fetching linked providers...');
+      
+      const response = await this.makeRequest(
+        '/api/auth/linked-providers', 
+        'GET', 
+        null, 
+        true // Requires authentication
+      );
+      
+      if (response.success && response.data) {
+        console.log('✅ Linked providers retrieved:', response.data.linkedProviders);
+        return response.data;
+      } else {
+        throw new Error(response.message || 'Failed to fetch linked providers');
+      }
+    } catch (error) {
+      console.error('❌ Failed to fetch linked providers:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Apple Sign In with conflict detection
+   */
+  async appleSignIn(idToken) {
+    try {
+      console.log('🍎 Apple Sign In to backend...');
+      
+      const response = await this.makeRequest('/api/auth/apple-signin', 'POST', { idToken });
+      
+      if (response.success && response.data) {
+        console.log('✅ Apple Sign In successful');
+        
+        const token = response.data.token;
+        const userData = response.data.user;
+        
+        if (token) {
+          this.userToken = token;
+          await AsyncStorage.setItem('userToken', token);
+          
+          if (userData) {
+            await AsyncStorage.setItem('userData', JSON.stringify(userData));
+          }
+          
+          console.log('✅ Apple token stored successfully');
+          
+          // Transfer guest data after successful authentication
+          try {
+            await this.transferAllGuestData();
+          } catch (transferError) {
+            console.warn('⚠️ Guest data transfer failed (non-critical):', transferError);
+          }
+          
+          return response.data;
+        } else {
+          throw new Error('No token received from backend');
+        }
+      } else {
+        throw new Error(response.message || 'Apple Sign In failed');
+      }
+    } catch (error) {
+      console.error('❌ Apple Sign In failed:', error);
+      
+      // Check if it's a 409 conflict error
+      if (error.response?.status === 409 || error.message?.includes('account exists')) {
+        const conflictError = new Error(error.message || 'Account exists with different authentication method');
+        conflictError.isAccountConflict = true;
+        conflictError.status = 409;
+        conflictError.data = error.response?.data?.data || error.data;
+        throw conflictError;
+      }
+      
       throw error;
     }
   }

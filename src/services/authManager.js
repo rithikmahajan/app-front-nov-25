@@ -24,6 +24,23 @@ class AuthManager {
         if (firebaseUser) {
           // User is signed in with Firebase
           try {
+            // Add delay to ensure Firebase user is fully initialized
+            // This prevents race conditions when getting ID tokens
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Double-check user is still signed in after delay
+            const revalidatedUser = auth().currentUser;
+            if (!revalidatedUser) {
+              console.warn('⚠️ Firebase user signed out immediately after sign in');
+              return;
+            }
+            
+            // Verify the user UIDs match
+            if (revalidatedUser.uid !== firebaseUser.uid) {
+              console.warn('⚠️ User changed during initialization, skipping');
+              return;
+            }
+            
             // Check if session manager knows about this user
             const sessionState = sessionManager.getSessionState();
             
@@ -50,13 +67,77 @@ class AuthManager {
             // Ensure backend is authenticated
             if (!yoraaAPI.isAuthenticated()) {
               console.log('🔄 Authenticating with backend...');
-              const idToken = await firebaseUser.getIdToken(false);
-              await yoraaAPI.firebaseLogin(idToken);
-              console.log('✅ Backend authentication successful');
+              
+              // Verify Firebase user is still available before getting token
+              const currentUser = auth().currentUser;
+              if (!currentUser) {
+                console.warn('⚠️ Firebase user signed out during backend auth attempt');
+                return;
+              }
+              
+              // Retry logic for getting ID token (handles race conditions)
+              let retryCount = 0;
+              const maxRetries = 3;
+              let authSuccessful = false;
+              
+              while (retryCount < maxRetries && !authSuccessful) {
+                try {
+                  // Re-verify user still exists on each retry
+                  const userForToken = auth().currentUser;
+                  if (!userForToken) {
+                    console.warn(`⚠️ User signed out during retry ${retryCount + 1}`);
+                    return; // Exit gracefully
+                  }
+                  
+                  const idToken = await userForToken.getIdToken(false);
+                  await yoraaAPI.firebaseLogin(idToken);
+                  console.log('✅ Backend authentication successful');
+                  authSuccessful = true;
+                  break; // Success, exit retry loop
+                  
+                } catch (tokenError) {
+                  
+                  // Handle specific token errors - these are expected in some cases
+                  if (tokenError.code === 'auth/no-current-user' || 
+                      tokenError.message?.includes('no-current-user') ||
+                      tokenError.message?.includes('No user currently signed in')) {
+                    
+                    retryCount++;
+                    if (retryCount < maxRetries) {
+                      console.warn(`⚠️ No current user error (attempt ${retryCount}/${maxRetries}), retrying in ${retryCount * 200}ms...`);
+                      await new Promise(resolve => setTimeout(resolve, retryCount * 200)); // Exponential backoff
+                      continue; // Try again
+                    } else {
+                      console.warn('⚠️ User signed out after all retries, skipping backend auth');
+                      return; // Exit gracefully without throwing
+                    }
+                  }
+                  
+                  // For other errors, log but don't throw to outer catch
+                  console.error('⚠️ Backend authentication error:', tokenError.message);
+                  return; // Exit gracefully
+                }
+              }
+              
+              // If we exhausted retries without success, just log and continue
+              if (!authSuccessful) {
+                console.warn('⚠️ Backend authentication could not be completed, will retry later');
+              }
             }
             
           } catch (error) {
-            console.error('❌ Error handling Firebase user sign in:', error);
+            // Only log truly unexpected errors (filter out expected auth state errors)
+            const isExpectedAuthError = 
+              error.code === 'auth/no-current-user' ||
+              error.message?.includes('no-current-user') || 
+              error.message?.includes('No user currently signed in') ||
+              error.message?.includes('User signed out during authentication');
+            
+            if (!isExpectedAuthError) {
+              console.error('❌ Unexpected error handling Firebase user sign in:', error);
+            } else {
+              console.log('ℹ️ Auth state change handled gracefully (user signed out during initialization)');
+            }
           }
           
         } else {
