@@ -35,24 +35,35 @@ const CheckIcon = ({ width, height }) => (
 
 const ModalExchange = forwardRef((props, ref) => {
   const [visible, setVisible] = useState(false);
+  const [exchangeDetails, setExchangeDetails] = useState(null);
   const { navigation } = props;
 
   useImperativeHandle(ref, () => ({
-    open() {
+    open(details) {
+      setExchangeDetails(details || null);
       setVisible(true);
     },
     close() {
       setVisible(false);
+      setExchangeDetails(null);
     },
   }));
 
   const handleDone = () => {
     setVisible(false);
+    setExchangeDetails(null);
     // Navigate to orders screen
     if (navigation) {
       navigation.navigate('Orders');
     }
   };
+
+  // Extract order and exchange info
+  const orderData = exchangeDetails?.orderData;
+  const exchangeData = exchangeDetails?.exchangeData;
+  const selectedSize = exchangeDetails?.selectedSize;
+  const orderNumber = orderData?.orderNumber || orderData?._id?.slice(-8) || 'N/A';
+  const exchangeId = exchangeData?.exchangeId || exchangeData?._id?.slice(-8) || 'N/A';
 
   return (
     <Modal transparent visible={visible} animationType="fade">
@@ -90,6 +101,52 @@ const ModalExchange = forwardRef((props, ref) => {
             Thank you for requesting exchange !
           </Text>
 
+          {/* Exchange Details */}
+          {exchangeDetails && (
+            <View style={{
+              width: '100%',
+              backgroundColor: '#F5F5F5',
+              borderRadius: 10,
+              padding: 15,
+              marginVertical: 10,
+            }}>
+              <Text style={{
+                fontSize: FONT_SIZE.S,
+                fontFamily: FONT_FAMILY.BOLD,
+                color: '#333',
+                marginBottom: 8,
+              }}>
+                Exchange Details:
+              </Text>
+              <Text style={{
+                fontSize: FONT_SIZE.S,
+                fontFamily: FONT_FAMILY.REGULAR,
+                color: '#666',
+                marginBottom: 4,
+              }}>
+                Order: #{orderNumber}
+              </Text>
+              <Text style={{
+                fontSize: FONT_SIZE.S,
+                fontFamily: FONT_FAMILY.REGULAR,
+                color: '#666',
+                marginBottom: 4,
+              }}>
+                Exchange ID: #{exchangeId}
+              </Text>
+              {selectedSize && (
+                <Text style={{
+                  fontSize: FONT_SIZE.S,
+                  fontFamily: FONT_FAMILY.REGULAR,
+                  color: '#666',
+                  marginBottom: 4,
+                }}>
+                  New Size: {selectedSize}
+                </Text>
+              )}
+            </View>
+          )}
+
           {/* Subtext */}
           <Text
             style={{
@@ -100,7 +157,7 @@ const ModalExchange = forwardRef((props, ref) => {
               marginVertical: 10,
             }}
           >
-            We appreciate your patience.We'll get back to you with tracking
+            We appreciate your patience. We'll get back to you with tracking
             details.
           </Text>
           {/*  done button */}

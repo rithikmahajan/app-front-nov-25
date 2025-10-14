@@ -7,6 +7,7 @@ import {
   Animated,
   PanResponder,
   View,
+  ActivityIndicator,
 } from "react-native";
 import { FontFamilies } from "../constants/styles";
 
@@ -20,6 +21,8 @@ const FONT_FAMILY = {
 
 const CancelOrderRequest = forwardRef((props, ref) => {
   const [visible, setVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderData, setOrderData] = useState(null);
   const translateY = useRef(new Animated.Value(DEVICE_HEIGHT)).current;
 
   useEffect(() => {
@@ -45,7 +48,9 @@ const CancelOrderRequest = forwardRef((props, ref) => {
     });
   };
 
-  const handleOpen = () => {
+  const handleOpen = (order) => {
+    console.log('📦 Opening cancel order modal with order:', order);
+    setOrderData(order);
     setVisible(true);
   };
 
@@ -109,8 +114,8 @@ const CancelOrderRequest = forwardRef((props, ref) => {
   ).current;
 
   useImperativeHandle(ref, () => ({
-    open() {
-      handleOpen();
+    open(order) {
+      handleOpen(order);
     },
     close() {
       handleClose();
@@ -230,17 +235,27 @@ const CancelOrderRequest = forwardRef((props, ref) => {
             
             {/* Cancel Order Button (Outlined) */}
             <TouchableOpacity
-              onPress={() => {
-                // Close modal and call callback when animation completes
-                Animated.spring(translateY, {
-                  toValue: DEVICE_HEIGHT,
-                  useNativeDriver: true,
-                  tension: 150,
-                  friction: 6,
-                }).start(() => {
-                  setVisible(false);
-                  props.onRequestConfirmed?.();
-                });
+              onPress={async () => {
+                if (isSubmitting) return;
+                
+                setIsSubmitting(true);
+                try {
+                  // Close modal first
+                  Animated.spring(translateY, {
+                    toValue: DEVICE_HEIGHT,
+                    useNativeDriver: true,
+                    tension: 150,
+                    friction: 6,
+                  }).start(() => {
+                    setVisible(false);
+                    setIsSubmitting(false);
+                    // Pass order data to parent component
+                    props.onRequestConfirmed?.(orderData);
+                  });
+                } catch (error) {
+                  console.error('Error handling cancel order:', error);
+                  setIsSubmitting(false);
+                }
               }}
               style={{
                 backgroundColor: "white",
@@ -252,15 +267,20 @@ const CancelOrderRequest = forwardRef((props, ref) => {
                 borderRadius: 100,
                 alignItems: "center",
               }}
+              disabled={isSubmitting}
             >
-              <Text style={{ 
-                color: "#000000",  
-                fontFamily: FONT_FAMILY.BOLD,
-                fontSize: 16,
-                lineHeight: 19.2,
-              }}>
-                Cancel Order
-              </Text>
+              {isSubmitting ? (
+                <ActivityIndicator color="#000000" />
+              ) : (
+                <Text style={{ 
+                  color: "#000000",  
+                  fontFamily: FONT_FAMILY.BOLD,
+                  fontSize: 16,
+                  lineHeight: 19.2,
+                }}>
+                  Cancel Order
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
         </Animated.View>

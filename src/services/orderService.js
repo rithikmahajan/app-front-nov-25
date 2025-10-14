@@ -627,28 +627,51 @@ Do you want to proceed with ₹${backendAmount.toFixed(2)}?`;
 /**
  * Verify Payment
  * Handles payment verification after successful Razorpay payment
+ * Now includes Shiprocket shipment creation
  */
 export const verifyPayment = async (paymentData) => {
   console.log('🔐 Verifying payment:', paymentData);
+  console.log('📦 Payment data includes:', {
+    hasPaymentId: !!paymentData.razorpay_payment_id,
+    hasOrderId: !!paymentData.razorpay_order_id,
+    hasSignature: !!paymentData.razorpay_signature
+  });
   
   try {
     let response;
     try {
       // Primary API call
       response = await apiService.post('/razorpay/verify-payment', paymentData);
+      console.log('✅ Payment verification via apiService successful');
     } catch (apiServiceError) {
       console.warn('apiService verification failed, trying yoraaAPI:', apiServiceError.message);
       // Fallback API call
       response = await yoraaAPI.makeRequest('/api/razorpay/verify-payment', 'POST', paymentData, true);
+      console.log('✅ Payment verification via yoraaAPI successful');
     }
     
     if (response && response.success) {
-      console.log('✅ Payment verification successful:', response);
+      console.log('✅ Payment verification successful:', {
+        orderId: response.orderId || response.order_id,
+        awbCode: response.awb_code,
+        shipmentId: response.shipment_id,
+        courierName: response.courier_name
+      });
+      
+      // Return complete order and shipping details
       return {
         success: true,
         orderId: response.orderId || response.order_id,
         order: response.order,
-        message: 'Payment verified successfully'
+        
+        // Shipping Details from Shiprocket
+        awb_code: response.awb_code,           // Tracking number
+        shipment_id: response.shipment_id,     // Shiprocket shipment ID
+        courier_name: response.courier_name,   // Courier company name
+        
+        message: response.awb_code 
+          ? 'Payment verified and shipment created successfully' 
+          : 'Payment verified successfully'
       };
     } else {
       console.error('❌ Payment verification failed:', response);
@@ -661,7 +684,8 @@ export const verifyPayment = async (paymentData) => {
     console.error('❌ Payment verification error:', error);
     return {
       success: false,
-      message: 'Payment verification failed due to network error'
+      message: 'Payment verification failed due to network error',
+      error: error.message
     };
   }
 };

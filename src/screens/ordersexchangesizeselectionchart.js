@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,42 +7,188 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { GlobalBackButton } from '../components';
 import ModalExchange from './ordersexchangethankyoumodal';
-
-const sizes = [
-  { id: 'S', name: 'S', waist: '71.1', inseam: '70.1', available: false },
-  { id: 'M', name: 'M', waist: '71.1', inseam: '70.1', available: true },
-  { id: 'L', name: 'L', waist: '71.1', inseam: '70.1', available: true },
-  { id: 'XL', name: 'XL', waist: '71.1', inseam: '70.1', available: true },
-  { id: 'XXL', name: 'XXL', waist: '71.1', inseam: '70.1', available: true },
-];
+import yoraaAPI from '../services/yoraaAPI';
 
 const OrdersExchangeSizeSelectionChart = ({ navigation, route }) => {
-  const [selectedSize, setSelectedSize] = useState('M'); // Default to M as shown in design
-  const [activeTab, setActiveTab] = useState('sizeChart'); // 'sizeChart' or 'howToMeasure'
-  const [unit, setUnit] = useState('cm'); // 'cm' or 'in'
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [activeTab, setActiveTab] = useState('sizeChart');
+  const [unit, setUnit] = useState('cm');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderData, setOrderData] = useState(null);
+  const [productSizes, setProductSizes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const modalExchangeRef = useRef(null);
+
+  // Get order data from route params
+  const orderId = route?.params?.orderId;
+  const routeOrderData = route?.params?.orderData;
+
+  // Fetch order and product data
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!orderId) {
+        Alert.alert('Error', 'Order ID is missing');
+        navigation.goBack();
+        return;
+      }
+
+      try {
+        setLoading(true);
+        
+        // If we have order data from route, use it, otherwise fetch
+        let order = routeOrderData;
+        if (!order) {
+          console.log('📦 Fetching order details for:', orderId);
+          const orderResponse = await yoraaAPI.makeRequest(
+            `/api/orders/${orderId}`,
+            'GET',
+            null,
+            true
+          );
+
+          if (orderResponse.success && orderResponse.data) {
+            order = orderResponse.data;
+          } else {
+            throw new Error('Failed to fetch order details');
+          }
+        }
+
+        setOrderData(order);
+
+        // Fetch product details to get available sizes
+        if (order.items && order.items.length > 0) {
+          const productId = order.items[0].product || order.items[0].productId;
+          if (productId) {
+            console.log('📦 Fetching product details for:', productId);
+            const productResponse = await yoraaAPI.makeRequest(
+              `/api/items/${productId}`,
+              'GET',
+              null,
+              true
+            );
+
+            if (productResponse.success && productResponse.data) {
+              const product = productResponse.data;
+              console.log('✅ Product data fetched:', product);
+              
+              // Format sizes for display
+              if (product.sizes && Array.isArray(product.sizes)) {
+                const formattedSizes = product.sizes.map(size => ({
+                  id: size.size || size.name,
+                  name: size.size || size.name,
+                  waist: size.waist || '71.1',
+                  inseam: size.inseam || '70.1',
+                  available: size.quantity > 0,
+                  stock: size.quantity || 0
+                }));
+                setProductSizes(formattedSizes);
+                
+                // Set default selected size if current size is unavailable
+                const currentSize = order.items[0].size;
+                const currentSizeAvailable = formattedSizes.find(
+                  s => s.id === currentSize && s.available
+                );
+                
+                if (!currentSizeAvailable && formattedSizes.length > 0) {
+                  // Select first available size
+                  const firstAvailable = formattedSizes.find(s => s.available);
+                  if (firstAvailable) {
+                    setSelectedSize(firstAvailable.id);
+                  }
+                }
+              } else {
+                // Fallback to default sizes if product doesn't have sizes
+                setProductSizes([
+                  { id: 'S', name: 'S', waist: '71.1', inseam: '70.1', available: false },
+                  { id: 'M', name: 'M', waist: '71.1', inseam: '70.1', available: true },
+                  { id: 'L', name: 'L', waist: '71.1', inseam: '70.1', available: true },
+                  { id: 'XL', name: 'XL', waist: '71.1', inseam: '70.1', available: true },
+                  { id: 'XXL', name: 'XXL', waist: '71.1', inseam: '70.1', available: true },
+                ]);
+                setSelectedSize('M');
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error fetching data:', error);
+        Alert.alert(
+          'Error',
+          'Failed to load product details. Please try again.',
+          [{ text: 'OK', onPress: () => navigation.goBack() }]
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [orderId, routeOrderData, navigation]);
 
   const handleSizeSelect = (sizeId) => {
     // Find the size to check if it's available
-    const size = sizes.find(s => s.id === sizeId);
+    const size = productSizes.find(s => s.id === sizeId);
     if (size && !size.available) {
-      // Don't allow selection of unavailable sizes
+      Alert.alert('Size Unavailable', `Size ${sizeId} is currently out of stock.`);
       return;
     }
     setSelectedSize(sizeId);
   };
 
-  const handleExchange = () => {
+  const handleExchange = async () => {
     if (!selectedSize) {
       Alert.alert('Error', 'Please select a size for exchange.');
       return;
     }
-    
-    // Open the exchange thank you modal
-    modalExchangeRef.current?.open();
+
+    if (!orderData || !orderData._id) {
+      Alert.alert('Error', 'Order information is missing. Please try again.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const exchangeData = {
+        orderId: orderData._id,
+        reason: orderData.exchangeReason || 'Size exchange',
+        desiredSize: selectedSize,
+      };
+
+      console.log('🔄 Submitting exchange request for order:', orderData._id);
+      
+      const response = await yoraaAPI.makeRequest(
+        '/api/orders/exchange',
+        'POST',
+        exchangeData,
+        true
+      );
+
+      if (response.success) {
+        console.log('✅ Exchange request successful:', response.data);
+        
+        // Open the exchange thank you modal with order and exchange details
+        modalExchangeRef.current?.open({
+          orderData: orderData,
+          exchangeData: response.data,
+          selectedSize: selectedSize
+        });
+      } else {
+        throw new Error(response.message || 'Failed to submit exchange request');
+      }
+    } catch (error) {
+      console.error('❌ Error submitting exchange request:', error);
+      Alert.alert(
+        'Error',
+        error.message || 'Failed to submit exchange request. Please try again.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderSizeRow = (size, index) => {
@@ -129,7 +275,18 @@ const OrdersExchangeSizeSelectionChart = ({ navigation, route }) => {
 
       {/* Size Rows */}
       <View style={styles.sizeList}>
-        {sizes.map(renderSizeRow)}
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#000" />
+            <Text style={styles.loadingText}>Loading sizes...</Text>
+          </View>
+        ) : productSizes.length > 0 ? (
+          productSizes.map(renderSizeRow)
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No sizes available</Text>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -183,11 +340,16 @@ const OrdersExchangeSizeSelectionChart = ({ navigation, route }) => {
         {/* Exchange Button */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={styles.exchangeButton}
+            style={[styles.exchangeButton, isSubmitting && styles.exchangeButtonDisabled]}
             onPress={handleExchange}
             activeOpacity={0.8}
+            disabled={isSubmitting}
           >
-            <Text style={styles.exchangeButtonText}>Exchange</Text>
+            {isSubmitting ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={styles.exchangeButtonText}>Exchange</Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -418,11 +580,38 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  exchangeButtonDisabled: {
+    backgroundColor: '#999999',
+  },
   exchangeButtonText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#FFFFFF',
     fontFamily: 'Montserrat-Medium',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#666',
+    fontFamily: 'Montserrat-Regular',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#999',
+    fontFamily: 'Montserrat-Regular',
+    textAlign: 'center',
   },
 });
 

@@ -977,12 +977,48 @@ const BagScreen = ({ navigation, route }) => {
       // Just pass the original bagItems to processCompleteOrder
       console.log('📦 Passing original bag items to payment service:', bagItems);
       
-      // Format address for backend
+      // ✅ FIX: Get authenticated user data BEFORE formatting address
+      const userData = await yoraaAPI.getUserData();
+      const userToken = yoraaAPI.getUserToken();
+      const userId = userData?.id || userData?.uid || userData?._id;
+      
+      console.log('🔑 Authentication data retrieved:', {
+        hasUserId: !!userId,
+        hasUserToken: !!userToken,
+        hasUserData: !!userData,
+        userId: userId,
+        tokenLength: userToken ? userToken.length : 0
+      });
+      
+      // ✅ FIX: Validate authentication before proceeding
+      if (!userId || !userToken) {
+        console.error('❌ Missing authentication data:', {
+          userId: userId,
+          hasToken: !!userToken
+        });
+        Alert.alert(
+          'Authentication Required',
+          'Please login to complete your order.',
+          [
+            {
+              text: 'Login',
+              onPress: () => navigation.navigate('RewardsScreen', { fromCheckout: true })
+            },
+            {
+              text: 'Cancel',
+              style: 'cancel'
+            }
+          ]
+        );
+        return;
+      }
+      
+      // Format address for backend - ensure all required fields are present
       const formattedAddress = {
-        firstName: selectedAddress.firstName || selectedAddress.name?.split(' ')[0] || 'Customer',
-        lastName: selectedAddress.lastName || selectedAddress.name?.split(' ').slice(1).join(' ') || '',
-        email: selectedAddress.email || 'customer@yoraa.com',
-        phone: selectedAddress.phoneNumber || selectedAddress.phone || '',
+        firstName: selectedAddress.firstName || selectedAddress.name?.split(' ')[0] || userData?.firstName || 'Customer',
+        lastName: selectedAddress.lastName || selectedAddress.name?.split(' ').slice(1).join(' ') || userData?.lastName || '',
+        email: selectedAddress.email || userData?.email || 'customer@yoraa.com',
+        phone: selectedAddress.phoneNumber || selectedAddress.phone || userData?.phoneNumber || '',
         addressLine1: selectedAddress.address || selectedAddress.addressLine1 || '',
         addressLine2: selectedAddress.addressLine2 || '',
         city: selectedAddress.city || '',
@@ -991,9 +1027,24 @@ const BagScreen = ({ navigation, route }) => {
         zipCode: selectedAddress.pinCode || selectedAddress.zipCode || ''
       };
       
-      // Get user authentication data
-      const userId = await yoraaAPI.getUserData().then(data => data?.id || data?.uid);
-      const userToken = yoraaAPI.getUserToken();
+      console.log('📍 Formatted address for backend:', {
+        firstName: formattedAddress.firstName,
+        lastName: formattedAddress.lastName,
+        email: formattedAddress.email,
+        phone: formattedAddress.phone,
+        city: formattedAddress.city,
+        hasAllRequiredFields: !!(
+          formattedAddress.firstName &&
+          formattedAddress.lastName &&
+          formattedAddress.email &&
+          formattedAddress.phone &&
+          formattedAddress.addressLine1 &&
+          formattedAddress.city &&
+          formattedAddress.state &&
+          formattedAddress.zipCode &&
+          formattedAddress.country
+        )
+      });
       
       // Process complete order using paymentService
       // Pass original bagItems - orderService will format them correctly
@@ -1001,8 +1052,8 @@ const BagScreen = ({ navigation, route }) => {
         bagItems,  // ✅ Pass original items, not formatted
         formattedAddress,
         {
-          userId,
-          userToken,
+          userId: userId,          // ✅ Ensure userId is passed
+          userToken: userToken,    // ✅ Ensure token is passed
           orderNotes: '',
           paymentMethod: 'razorpay'
         }

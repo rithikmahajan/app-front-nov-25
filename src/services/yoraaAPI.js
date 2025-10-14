@@ -1296,6 +1296,69 @@ class YoraaAPIService {
     return await this.makeRequest('/api/orders/user', 'GET', null, true);
   }
 
+  async cancelOrder(orderId, reason = 'Customer requested cancellation') {
+    try {
+      console.log('🚫 Cancelling order:', orderId);
+      return await this.makeRequest(`/api/orders/${orderId}/cancel`, 'PUT', { reason }, true);
+    } catch (error) {
+      console.error('❌ Error cancelling order:', error);
+      throw error;
+    }
+  }
+
+  async returnOrder(orderId, reason, images = []) {
+    try {
+      console.log('📦 Creating return request for order:', orderId);
+      
+      const formData = new FormData();
+      formData.append('orderId', orderId);
+      formData.append('reason', reason);
+
+      // Append images
+      images.forEach((image, index) => {
+        formData.append('images', {
+          uri: image.uri,
+          type: image.type || 'image/jpeg',
+          name: image.name || `return_image_${index}.jpg`,
+        });
+      });
+
+      return await this.makeRequest('/api/orders/return', 'POST', formData, true, false, {
+        'Content-Type': 'multipart/form-data',
+      });
+    } catch (error) {
+      console.error('❌ Error creating return request:', error);
+      throw error;
+    }
+  }
+
+  async exchangeOrder(orderId, reason, desiredSize) {
+    try {
+      console.log('🔄 Creating exchange request for order:', orderId);
+      
+      const exchangeData = {
+        orderId,
+        reason,
+        desiredSize,
+      };
+
+      return await this.makeRequest('/api/orders/exchange', 'POST', exchangeData, true);
+    } catch (error) {
+      console.error('❌ Error creating exchange request:', error);
+      throw error;
+    }
+  }
+
+  async getReturnOrders() {
+    try {
+      console.log('📦 Fetching return orders');
+      return await this.makeRequest('/api/orders/return-orders', 'GET', null, true);
+    } catch (error) {
+      console.error('❌ Error fetching return orders:', error);
+      throw error;
+    }
+  }
+
   // User Profile
   async getUserProfile() {
     try {

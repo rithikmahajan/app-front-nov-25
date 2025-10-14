@@ -9,6 +9,7 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import TrackingModal from './orderstrackmodeloverlay';
 import CancelOrderRequest from './orderscancelordermodal';
@@ -21,6 +22,7 @@ const OrdersScreen = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [currentCancelOrder, setCurrentCancelOrder] = useState(null);
 
   // Function to get customer-facing actions based on order status
   const getCustomerActions = useCallback((order) => {
@@ -83,8 +85,20 @@ const OrdersScreen = ({ navigation, route }) => {
           paymentStatus: order.payment_status,
           shippingStatus: order.shipping_status,
           razorpayOrderId: order.razorpay_order_id,
-          address: order.address
+          address: order.address,
+          // ✅ CRITICAL FIX: Ensure AWB code is extracted from API response
+          awbCode: order.awb_code || order.awbCode || order.tracking_number,
+          awb_code: order.awb_code || order.awbCode || order.tracking_number,
+          shipmentId: order.shipment_id || order.shiprocket_order_id,
+          items: order.items || [],
+          item_quantities: order.item_quantities || []
         }));
+        
+        console.log('✅ Orders fetched and transformed:', {
+          count: transformedOrders.length,
+          firstOrderHasAWB: !!transformedOrders[0]?.awbCode,
+          sampleAWB: transformedOrders[0]?.awbCode
+        });
         
         setOrders(transformedOrders);
       } else {
@@ -243,35 +257,85 @@ const OrdersScreen = ({ navigation, route }) => {
 
   // Mock tracking data - you can replace this with actual API data
   const getTrackingData = useCallback((order) => {
-    // Mock tracking data based on order status
-    if (order.status === 'confirmed') {
-      return [
+    // Return AWB code and order details for real-time Shiprocket tracking
+    return {
+      awbCode: order.awbCode || order.awb_code,
+      orderId: order.id || order._id,
+      razorpayOrderId: order.razorpayOrderId || order.razorpay_order_id,
+      orderStatus: order.status || order.order_status,
+      orderDate: order.orderDate || order.created_at,
+      address: order.address,
+      totalAmount: order.totalAmount || order.total_price,
+      items: order.items || [],
+      // Legacy mock data for fallback (if AWB not available)
+      mockData: order.status === 'confirmed' ? [
         { status: "Packing", location: "Warehouse Mumbai", timestamp: "2024-01-15 10:30 AM" },
         { status: "Picked", location: "Courier Hub Mumbai", timestamp: "2024-01-15 02:45 PM" },
-      ];
-    } else if (order.status === 'delivered') {
-      return [
+      ] : order.status === 'delivered' ? [
         { status: "Packing", location: "Warehouse Mumbai", timestamp: "2024-01-15 10:30 AM" },
         { status: "Picked", location: "Courier Hub Mumbai", timestamp: "2024-01-15 02:45 PM" },
         { status: "In Transit", location: "In Transit to Delhi", timestamp: "2024-01-16 08:00 AM" },
         { status: "Delivered", location: "Delivered to Customer", timestamp: "2024-01-17 11:30 AM" },
-      ];
-    }
-    return [];
+      ] : []
+    };
   }, []); // End of getTrackingData useCallback
 
   const handleTrackOrder = useCallback((order) => {
     const trackingData = getTrackingData(order);
+    console.log('📦 Opening tracking modal with data:', {
+      awbCode: trackingData.awbCode,
+      orderId: trackingData.orderId,
+      hasAddress: !!trackingData.address
+    });
     trackingModalRef.current?.openModal(trackingData);
   }, [getTrackingData]);
 
   const handleCancelOrder = (order) => {
-    cancelOrderModalRef.current?.open();
+    setCurrentCancelOrder(order);
+    cancelOrderModalRef.current?.open(order);
   };
 
-  const handleCancelOrderConfirmed = () => {
-    // Open the confirmation modal
-    cancelConfirmationModalRef.current?.open();
+  const handleCancelOrderConfirmed = async (orderData) => {
+    // Use orderData if passed, otherwise use currentCancelOrder
+    const orderToCancel = orderData || currentCancelOrder;
+    
+    if (!orderToCancel) {
+      console.error('No order selected for cancellation');
+      return;
+    }
+
+    try {
+      console.log('🚫 Cancelling order:', orderToCancel._id || orderToCancel.id);
+      
+      const orderId = orderToCancel._id || orderToCancel.id;
+      
+      const response = await yoraaAPI.makeRequest(
+        `/api/orders/${orderId}/cancel`,
+        'PUT',
+        { reason: 'Customer requested cancellation' },
+        true
+      );
+
+      if (response.success) {
+        console.log('✅ Order cancelled successfully');
+        
+        // Open the confirmation modal
+        cancelConfirmationModalRef.current?.open();
+        
+        // Refresh orders list
+        setTimeout(() => {
+          fetchOrders();
+        }, 1000);
+      } else {
+        throw new Error(response.message || 'Failed to cancel order');
+      }
+    } catch (cancelError) {
+      console.error('❌ Error cancelling order:', cancelError);
+      Alert.alert(
+        'Error',
+        cancelError.message || 'Failed to cancel order. Please try again.'
+      );
+    }
   };
 
   return (
