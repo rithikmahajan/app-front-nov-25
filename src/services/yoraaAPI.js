@@ -393,38 +393,53 @@ class YoraaAPIService {
           const error = new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
           error.isDuplicateReviewError = true;
           throw error;
-        } else {
-          console.error(`❌ API Error [${response.status}] ${endpoint}:`, data);
-          console.error('❌ Full error response:', JSON.stringify(data, null, 2));
-          console.error('❌ Request that failed:', body ? JSON.stringify(body, null, 2) : 'No body');
-          
-          // Enhanced error handling for chat endpoints
-          if (endpoint.includes('/chat/')) {
-            console.error('🔍 CHAT ENDPOINT ERROR ANALYSIS:');
-            
-            if (response.status === 401) {
-              console.error('🔐 Authentication Error: Firebase JWT token invalid or expired');
-              console.error('💡 Try: Refresh Firebase token and retry');
-            } else if (response.status === 500) {
-              console.error('🚨 Server Error: Backend processing failed');
-              console.error('💡 Possible causes:');
-              console.error('• Firebase Admin SDK configuration issues');
-              console.error('• Database connection problems');
-              console.error('• Backend authentication middleware errors');
-              console.error('• Check backend server logs for details');
-            } else if (response.status === 403) {
-              console.error('🚫 Forbidden: User not authorized for chat functionality');
-            }
-          }
-          
-          throw new Error(data.message || data.error || `HTTP ${response.status}: ${response.statusText}`);
         }
+        
+        // Handle cart endpoint 404s silently (backend cart sync is optional)
+        if (response.status === 404 && endpoint.includes('/api/cart/')) {
+          console.warn(`⚠️ Cart endpoint not available: ${endpoint} - using local cart only`);
+          const error = new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+          error.status = 404;
+          error.statusCode = 404;
+          error.isCartEndpointMissing = true;
+          throw error;
+        }
+        
+        // Log other errors normally
+        console.error(`❌ API Error [${response.status}] ${endpoint}:`, data);
+        console.error('❌ Full error response:', JSON.stringify(data, null, 2));
+        console.error('❌ Request that failed:', body ? JSON.stringify(body, null, 2) : 'No body');
+        
+        // Enhanced error handling for chat endpoints
+        if (endpoint.includes('/chat/')) {
+          console.error('🔍 CHAT ENDPOINT ERROR ANALYSIS:');
+          
+          if (response.status === 401) {
+            console.error('🔐 Authentication Error: Firebase JWT token invalid or expired');
+            console.error('💡 Try: Refresh Firebase token and retry');
+          } else if (response.status === 500) {
+            console.error('🚨 Server Error: Backend processing failed');
+            console.error('💡 Possible causes:');
+            console.error('• Firebase Admin SDK configuration issues');
+            console.error('• Database connection problems');
+            console.error('• Backend authentication middleware errors');
+            console.error('• Check backend server logs for details');
+          } else if (response.status === 403) {
+            console.error('🚫 Forbidden: User not authorized for chat functionality');
+          }
+        }
+        
+        throw new Error(data.message || data.error || `HTTP ${response.status}: ${response.statusText}`);
       }
+
 
       console.log(`✅ API Success [${method}] ${endpoint}:`, data.success ? 'SUCCESS' : 'RESPONSE_RECEIVED');
       return data;
     } catch (error) {
-      console.error(`API Error [${method} ${endpoint}]:`, error);
+      // Don't log cart 404 errors - they're handled gracefully
+      if (!(error.isCartEndpointMissing && error.status === 404)) {
+        console.error(`API Error [${method} ${endpoint}]:`, error);
+      }
       throw error;
     }
   }
@@ -1035,6 +1050,11 @@ class YoraaAPIService {
       const response = await this.makeRequest(endpoint, 'GET', null, isAuthenticated);
       return response;
     } catch (error) {
+      // If cart endpoint doesn't exist (404) or cart is empty, return empty cart
+      if (error.status === 404 || error.statusCode === 404) {
+        console.warn('⚠️ Cart endpoint not available, using local cart only');
+        return { items: [] };
+      }
       console.error('❌ Error fetching cart:', error);
       throw error;
     }
@@ -1071,28 +1091,60 @@ class YoraaAPIService {
         throw new Error(response.message || 'Failed to add item to cart');
       }
     } catch (error) {
+      // If cart endpoint doesn't exist (404), return success with localOnly flag
+      if (error.status === 404 || error.statusCode === 404) {
+        console.warn('⚠️ Cart endpoint not available, item added to local cart only');
+        return { success: true, localOnly: true };
+      }
       console.error('❌ Error adding to cart:', error);
       throw error;
     }
   }
 
   async updateCartItem(itemId, sizeId, quantity) {
-    return await this.makeRequest('/api/cart/update', 'PUT', {
-      itemId,
-      sizeId,
-      quantity
-    }, true);
+    try {
+      return await this.makeRequest('/api/cart/update', 'PUT', {
+        itemId,
+        sizeId,
+        quantity
+      }, true);
+    } catch (error) {
+      // If endpoint doesn't exist (404), silently fail - cart is stored locally
+      if (error.status === 404 || error.statusCode === 404) {
+        console.warn('⚠️ Cart sync endpoint not available, using local cart only');
+        return { success: true, localOnly: true };
+      }
+      throw error;
+    }
   }
 
   async removeFromCart(itemId, sizeId) {
-    return await this.makeRequest('/api/cart/remove', 'DELETE', {
-      itemId,
-      sizeId
-    }, true);
+    try {
+      return await this.makeRequest('/api/cart/remove', 'DELETE', {
+        itemId,
+        sizeId
+      }, true);
+    } catch (error) {
+      // If endpoint doesn't exist (404), silently fail - cart is stored locally
+      if (error.status === 404 || error.statusCode === 404) {
+        console.warn('⚠️ Cart sync endpoint not available, using local cart only');
+        return { success: true, localOnly: true };
+      }
+      throw error;
+    }
   }
 
   async clearCart() {
-    return await this.makeRequest('/api/cart/clear', 'DELETE', null, true);
+    try {
+      return await this.makeRequest('/api/cart/clear', 'DELETE', null, true);
+    } catch (error) {
+      // If endpoint doesn't exist (404), silently fail - cart is stored locally
+      if (error.status === 404 || error.statusCode === 404) {
+        console.warn('⚠️ Cart sync endpoint not available, using local cart only');
+        return { success: true, localOnly: true };
+      }
+      throw error;
+    }
   }
 
   // Guest Data Transfer Methods

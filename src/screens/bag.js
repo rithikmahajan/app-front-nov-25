@@ -12,7 +12,6 @@ import {
   PanResponder,
   Image,
 } from 'react-native';
-import Config from 'react-native-config';
 import BottomNavigationBar from '../components/bottomnavigationbar';
 import BagQuantitySelectorModalOverlay from './bagquantityselectormodaloverlay';
 import BagSizeSelectorModalOverlay from './bagsizeselectormodaloverlay';
@@ -23,10 +22,9 @@ import { useAddress } from '../contexts/AddressContext';
 import { useCurrencyContext } from '../contexts/CurrencyContext';
 import { apiService } from '../services/apiService';
 import { yoraaAPI } from '../services/yoraaAPI';
-import RazorpayCheckout from 'react-native-razorpay';
+import paymentService from '../services/paymentService';
 import { 
   validateCart, 
-  formatCartItemForAPI, 
   debugCart, 
   getItemPrice 
 } from '../utils/skuUtils';
@@ -755,345 +753,11 @@ const BagScreen = ({ navigation, route }) => {
     return enhancedValidation;
   }, [bagItems, dynamicPricing]);
 
-  // Updated function to create Razorpay order (matches backend implementation)
-  const createRazorpayOrder = useCallback(async () => {
-    try {
-      console.log('🔍 Creating Razorpay order with bag items:', bagItems);
-      console.log('🔍 Selected address:', selectedAddress);
-
-      // Check if we have items and address
-      if (!bagItems || bagItems.length === 0) {
-        Alert.alert('Empty Cart', 'Please add items to your cart before proceeding with payment.');
-        return null;
-      }
-
-      if (!selectedAddress) {
-        Alert.alert('Address Required', 'Please select a delivery address to continue.');
-        return null;
-      }
-
-      // Validate cart data before proceeding
-      const cartValidation = validateCheckoutData();
-      if (!cartValidation) {
-        return null; // Validation failed, user was alerted
-      }
-
-      // Use the enhanced validated total amount that matches UI display
-      const totalAmount = cartValidation.totalAmount;
-      const razorpayAmount = cartValidation.razorpayAmount;
-      console.log('🔍 Using enhanced validated amounts:', {
-        totalAmount,
-        razorpayAmount,
-        displayTotal: cartValidation.displayTotal,
-        breakdown: cartValidation.breakdown
-      });
-      console.log('🛒 Original bagItems structure:', bagItems);
-
-      // Format cart items for backend using utility function
-      const formattedCart = bagItems.map((bagItem, index) => formatCartItemForAPI(bagItem, index));
-      
-      console.log('� Formatted cart for backend:', formattedCart);
-
-      // Format address for backend (updated to match backend expectations)
-      const formattedAddress = {
-        firstName: selectedAddress.firstName || selectedAddress.name?.split(' ')[0] || 'Customer',
-        lastName: selectedAddress.lastName || selectedAddress.name?.split(' ').slice(1).join(' ') || '',
-        address: selectedAddress.address || selectedAddress.addressLine1,
-        city: selectedAddress.city,
-        state: selectedAddress.state,
-        country: selectedAddress.country || 'India',
-        pinCode: selectedAddress.pinCode || selectedAddress.zipCode,
-        phoneNumber: selectedAddress.phoneNumber || selectedAddress.phone
-      };
-
-      // Prepare order data for single API call (backend handles both order and Razorpay)
-      const orderData = {
-        amount: totalAmount, // Amount in rupees (not paise) - backend handles conversion
-        cart: formattedCart,
-        staticAddress: formattedAddress
-      };
-
-      console.log('📤 Sending Razorpay order data:', orderData);
-
-      // Single API call that creates both order and Razorpay order
-      let response;
-      try {
-        response = await apiService.post('/razorpay/create-order', orderData);
-      } catch (apiServiceError) {
-        console.warn('apiService failed, trying yoraaAPI as fallback:', apiServiceError.message);
-        response = await yoraaAPI.makeRequest('/api/razorpay/create-order', 'POST', orderData, true);
-      }
-
-      if (response && response.id) {
-        // Backend returns standard Razorpay response format
-        console.log('✅ Razorpay order created successfully:', response);
-        
-        // Initialize Razorpay payment
-        await initializeRazorpayPayment(response, formattedAddress);
-        return response;
-      } else {
-        const errorMsg = response?.message || response?.error || 'Failed to create Razorpay order';
-        throw new Error(errorMsg);
-      }
-    } catch (error) {
-      console.error('❌ Error creating Razorpay order:', error);
-      
-      // Handle specific backend errors
-      let errorMessage = 'Failed to create order. Please try again.';
-      
-      if (error.message && error.message.includes('Invalid SKU')) {
-        errorMessage = 'There was an issue with one of your cart items. Please remove and re-add the items to your cart.';
-      } else if (error.message && error.message.includes('status code 400')) {
-        errorMessage = 'Invalid order data. Please check your cart items and delivery address.';
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      Alert.alert('Order Error', errorMessage);
-      return null;
-    }
-  }, [bagItems, selectedAddress, initializeRazorpayPayment, validateCheckoutData]);
-
-  // Function to initialize Razorpay payment (UPDATED - Environment-aware)
-  const initializeRazorpayPayment = useCallback(async (razorpayOrder, address) => {
-    try {
-      console.log('💳 Initializing Razorpay payment with order:', razorpayOrder);
-
-      // Priority: Environment variable > Auto-detect based on __DEV__
-      const razorpayKey = Config.RAZORPAY_KEY_ID || (__DEV__ ? 'rzp_test_9WNhUijdgxSon5' : 'rzp_live_VRU7ggfYLI7DWV');
-      
-      console.log('🔑 Razorpay mode:', __DEV__ ? 'TEST' : 'LIVE');
-      console.log('🔑 From environment:', !!Config.RAZORPAY_KEY_ID);
-      console.log('🔑 Using Razorpay key:', razorpayKey);
-
-      const options = {
-        description: 'Order Payment',
-        image: 'https://your-app-logo.com/logo.png', // Replace with actual logo URL
-        currency: razorpayOrder.currency,
-        key: razorpayKey,
-        amount: razorpayOrder.amount,
-        order_id: razorpayOrder.id,
-        name: 'Yoraa',
-        prefill: {
-          email: 'customer@yoraa.com', // Replace with actual user email if available
-          contact: address.phoneNumber,
-          name: `${address.firstName} ${address.lastName}`
-        },
-        theme: { color: '#000000' }
-      };
-
-      console.log('🚀 Opening Razorpay with options:', options);
-
-      try {
-        const paymentResponse = await RazorpayCheckout.open(options);
-        console.log('✅ Payment successful:', paymentResponse);
-        
-        // Verify payment with backend
-        await verifyPayment(paymentResponse);
-        
-      } catch (paymentError) {
-        console.log('❌ Payment error/cancelled:', paymentError);
-        
-        // Handle payment cancellation vs error with Skip option
-        if (paymentError.code === 'PAYMENT_CANCELLED') {
-          Alert.alert(
-            'Payment Cancelled', 
-            'Your payment was cancelled. Would you like to try again or continue shopping?',
-            [
-              { 
-                text: 'Continue Shopping', 
-                style: 'cancel',
-                onPress: () => {
-                  console.log('User chose to continue shopping');
-                  // User can continue using the app
-                }
-              },
-              { 
-                text: 'Retry Payment', 
-                onPress: () => initializeRazorpayPayment(razorpayOrder, address) 
-              }
-            ]
-          );
-        } else {
-          Alert.alert(
-            'Payment Failed', 
-            'There was an issue processing your payment. You can retry or continue shopping.',
-            [
-              { 
-                text: 'Continue Shopping', 
-                style: 'cancel',
-                onPress: () => {
-                  console.log('User chose to skip payment and continue shopping');
-                  // User can continue using the app without completing payment
-                }
-              },
-              { 
-                text: 'Retry Payment', 
-                onPress: () => initializeRazorpayPayment(razorpayOrder, address) 
-              }
-            ]
-          );
-        }
-      }
-
-      return true;
-    } catch (error) {
-      console.error('❌ Error initializing Razorpay payment:', error);
-      Alert.alert('Payment Error', 'Order created but payment initialization failed. Please contact support.');
-      return null;
-    }
-  }, [verifyPayment]);
-
-  // Function to verify payment (OPTIMIZED - PARALLEL API CALLS)
-  const verifyPayment = useCallback(async (paymentResponse) => {
-    try {
-      console.log('🔍 Verifying payment (OPTIMIZED):', paymentResponse);
-      
-      const verificationData = {
-        razorpay_order_id: paymentResponse.razorpay_order_id,
-        razorpay_payment_id: paymentResponse.razorpay_payment_id,
-        razorpay_signature: paymentResponse.razorpay_signature
-      };
-
-      console.log('📤 Sending verification data (parallel calls):', verificationData);
-
-      // OPTIMIZATION: Parallel API calls instead of sequential
-      const apiCalls = [
-        apiService.post('/razorpay/verify-payment', verificationData).catch(err => ({ error: err, source: 'apiService' })),
-        yoraaAPI.makeRequest('/razorpay/verify-payment', 'POST', verificationData, true).catch(err => ({ error: err, source: 'yoraaAPI' }))
-      ];
-
-      console.log('⚡ Making parallel API calls for faster verification...');
-      const results = await Promise.allSettled(apiCalls);
-      
-      console.log('📊 API Results:', results.map(r => ({
-        status: r.status,
-        success: r.value?.success,
-        source: r.value?.source,
-        hasError: !!r.value?.error
-      })));
-
-      // Find first successful response
-      let response = null;
-      let errorDetails = null;
-
-      for (const result of results) {
-        if (result.status === 'fulfilled' && result.value?.success) {
-          response = result.value;
-          console.log('✅ Found successful response from:', result.value.source || 'unknown');
-          break;
-        } else if (result.status === 'fulfilled' && result.value?.error) {
-          if (!errorDetails) {
-            errorDetails = result.value.error;
-          }
-        }
-      }
-
-      // If no successful response, collect error details
-      if (!response) {
-        const errors = results.map(r => r.value?.error || r.reason).filter(Boolean);
-        errorDetails = errors[0] || 'All verification attempts failed';
-        console.error('🚨 All API calls failed:', errors);
-      }
-
-      if (response && response.success) {
-        // Handle different success scenarios based on Shiprocket integration
-        if (response.awbCode && response.awbCode !== "AWB generation failed") {
-          // Full success: Payment + Shiprocket + AWB
-          handleOrderSuccess(response);
-        } else if (response.shiprocketOrderId) {
-          // Payment success but AWB generation pending
-          handleOrderPartialSuccess(response);
-        } else {
-          // Payment success but shipping integration failed
-          handleOrderWithShippingIssues(response);
-        }
-        
-        // Clear the bag after successful payment verification
-        clearBag();
-      } else {
-        // Enhanced error handling for better user experience
-        const isSignatureError = errorDetails?.message?.includes('signature') || 
-                                 errorDetails?.includes('signature') ||
-                                 (typeof errorDetails === 'string' && errorDetails.includes('signature'));
-        
-        if (isSignatureError) {
-          // Signature verification failed - payment likely went through but backend can't verify
-          console.log('🔒 Signature verification failed - payment may have been processed');
-          
-          Alert.alert(
-            'Payment Status Unclear', 
-            'Your payment may have been processed successfully, but we couldn\'t verify it immediately. Please check your bank statement and contact support if needed.',
-            [
-              { 
-                text: 'Contact Support',
-                onPress: () => console.log('User chose to contact support')
-              },
-              { 
-                text: 'Try Again',
-                onPress: () => {
-                  console.log('User chose to retry payment');
-                  handleCheckout(); // Retry the entire payment process
-                }
-              },
-              { 
-                text: 'Continue Shopping',
-                style: 'default',
-                onPress: () => {
-                  console.log('User chose to continue shopping');
-                  // Don't clear the bag in case payment failed
-                }
-              }
-            ]
-          );
-        } else {
-          // Other verification errors
-          Alert.alert(
-            'Payment Verification Failed', 
-            'There was an issue verifying your payment. Please contact our support team for assistance.',
-            [
-              { 
-                text: 'Contact Support',
-                onPress: () => console.log('User chose to contact support')
-              },
-              { 
-                text: 'Try Again',
-                onPress: () => {
-                  console.log('User chose to retry payment');
-                  handleCheckout(); // Retry the entire payment process
-                }
-              },
-              { 
-                text: 'Continue Shopping',
-                style: 'cancel',
-                onPress: () => console.log('User chose to continue shopping')
-              }
-            ]
-          );
-        }
-      }
-
-    } catch (error) {
-      console.error('❌ Payment verification error:', error);
-      
-      // User-friendly error handling
-      Alert.alert(
-        'Verification Error', 
-        'There was an issue verifying your payment. If your payment went through, please contact support with your payment details.',
-        [
-          { 
-            text: 'Contact Support',
-            onPress: () => console.log('User chose to contact support')
-          },
-          { 
-            text: 'Continue Shopping',
-            style: 'cancel',
-            onPress: () => console.log('User chose to continue shopping')
-          }
-        ]
-      );
-    }
-  }, [clearBag, handleCheckout, handleOrderSuccess, handleOrderPartialSuccess, handleOrderWithShippingIssues]);
+  // ========================================================================
+  // RAZORPAY PAYMENT FUNCTIONS
+  // Now handled by paymentService.processCompleteOrder
+  // The implementation follows the official Razorpay Integration Guide
+  // ========================================================================
 
   // Order success handling functions
   const handleOrderSuccess = useCallback((data) => {
@@ -1199,7 +863,7 @@ const BagScreen = ({ navigation, route }) => {
     );
   }, []);
 
-  // ENHANCED: Authentication-aware checkout with direct Razorpay payment
+  // ENHANCED: Authentication-aware checkout using paymentService
   const handleCheckout = useCallback(async () => {
     console.log('🔍 handleCheckout (ENHANCED) - dynamicPricing:', dynamicPricing);
     console.log('🔍 handleCheckout - bagCalculations (compatibility):', bagCalculations);
@@ -1238,6 +902,25 @@ const BagScreen = ({ navigation, route }) => {
       );
       return;
     }
+    
+    // STEP 1.6: Debug product existence before checkout
+    console.log('🔍 CHECKOUT DEBUG - Verifying all products exist in backend...');
+    for (const item of bagItems) {
+      const productId = item.id || item._id;
+      console.log(`🔍 Checking product ${productId} (${item.name})...`);
+      try {
+        const product = await yoraaAPI.makeRequest(`/api/products/${productId}`, 'GET', null, false);
+        console.log(`✅ Product ${productId} exists in backend:`, {
+          name: product.name || product.productName,
+          status: product.status,
+          sizesCount: product.sizes?.length,
+          hasRequestedSize: product.sizes?.some(s => s.size === item.size)
+        });
+      } catch (error) {
+        console.error(`❌ Product ${productId} NOT FOUND in backend:`, error);
+      }
+    }
+    console.log('🔍 Product verification complete');
 
     // STEP 2: Check authentication status
     const isAuthenticated = yoraaAPI.isAuthenticated();
@@ -1283,15 +966,104 @@ const BagScreen = ({ navigation, route }) => {
       return;
     }
 
-    // STEP 4: User is authenticated and has address, initiate Razorpay payment directly
-    console.log('✅ User is authenticated with address, initiating Razorpay payment');
+    // STEP 4: User is authenticated and has address, process payment using paymentService
+    console.log('✅ User is authenticated with address, processing complete order');
     console.log('📦 Cart items:', bagItems.length);
     console.log('📍 Delivery address:', selectedAddress);
     console.log('💰 Total amount:', dynamicPricing.total);
     
-    // Create Razorpay order and initiate payment
-    await createRazorpayOrder();
-  }, [dynamicPricing, bagCalculations, navigation, bagItems, validateAndCleanCart, selectedAddress, createRazorpayOrder]);
+    try {
+      // Don't format cart items here - orderService will handle formatting
+      // Just pass the original bagItems to processCompleteOrder
+      console.log('📦 Passing original bag items to payment service:', bagItems);
+      
+      // Format address for backend
+      const formattedAddress = {
+        firstName: selectedAddress.firstName || selectedAddress.name?.split(' ')[0] || 'Customer',
+        lastName: selectedAddress.lastName || selectedAddress.name?.split(' ').slice(1).join(' ') || '',
+        email: selectedAddress.email || 'customer@yoraa.com',
+        phone: selectedAddress.phoneNumber || selectedAddress.phone || '',
+        addressLine1: selectedAddress.address || selectedAddress.addressLine1 || '',
+        addressLine2: selectedAddress.addressLine2 || '',
+        city: selectedAddress.city || '',
+        state: selectedAddress.state || '',
+        country: selectedAddress.country || 'India',
+        zipCode: selectedAddress.pinCode || selectedAddress.zipCode || ''
+      };
+      
+      // Get user authentication data
+      const userId = await yoraaAPI.getUserData().then(data => data?.id || data?.uid);
+      const userToken = yoraaAPI.getUserToken();
+      
+      // Process complete order using paymentService
+      // Pass original bagItems - orderService will format them correctly
+      const result = await paymentService.processCompleteOrder(
+        bagItems,  // ✅ Pass original items, not formatted
+        formattedAddress,
+        {
+          userId,
+          userToken,
+          orderNotes: '',
+          paymentMethod: 'razorpay'
+        }
+      );
+      
+      console.log('✅ Payment completed successfully:', result);
+      
+      // Handle successful payment - navigate to order confirmation
+      if (result.success && result.order) {
+        // Clear the bag
+        clearBag();
+        
+        // Navigate to order confirmation screen
+        navigation.navigate('orderconfirmationphone', {
+          orderDetails: {
+            orderId: result.order._id || result.orderId,
+            paymentId: result.paymentId,
+            amount: result.order.totalAmount || result.order.amount,
+            currency: 'INR',
+            deliveryAddress: result.order.deliveryAddress || selectedAddress,
+            deliveryOption: result.order.deliveryOption || 'standard',
+            items: result.order.items || result.order.orderItems || bagItems.map(item => ({
+              id: item.id || item._id,
+              name: item.productName || item.name,
+              size: item.selectedSize?.size || item.size,
+              color: item.selectedSize?.color || item.color,
+              quantity: item.quantity || 1,
+              price: item.selectedSize?.price || item.price,
+              images: item.images || []
+            })),
+            timestamp: result.order.createdAt || new Date().toISOString(),
+            awbCode: result.order.awbCode,
+            shiprocketOrderId: result.order.shiprocketOrderId,
+            status: result.order.status || 'confirmed',
+            trackingUrl: result.order.tracking_url
+          }
+        });
+      }
+      
+    } catch (error) {
+      console.error('❌ Payment error:', error);
+      
+      // Show user-friendly error message
+      const errorMessage = error.message || 'Payment failed. Please try again.';
+      
+      Alert.alert(
+        'Payment Failed',
+        errorMessage,
+        [
+          {
+            text: 'Try Again',
+            onPress: () => handleCheckout()
+          },
+          {
+            text: 'Continue Shopping',
+            style: 'cancel'
+          }
+        ]
+      );
+    }
+  }, [dynamicPricing, bagCalculations, navigation, bagItems, validateAndCleanCart, selectedAddress, clearBag]);
 
   // Optimized handler functions with better state management
   const handleQuantityChange = useCallback((itemId, newQuantity) => {

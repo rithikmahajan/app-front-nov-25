@@ -60,27 +60,21 @@ class EnvironmentConfig {
 
   /**
    * Get the appropriate API URL based on environment and platform
-   * 🔧 TEMPORARILY USING PRODUCTION SERVER FOR DEBUGGING
    */
   getApiUrl() {
-    // Always return production URL (port 8000 is the ACTUAL working port)
-    const productionUrl = 'http://185.193.19.244:8000/api';
-    return productionUrl;
+    if (this.isDevelopment) {
+      // Development mode - use localhost backend
+      if (this.platform.isAndroid) {
+        // Android emulator uses 10.0.2.2 to access host machine
+        return this.api.baseUrl.replace('localhost', '10.0.2.2');
+      } else {
+        // iOS Simulator - direct localhost
+        return this.api.baseUrl;
+      }
+    }
     
-    // Original logic (commented out for debugging):
-    // if (this.isDevelopment) {
-    //   // Development mode - simplified localhost connection
-    //   if (this.platform.isAndroid) {
-    //     // Android emulator uses 10.0.2.2 to access host machine
-    //     return this.api.baseUrl.replace('localhost', '10.0.2.2');
-    //   } else {
-    //     // iOS Simulator - direct localhost should work
-    //     return this.api.baseUrl;
-    //   }
-    // }
-    // 
-    // // Production - always use production backend
-    // return this.api.backendUrl;
+    // Production - use production backend (port 8000 is the ACTUAL working port)
+    return this.api.backendUrl;
   }
 
   /**

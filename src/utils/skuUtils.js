@@ -179,26 +179,28 @@ export const validateCart = (cartItems) => {
 
 // Format cart item for backend API
 export const formatCartItemForAPI = (bagItem, index = 0) => {
-  let itemId, sku, itemPrice;
+  let itemId, sku, itemPrice, itemName;
   
   // Handle different possible cart item structures
   if (bagItem.item) {
-    // Nested item structure
+    // Nested item structure (item wrapped in an item object)
     itemId = bagItem.item._id || bagItem.item.id;
+    itemName = bagItem.item.name || bagItem.item.productName || bagItem.item.title || bagItem.name || 'Product';
     
     // Look for SKU in nested item's sizes array first
     if (bagItem.item.sizes && Array.isArray(bagItem.item.sizes) && bagItem.size) {
       const selectedSizeVariant = bagItem.item.sizes.find(sizeObj => sizeObj.size === bagItem.size);
-      sku = selectedSizeVariant?.sku || bagItem.item.sku || bagItem.item.model || bagItem.item.productCode;
+      sku = selectedSizeVariant?.sku || bagItem.item.sku || bagItem.item.model || bagItem.item.productCode || bagItem.sku;
     } else {
-      sku = bagItem.item.sku || bagItem.item.model || bagItem.item.productCode;
+      sku = bagItem.item.sku || bagItem.item.model || bagItem.item.productCode || bagItem.sku;
     }
     
     const priceInfo = getItemPrice(bagItem.item);
     itemPrice = priceInfo.price;
   } else {
-    // Direct item structure
-    itemId = bagItem._id || bagItem.id;
+    // Direct item structure (bag item with all fields at top level)
+    itemId = bagItem._id || bagItem.id || bagItem.itemId;
+    itemName = bagItem.name || bagItem.productName || bagItem.title || 'Product';
     
     // Look for SKU in sizes array first
     if (bagItem.sizes && Array.isArray(bagItem.sizes) && bagItem.size) {
@@ -223,6 +225,7 @@ export const formatCartItemForAPI = (bagItem, index = 0) => {
   
   console.log(`📦 Formatted cart item ${index + 1}:`, {
     itemId,
+    name: itemName,
     sku,
     size: bagItem.size,
     quantity: bagItem.quantity,
@@ -232,6 +235,7 @@ export const formatCartItemForAPI = (bagItem, index = 0) => {
   
   return {
     itemId,
+    name: itemName,
     sku,
     size: bagItem.size || 'OneSize',
     quantity: Number(bagItem.quantity) || 1,

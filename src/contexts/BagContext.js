@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { yoraaAPI } from '../services/yoraaAPI';
 import authManager from '../services/authManager';
 import { Alert } from 'react-native';
+import { validateProductAndSize, validateCart as validateCartUtil } from '../utils/productValidation';
 
 const BagContext = createContext();
 
@@ -126,11 +127,29 @@ export const BagProvider = ({ children }) => {
       sku = sizeVariant?.sku || null;
     }
     
-    console.log(`🛒 Adding to bag - Product ID: ${product.id}, Size: ${size}, SKU: ${sku}`);
+    // Validate product exists in backend before adding
+    const productId = product.id || product._id;
+    console.log(`🔍 Validating product ${productId} with size ${size} against backend...`);
+    
+    const validationResult = await validateProductAndSize({
+      id: productId,
+      sku: sku,
+      size: size
+    });
+    
+    if (!validationResult.valid) {
+      console.log('❌ Product validation failed, not adding to cart');
+      // Error alert is shown by validateProductAndSize
+      return;
+    }
+    
+    console.log('✅ Product validation passed, proceeding to add to cart');
+    
+    console.log(`🛒 Adding to bag - Product ID: ${productId}, Size: ${size}, SKU: ${sku}`);
     console.log('Current bag items:', bagItems.map(item => `${item.id}-${item.size} (qty: ${item.quantity})`));
     
     const existingItemIndex = bagItems.findIndex(
-      item => item.id === product.id && item.size === size
+      item => item.id === productId && item.size === size
     );
 
     if (existingItemIndex >= 0) {
@@ -169,24 +188,45 @@ export const BagProvider = ({ children }) => {
       }
     } else {
       // New item, add to bag
-      let price = product.price;
+      let price = 0;
+      let regularPrice = 0;
       
-      // Handle price conversion - ensure it's a number
-      if (typeof price === 'string') {
-        // Remove currency symbols and convert to number
-        price = parseFloat(price.replace(/[^0-9.]/g, ''));
+      // Extract price from sizes array for the selected size
+      if (product.sizes && Array.isArray(product.sizes) && size) {
+        const selectedSizeVariant = product.sizes.find(s => s.size === size);
+        if (selectedSizeVariant) {
+          // Use sale price if available, otherwise regular price
+          price = selectedSizeVariant.salePrice || selectedSizeVariant.regularPrice || 0;
+          regularPrice = selectedSizeVariant.regularPrice || price;
+          
+          console.log(`💰 Extracted price for size ${size}:`, {
+            salePrice: selectedSizeVariant.salePrice,
+            regularPrice: selectedSizeVariant.regularPrice,
+            finalPrice: price,
+            stock: selectedSizeVariant.stock
+          });
+        } else {
+          console.warn(`⚠️ Size ${size} not found in product sizes array`);
+        }
+      } else {
+        // Fallback to product-level price if exists
+        price = product.price || product.salePrice || product.regularPrice || 0;
+        regularPrice = product.regularPrice || price;
+        
+        console.warn(`⚠️ No sizes array found, using product-level price: ${price}`);
       }
       
-      // If price is still not valid, default to 0
-      if (isNaN(price)) {
-        price = 0;
-      }
+      // Ensure prices are valid numbers
+      price = Number(price) || 0;
+      regularPrice = Number(regularPrice) || 0;
 
       const newItem = {
         ...product,
         id: product.id || product._id,
         name: product.name || product.productName || product.title || 'Product',
-        price: price, // Store as number
+        price: price,              // Current selling price (from salePrice or regularPrice)
+        regularPrice: regularPrice, // Original price
+        salePrice: price,           // Same as price for consistency
         size: size,
         quantity: 1,
         sku: sku || product.sku || `SKU-${product.id || product._id}`,
@@ -446,37 +486,21 @@ export const BagProvider = ({ children }) => {
       return { valid: true, removedItems: [] };
     }
     
-    const invalidItems = [];
-    const validItems = [];
+    // Use the comprehensive validateCart utility
+    const validationResult = await validateCartUtil(bagItems);
     
-    for (const item of bagItems) {
-      try {
-        // Try to fetch product from backend
-        const response = await yoraaAPI.makeRequest(`/api/products/${item.id}`, 'GET', null, false);
-        
-        if (response && !response.error) {
-          validItems.push(item);
-          console.log(`✅ Item ${item.id} is valid`);
-        } else {
-          invalidItems.push(item);
-          console.warn(`⚠️ Item ${item.id} is invalid`);
-        }
-      } catch (error) {
-        console.warn(`⚠️ Could not validate item ${item.id}:`, error.message);
-        invalidItems.push(item);
-      }
-    }
-    
-    // Remove invalid items from cart
-    if (invalidItems.length > 0) {
-      console.log(`🗑️ Removing ${invalidItems.length} invalid items from cart`);
-      setBagItems(validItems);
+    if (!validationResult.valid) {
+      console.log(`🗑️ Found ${validationResult.invalidItems.length} invalid items in cart`);
+      
+      // Remove invalid items from local cart
+      setBagItems(validationResult.validItems);
       
       // Also remove from backend if authenticated
       if (yoraaAPI.isAuthenticated()) {
-        for (const item of invalidItems) {
+        for (const item of validationResult.invalidItems) {
           try {
-            await yoraaAPI.removeFromCart(item.id, item.size);
+            await yoraaAPI.removeFromCart(item.id || item._id, item.size);
+            console.log(`✅ Removed invalid item ${item.id || item._id} from backend`);
           } catch (error) {
             console.error('Error removing invalid item from backend:', error);
           }
@@ -485,11 +509,12 @@ export const BagProvider = ({ children }) => {
       
       return { 
         valid: false, 
-        removedItems: invalidItems,
-        message: `Removed ${invalidItems.length} unavailable item(s) from your cart`
+        removedItems: validationResult.invalidItems,
+        message: validationResult.message
       };
     }
     
+    console.log('✅ All cart items validated successfully');
     return { valid: true, removedItems: [] };
   }, [bagItems]);
 

@@ -233,10 +233,22 @@ export const validateProductIds = async (cartItems) => {
   console.log('🔍 Validating product IDs with backend...');
   
   try {
-    const productIds = cartItems.map(item => item.id || item.productId || item._id).filter(Boolean);
+    // Check for various possible ID field names
+    const productIds = cartItems.map(item => 
+      item.id || item.itemId || item.productId || item._id
+    ).filter(Boolean);
+    
+    console.log('🔍 Extracted product IDs:', productIds);
+    console.log('🔍 From cart items:', cartItems.map(item => ({
+      id: item.id,
+      itemId: item.itemId,
+      productId: item.productId,
+      _id: item._id
+    })));
     
     if (productIds.length === 0) {
       console.error('❌ No valid product IDs found in cart');
+      console.error('❌ Cart items structure:', JSON.stringify(cartItems, null, 2));
       return { valid: false, invalidIds: [], message: 'No valid products in cart' };
     }
     
@@ -522,7 +534,15 @@ export const createOrder = async (cart, address, additionalOptions = {}) => {
       console.log('✅ Order created via apiService:', response);
     } catch (apiServiceError) {
       console.warn('apiService failed, trying yoraaAPI as fallback:', apiServiceError.message);
-      // Fallback API call
+      
+      // Check if this is the "Invalid item IDs" backend error
+      if (apiServiceError.message && apiServiceError.message.includes('Invalid item IDs')) {
+        console.error('🚨 BACKEND ISSUE: Invalid item IDs error - ObjectId conversion not deployed!');
+        console.error('📋 Product IDs that failed:', formattedCart.map(item => item.id));
+        throw new Error('Backend validation failed: Invalid item IDs. The backend team needs to deploy the ObjectId conversion fix.');
+      }
+      
+      // Try fallback API call
       response = await yoraaAPI.makeRequest('/api/razorpay/create-order', 'POST', requestBody, true);
       console.log('✅ Order created via yoraaAPI fallback:', response);
     }

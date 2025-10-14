@@ -6,14 +6,14 @@
  * Integrates with order service for complete checkout flow
  */
 
+import { Alert } from 'react-native';
 import RazorpayCheckout from 'react-native-razorpay';
-import Config from 'react-native-config';
 import orderService from './orderService';
 
 // Razorpay Configuration
 const RAZORPAY_CONFIG = {
-  // Priority: Environment variable > Auto-detect based on __DEV__
-  key: Config.RAZORPAY_KEY_ID || (__DEV__ ? 'rzp_test_9WNhUijdgxSon5' : 'rzp_live_VRU7ggfYLI7DWV'),
+  // ALWAYS USE LIVE KEY - as per user request
+  key: 'rzp_live_VRU7ggfYLI7DWV',
   
   // Company branding
   name: 'Yoraa Apparels',
@@ -27,8 +27,7 @@ const RAZORPAY_CONFIG = {
 
 // Log which key is being used
 console.log('🔑 Razorpay Config:', {
-  mode: __DEV__ ? 'TEST' : 'LIVE',
-  fromEnv: !!Config.RAZORPAY_KEY_ID,
+  mode: 'LIVE (FORCED)',
   key: RAZORPAY_CONFIG.key
 });
 
@@ -257,7 +256,22 @@ export const processCompleteOrder = async (cart, address, options = {}) => {
     
     // Step 1: Create order with authentication data
     console.log('1️⃣ Creating order with authentication...');
-    const orderResponse = await orderService.createOrder(cart, address, enhancedOptions);
+    let orderResponse;
+    try {
+      orderResponse = await orderService.createOrder(cart, address, enhancedOptions);
+    } catch (orderError) {
+      console.error('❌ Order creation failed:', orderError.message);
+      
+      // Show user-friendly error message
+      if (orderError.message.includes('Invalid item IDs') || 
+          orderError.message.includes('no longer available')) {
+        throw new Error('⚠️ Some products in your cart are no longer available. This is a backend issue - please contact support.');
+      } else if (orderError.message.includes('Cart validation failed')) {
+        throw new Error('⚠️ There is an issue with your cart. Please refresh and try again.');
+      } else {
+        throw new Error(`⚠️ Order creation failed: ${orderError.message}`);
+      }
+    }
     
     // Step 2: Check for amount differences
     if (orderResponse.order_details && orderResponse.order_details.amount_difference > 0) {

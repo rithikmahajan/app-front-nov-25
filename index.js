@@ -62,6 +62,14 @@ if (__DEV__) {
       return;
     }
     
+    // Filter out expected cart sync 404 errors (backend cart endpoints optional)
+    if (message.includes('API Error') && 
+        message.includes('/api/cart/') && 
+        (message.includes('404') || message.includes('not found'))) {
+      // Don't log as error - cart 404s are expected and handled
+      return;
+    }
+    
     originalConsoleError('RN Error:', ...args);
   };
 }
