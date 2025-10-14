@@ -438,6 +438,61 @@ export const BagProvider = ({ children }) => {
     }
   }, [bagItems, deduplicateBagItems]);
 
+  // Validate cart items against backend
+  const validateAndCleanCart = useCallback(async () => {
+    console.log('🔍 Validating cart items against backend...');
+    
+    if (bagItems.length === 0) {
+      return { valid: true, removedItems: [] };
+    }
+    
+    const invalidItems = [];
+    const validItems = [];
+    
+    for (const item of bagItems) {
+      try {
+        // Try to fetch product from backend
+        const response = await yoraaAPI.makeRequest(`/api/products/${item.id}`, 'GET', null, false);
+        
+        if (response && !response.error) {
+          validItems.push(item);
+          console.log(`✅ Item ${item.id} is valid`);
+        } else {
+          invalidItems.push(item);
+          console.warn(`⚠️ Item ${item.id} is invalid`);
+        }
+      } catch (error) {
+        console.warn(`⚠️ Could not validate item ${item.id}:`, error.message);
+        invalidItems.push(item);
+      }
+    }
+    
+    // Remove invalid items from cart
+    if (invalidItems.length > 0) {
+      console.log(`🗑️ Removing ${invalidItems.length} invalid items from cart`);
+      setBagItems(validItems);
+      
+      // Also remove from backend if authenticated
+      if (yoraaAPI.isAuthenticated()) {
+        for (const item of invalidItems) {
+          try {
+            await yoraaAPI.removeFromCart(item.id, item.size);
+          } catch (error) {
+            console.error('Error removing invalid item from backend:', error);
+          }
+        }
+      }
+      
+      return { 
+        valid: false, 
+        removedItems: invalidItems,
+        message: `Removed ${invalidItems.length} unavailable item(s) from your cart`
+      };
+    }
+    
+    return { valid: true, removedItems: [] };
+  }, [bagItems]);
+
   const value = {
     bagItems,
     addToBag,
@@ -451,6 +506,7 @@ export const BagProvider = ({ children }) => {
     isInBag,
     loadBagFromAPI,
     deduplicateBagItems,
+    validateAndCleanCart,
     loading,
     initialized,
   };

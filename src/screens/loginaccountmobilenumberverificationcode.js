@@ -10,8 +10,9 @@ import {
   Alert,
 } from 'react-native';
 import GlobalBackButton from '../components/GlobalBackButton';
-import phoneAuthService from '../services/phoneAuthService';
 import sessionManager from '../services/sessionManager';
+import yoraaAPI from '../services/yoraaAPI';
+import authStorageService from '../services/authStorageService';
 
 const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
   const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
@@ -27,13 +28,25 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
 
   const handleVerification = async () => {
     const code = verificationCode.join('');
+    const debugTimestamp = new Date().toISOString();
+    
+    console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+    console.log('║      📱 PHONE OTP VERIFICATION DEBUG SESSION STARTED          ║');
+    console.log('╚═══════════════════════════════════════════════════════════════╝');
+    console.log(`⏰ Timestamp: ${debugTimestamp}`);
+    console.log(`📞 Phone Number: ${phoneNumber}`);
+    console.log(`🔢 OTP Code: ${code}`);
+    console.log(`📦 Confirmation Object: ${confirmation ? 'EXISTS' : 'MISSING'}`);
+    console.log(`🛒 From Checkout: ${route?.params?.fromCheckout ? 'YES' : 'NO'}`);
     
     if (code.length !== 6) {
+      console.log('❌ Validation failed: Incomplete OTP code');
       Alert.alert('Error', 'Please enter the complete 6-digit verification code');
       return;
     }
 
     if (!confirmation) {
+      console.log('❌ Validation failed: No confirmation object');
       Alert.alert('Error', 'No verification session found. Please request a new OTP.');
       return;
     }
@@ -41,24 +54,148 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
     setIsLoading(true);
     
     try {
-      console.log('📱 Verifying OTP:', code);
+      console.log('\n� STEP 1: Verifying OTP with Firebase...');
+      console.log(`⏰ Verification Start: ${new Date().toISOString()}`);
       
-      // Verify OTP using Firebase Phone Auth
-      const userCredential = await phoneAuthService.verifyOTP(code, confirmation);
-      const user = userCredential.user;
+      // Step 1: Verify OTP with Firebase
+      const verificationResult = await confirmation.confirm(code);
       
-      console.log('✅ Phone authentication successful:', user.uid);
+      console.log('✅ STEP 1 SUCCESS: OTP verified by Firebase');
+      console.log('📦 Verification Result:', {
+        hasUser: !!verificationResult?.user,
+        hasAdditionalUserInfo: !!verificationResult?.additionalUserInfo
+      });
       
-      // Wait a moment for Firebase auth state to fully propagate
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Step 2: Get the current user from Firebase Auth
+      console.log('\n🔄 STEP 2: Getting Firebase Auth current user...');
+      const { getAuth } = require('@react-native-firebase/auth');
+      const auth = getAuth();
+      const user = auth.currentUser;
       
-      // Verify user is still signed in
-      const currentUser = phoneAuthService.getCurrentUser();
-      if (!currentUser) {
-        throw new Error('Authentication failed. Please try again.');
+      if (!user) {
+        console.error('❌ STEP 2 FAILED: No current user found');
+        throw new Error('Authentication succeeded but user not found. Please try again.');
       }
       
-      // Create session for phone login
+      console.log('✅ STEP 2 SUCCESS: Current user retrieved');
+      console.log('👤 Firebase User Details:');
+      console.log(`   - UID: ${user.uid}`);
+      console.log(`   - Phone: ${user.phoneNumber}`);
+      console.log(`   - Email: ${user.email || 'N/A'}`);
+      console.log(`   - Display Name: ${user.displayName || 'N/A'}`);
+      console.log(`   - Email Verified: ${user.emailVerified}`);
+      console.log(`   - Is Anonymous: ${user.isAnonymous}`);
+      console.log(`   - Created At: ${user.metadata?.creationTime}`);
+      console.log(`   - Last Sign In: ${user.metadata?.lastSignInTime}`);
+      console.log(`   - Provider Data:`, user.providerData?.map(p => p.providerId).join(', ') || 'N/A');
+      
+      // Step 3: CRITICAL - Authenticate with backend to get JWT token
+      console.log('\n🔄 STEP 3: Authenticating with Yoraa backend...');
+      
+      try {
+        console.log('   - Getting Firebase ID token...');
+        const idToken = await user.getIdToken(/* forceRefresh */ true);
+        console.log(`   - Firebase ID Token: ${idToken.substring(0, 30)}... (${idToken.length} chars)`);
+        
+        console.log('   - Calling backend firebaseLogin API...');
+        const backendResponse = await yoraaAPI.firebaseLogin(idToken);
+        
+        console.log('✅ STEP 3 SUCCESS: Backend authentication successful');
+        console.log('📦 Backend Response:', {
+          hasToken: !!backendResponse?.token,
+          hasUser: !!backendResponse?.user,
+          tokenLength: backendResponse?.token?.length || 0
+        });
+        
+        if (backendResponse && backendResponse.token) {
+          console.log('✅ Backend JWT token received and stored');
+          
+          // Store user data in auth storage service
+          if (backendResponse.user) {
+            console.log('   - Storing user data in auth storage...');
+            await authStorageService.storeAuthData(backendResponse.token, backendResponse.user);
+            console.log('✅ User data stored in auth storage');
+          }
+          
+          // Verify token storage
+          console.log('\n🔍 STEP 3.1: Verifying token storage...');
+          const storedToken = await yoraaAPI.getUserToken();
+          console.log(`   - Token Storage: ${storedToken ? '✅ EXISTS' : '❌ MISSING'}`);
+          
+          if (!storedToken) {
+            console.error('⚠️ Token not stored properly, reinitializing...');
+            await yoraaAPI.initialize();
+            
+            const retryToken = await yoraaAPI.getUserToken();
+            console.log(`   - Token After Retry: ${retryToken ? '✅ EXISTS' : '❌ STILL MISSING'}`);
+          }
+          
+          const isAuth = yoraaAPI.isAuthenticated();
+          console.log(`🔐 Backend Authentication Status: ${isAuth ? '✅ AUTHENTICATED' : '❌ NOT AUTHENTICATED'}`);
+          
+          // ✅ NEW: STEP 3.2 - Initialize and Register FCM Token
+          console.log('\n🔔 STEP 3.2: Initializing FCM service...');
+          try {
+            // Import FCM service
+            const fcmService = require('../services/fcmService').default;
+            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+            
+            // Initialize FCM and get token
+            const fcmResult = await fcmService.initialize();
+            
+            if (fcmResult.success && fcmResult.token) {
+              console.log('✅ FCM token obtained:', fcmResult.token.substring(0, 20) + '...');
+              
+              // Register token with backend using the auth token we just verified
+              const authToken = await AsyncStorage.getItem('userToken');
+              
+              if (authToken) {
+                const registerResult = await fcmService.registerTokenWithBackend(authToken);
+                
+                if (registerResult.success) {
+                  console.log('✅ FCM token registered with backend');
+                } else {
+                  console.warn('⚠️ FCM registration failed (non-critical):', registerResult.error);
+                }
+              } else {
+                console.warn('⚠️ Auth token not found for FCM registration');
+              }
+            } else {
+              console.warn('⚠️ FCM initialization failed:', fcmResult.error);
+            }
+          } catch (fcmError) {
+            console.warn('⚠️ FCM setup error (non-critical):', fcmError.message);
+            // Don't throw - FCM is non-critical to authentication
+          }
+          console.log('✅ STEP 3.2: FCM setup completed');
+          
+        } else {
+          console.warn('⚠️ Backend authentication succeeded but no token received');
+          console.warn('⚠️ This may cause authentication issues');
+        }
+      } catch (backendError) {
+        console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+        console.log('║              ⚠️  BACKEND AUTHENTICATION FAILED                ║');
+        console.log('╚═══════════════════════════════════════════════════════════════╝');
+        console.error('❌ Backend Error Type:', backendError.constructor.name);
+        console.error('❌ Backend Error Code:', backendError.code);
+        console.error('❌ Backend Error Message:', backendError.message);
+        console.error('❌ Full Backend Error:', JSON.stringify(backendError, null, 2));
+        console.error('❌ Stack Trace:', backendError.stack);
+        
+        // Continue anyway - Firebase auth succeeded
+        console.warn('⚠️⚠️⚠️ CRITICAL: User logged in to Firebase but NOT authenticated with backend!');
+        console.warn('This WILL cause "not authenticated" status to display in the app');
+        
+        Alert.alert(
+          'Warning',
+          'Login successful but some features may be limited. Please try logging in again if you experience issues.',
+          [{ text: 'OK' }]
+        );
+      }
+      
+      // Step 4: Create session for phone login
+      console.log('\n🔄 STEP 4: Creating session...');
       await sessionManager.createSession({
         uid: user.uid,
         email: user.email,
@@ -66,7 +203,8 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
         displayName: user.displayName
       }, 'phone');
       
-      console.log('✅ Session created for phone login');
+      console.log('✅ STEP 4 SUCCESS: Session created for phone login');
+      console.log(`⏰ Total Time: ${new Date().toISOString()}`);
       
       Alert.alert(
         'Success', 
@@ -75,6 +213,14 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
           {
             text: 'OK',
             onPress: () => {
+              console.log('\n🚀 STEP 5: Navigating to next screen...');
+              console.log('📍 Navigation Target: TermsAndConditions');
+              console.log('📦 Navigation Params:', {
+                previousScreen: 'LoginAccountMobileNumberVerificationCode',
+                hasUser: !!user,
+                fromCheckout: route?.params?.fromCheckout
+              });
+              
               // Navigate to Terms and Conditions screen after successful login verification
               if (navigation) {
                 navigation.navigate('TermsAndConditions', { 
@@ -83,23 +229,40 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
                   fromCheckout: route?.params?.fromCheckout
                 });
               }
+              
+              console.log('✅ Navigation completed');
+              console.log('╚═══════════════════════════════════════════════════════════════╝\n');
             }
           }
         ]
       );
       
     } catch (error) {
-      console.error('OTP verification error:', error);
+      console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+      console.log('║              ❌ OTP VERIFICATION ERROR                        ║');
+      console.log('╚═══════════════════════════════════════════════════════════════╝');
+      console.error('❌ Error Type:', error.constructor.name);
+      console.error('❌ Error Code:', error.code);
+      console.error('❌ Error Message:', error.message);
+      console.error('❌ Full Error Object:', JSON.stringify(error, null, 2));
+      console.error('❌ Stack Trace:', error.stack);
       
       // Handle specific authentication errors
-      let errorMessage = error.message || 'Invalid verification code. Please try again.';
+      let errorMessage = 'Invalid verification code. Please try again.';
       
-      if (error.message?.includes('no-current-user') || 
-          error.message?.includes('No user currently signed in')) {
-        errorMessage = 'Authentication session expired. Please request a new OTP.';
+      if (error.code === 'auth/invalid-verification-code') {
+        errorMessage = 'Invalid OTP code. Please check and try again.';
+      } else if (error.code === 'auth/code-expired') {
+        errorMessage = 'OTP code has expired. Please request a new code.';
+      } else if (error.code === 'auth/session-expired') {
+        errorMessage = 'Session expired. Please request a new OTP.';
+      } else if (error.message) {
+        errorMessage = error.message;
       }
       
+      console.log('📱 Showing Alert:', errorMessage);
       Alert.alert('Error', errorMessage);
+      console.log('╚═══════════════════════════════════════════════════════════════╝\n');
     } finally {
       setIsLoading(false);
     }
@@ -133,10 +296,11 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
     setIsLoading(true);
     
     try {
-      console.log('Resending OTP to:', phoneNumber);
+      console.log('🔄 Resending OTP to:', phoneNumber);
       
-      // Resend OTP using Firebase Phone Auth
-      const newConfirmation = await phoneAuthService.resendOTP(phoneNumber);
+      // Resend OTP using signInWithPhoneNumber directly
+      const { signInWithPhoneNumber, getAuth } = require('@react-native-firebase/auth');
+      const newConfirmation = await signInWithPhoneNumber(getAuth(), phoneNumber);
       
       // Update the confirmation object for this screen
       if (route?.params) {
@@ -152,8 +316,14 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
       Alert.alert('Success', 'A new verification code has been sent to your phone.');
       
     } catch (error) {
-      console.error('Resend OTP error:', error);
-      Alert.alert('Error', error.message || 'Failed to resend OTP. Please try again.');
+      console.error('❌ Resend OTP error:', error);
+      
+      let errorMessage = 'Failed to resend OTP. Please try again.';
+      if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
     }

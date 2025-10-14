@@ -748,17 +748,6 @@ const CollectionScreen = ({ navigation }) => {
           </View>
         ) : currentItems.length > 0 ? (
           <View style={styles.contentContainer}>
-            {/* Debug info - remove in production */}
-            {__DEV__ && (
-              <View style={styles.debugContainer}>
-                <Text style={styles.debugTitle}>
-                  Debug: {currentItems.length} items loaded
-                </Text>
-                <Text style={styles.debugText}>
-                  Sample item keys: {currentItems[0] ? Object.keys(currentItems[0]).join(', ') : 'none'}
-                </Text>
-              </View>
-            )}
             <FlatList
               data={currentItems}
               renderItem={renderProductItem}
@@ -1271,23 +1260,6 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-  },
-  debugContainer: {
-    padding: 10,
-    backgroundColor: '#f0f0f0',
-    margin: 10,
-    borderRadius: 4,
-  },
-  debugTitle: {
-    fontSize: 12,
-    color: '#666666',
-    fontFamily: 'Montserrat-Medium',
-  },
-  debugText: {
-    fontSize: 10,
-    color: '#999999',
-    fontFamily: 'Montserrat-Regular',
-    marginTop: 4,
   },
 });
 

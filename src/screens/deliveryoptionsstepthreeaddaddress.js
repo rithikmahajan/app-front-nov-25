@@ -116,14 +116,15 @@ const validateRequired = (value) => {
   return value && value.trim().length > 0;
 };
 
-const AddAddressModal = ({ visible, onClose, editingAddress, navigation, route }) => {
+const AddAddressModal = ({ visible = true, onClose, editingAddress, navigation, route }) => {
   const [slideAnim] = useState(new Animated.Value(screenHeight));
   const panY = useRef(new Animated.Value(0)).current;
   const { addAddress, updateAddress, loading } = useAddress();
   
   // Determine if this is being used as a standalone screen or modal
-  const isStandaloneScreen = !visible && navigation && route;
-  const routeEditingAddress = route?.params?.editingAddress;
+  const isStandaloneScreen = navigation && route;
+  const routeEditingAddress = route?.params?.editingAddress || route?.params?.addressData;
+  const isEditMode = route?.params?.isEdit || !!editingAddress || !!routeEditingAddress;
   const finalEditingAddress = editingAddress || routeEditingAddress;
   
   // Debug logging
@@ -131,7 +132,9 @@ const AddAddressModal = ({ visible, onClose, editingAddress, navigation, route }
     visible,
     hasEditingAddress: !!editingAddress,
     isStandaloneScreen,
-    finalEditingAddress: finalEditingAddress ? 'Present' : 'None'
+    isEditMode,
+    finalEditingAddress: finalEditingAddress ? 'Present' : 'None',
+    routeParams: route?.params
   });
     const [formData, setFormData] = useState({
     firstName: '',
@@ -213,30 +216,76 @@ const AddAddressModal = ({ visible, onClose, editingAddress, navigation, route }
   // Effect to populate form when editing an address
   useEffect(() => {
     if (finalEditingAddress && (visible || isStandaloneScreen)) {
-      console.log('🔧 Populating form with address data:', finalEditingAddress);
+      console.log('🔧 Populating form with address data:', JSON.stringify(finalEditingAddress, null, 2));
+      
       // Parse phone number to extract prefix and number
       let phonePrefix = '+91';
-      let phoneNumber = finalEditingAddress.phone || '';
+      // Try both field names - phoneNumber is what's displayed in the list
+      let phoneNumber = finalEditingAddress.phoneNumber || finalEditingAddress.phone || '';
       
       console.log('📱 EDITING ADDRESS - Phone parsing:');
-      console.log('📱 Original phone from address:', finalEditingAddress.phone);
+      console.log('📱 finalEditingAddress.phoneNumber:', finalEditingAddress.phoneNumber);
+      console.log('📱 finalEditingAddress.phone:', finalEditingAddress.phone);
+      console.log('📱 Selected value:', phoneNumber);
+      console.log('📱 Type:', typeof phoneNumber);
+      
+      // Convert to string if it's a number
+      phoneNumber = String(phoneNumber);
       
       // If phone has a prefix, extract it
       if (phoneNumber.startsWith('+')) {
-        const match = phoneNumber.match(/^(\+\d{1,4})(.*)$/);
-        if (match) {
-          phonePrefix = match[1];
-          phoneNumber = match[2];
-          console.log('📱 Extracted prefix:', phonePrefix);
-          console.log('📱 Extracted number:', phoneNumber);
+        // Try to match against known country codes from longest to shortest
+        let foundMatch = false;
+        const sortedCountryCodes = [...countryCodes].sort((a, b) => b.code.length - a.code.length);
+        
+        for (const cc of sortedCountryCodes) {
+          if (phoneNumber.startsWith(cc.code)) {
+            phonePrefix = cc.code;
+            phoneNumber = phoneNumber.substring(cc.code.length);
+            console.log('📱 Matched country code:', phonePrefix);
+            console.log('📱 Extracted number:', phoneNumber);
+            foundMatch = true;
+            break;
+          }
+        }
+        
+        if (!foundMatch) {
+          // Fallback: try generic regex if no country code matched
+          const match = phoneNumber.match(/^(\+\d{1,3})(.*)$/);
+          if (match) {
+            phonePrefix = match[1];
+            phoneNumber = match[2];
+            console.log('📱 Fallback extraction - prefix:', phonePrefix);
+            console.log('📱 Fallback extraction - number:', phoneNumber);
+          }
+        }
+      } else if (phoneNumber.length > 10 && !phoneNumber.startsWith('0')) {
+        // If the number is longer than 10 digits without +, assume first digits are country code
+        // For India: numbers starting with 91 followed by 10 digits
+        if (phoneNumber.startsWith('91') && phoneNumber.length === 12) {
+          phonePrefix = '+91';
+          phoneNumber = phoneNumber.substring(2); // Remove '91' prefix
+          console.log('📱 Detected 91 prefix without +, extracted number:', phoneNumber);
+        } else if (phoneNumber.startsWith('1') && phoneNumber.length === 11) {
+          // US/Canada numbers
+          phonePrefix = '+1';
+          phoneNumber = phoneNumber.substring(1);
+          console.log('📱 Detected 1 prefix without +, extracted number:', phoneNumber);
+        } else {
+          console.log('📱 Long number but unknown format, keeping as is:', phoneNumber);
         }
       } else {
-        console.log('📱 No prefix found, using default +91');
+        console.log('📱 Standard 10-digit or shorter number, using default +91');
       }
       
       // Find the country code object
       const countryCode = countryCodes.find(cc => cc.code === phonePrefix) || countryCodes[0];
       setSelectedCountry(countryCode);
+      
+      console.log('📱 Final parsed values:');
+      console.log('📱 Phone prefix:', phonePrefix);
+      console.log('📱 Phone number:', phoneNumber);
+      console.log('📱 Phone number length:', phoneNumber.length);
       
       setFormData({
         firstName: finalEditingAddress.firstName || '',
@@ -249,7 +298,7 @@ const AddAddressModal = ({ visible, onClose, editingAddress, navigation, route }
         country: finalEditingAddress.country || 'India',
         phone: phoneNumber,
         phonePrefix: phonePrefix,
-        type: finalEditingAddress.type || 'Home',
+        type: finalEditingAddress.type || finalEditingAddress.addressType || 'Home',
       });
     } else if (!finalEditingAddress && (visible || isStandaloneScreen)) {
       // Reset form for adding new address
@@ -274,7 +323,12 @@ const AddAddressModal = ({ visible, onClose, editingAddress, navigation, route }
     if (isStandaloneScreen) {
       // Navigate back when used as standalone screen
       if (navigation) {
-        navigation.goBack();
+        const returnScreen = route?.params?.returnScreen;
+        if (returnScreen) {
+          navigation.navigate(returnScreen);
+        } else {
+          navigation.goBack();
+        }
       }
     } else {
       // Reset pan animation

@@ -16,9 +16,9 @@ import {
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import GlobalBackButton from '../components/GlobalBackButton';
 import { AppleIcon, GoogleIcon, CaretDownIcon } from '../assets/icons';
-import phoneAuthService from '../services/phoneAuthService';
 import appleAuthService from '../services/appleAuthService';
 import googleAuthService from '../services/googleAuthService';
+import firebasePhoneAuthService from '../services/firebasePhoneAuth';
 
 // Comprehensive country codes data
 const countryCodes = [
@@ -300,29 +300,53 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
   );
 
   const handleLogin = async () => {
-    if (!mobileNumber.trim()) {
-      Alert.alert('Error', 'Please enter a valid mobile number');
-      return;
-    }
-
-    if (mobileNumber.length < 10) {
-      Alert.alert('Error', 'Please enter a valid 10-digit mobile number');
-      return;
-    }
-
-    setIsLoading(true);
+    const debugTimestamp = new Date().toISOString();
+    console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+    console.log('║          🔐 PHONE LOGIN DEBUG SESSION STARTED                 ║');
+    console.log('╚═══════════════════════════════════════════════════════════════╝');
+    console.log(`⏰ Timestamp: ${debugTimestamp}`);
+    console.log(`📱 Login Method: Phone`);
+    console.log(`🌍 Country Code: ${selectedCountry.code}`);
+    console.log(`📞 Phone Number: ${mobileNumber}`);
+    console.log(`🛒 From Checkout: ${route?.params?.fromCheckout ? 'YES' : 'NO'}`);
     
     try {
+      if (!mobileNumber.trim()) {
+        console.log('❌ Validation failed: Empty phone number');
+        Alert.alert('Error', 'Please enter a valid mobile number');
+        return;
+      }
+
+      if (mobileNumber.length < 10) {
+        console.log('❌ Validation failed: Phone number too short');
+        Alert.alert('Error', 'Please enter a valid 10-digit mobile number');
+        return;
+      }
+
+      setIsLoading(true);
+      
       // Format phone number with country code
-      const formattedPhoneNumber = phoneAuthService.formatPhoneNumber(
-        selectedCountry.code, 
-        mobileNumber
-      );
+      const formattedPhoneNumber = `${selectedCountry.code}${mobileNumber.replace(/[^\d]/g, '')}`;
       
-      console.log('Sending OTP to:', formattedPhoneNumber);
+      console.log('\n🔄 STEP 1: Sending OTP via Firebase');
+      console.log(`📱 Formatted Phone: ${formattedPhoneNumber}`);
+      console.log(`⏰ OTP Request Time: ${new Date().toISOString()}`);
       
-      // Send OTP using Firebase Phone Auth
-      const confirmation = await phoneAuthService.sendOTP(formattedPhoneNumber);
+      // Send OTP using Firebase Phone Auth Service
+      const result = await firebasePhoneAuthService.sendOTP(formattedPhoneNumber);
+      
+      if (!result.success) {
+        const errorMsg = result.fullError || result.error || 'Failed to send OTP';
+        console.log('\n❌ STEP 1 FAILED: OTP Send Error');
+        console.error('❌ Firebase Error Code:', result.errorCode);
+        console.error('❌ Error Message:', result.error);
+        console.error('❌ Full Error:', errorMsg);
+        throw new Error(errorMsg);
+      }
+      
+      console.log('✅ STEP 1 SUCCESS: OTP sent successfully');
+      console.log('📦 Confirmation Object:', result.confirmation ? 'EXISTS' : 'MISSING');
+      console.log(`⏰ OTP Sent Time: ${new Date().toISOString()}`);
       
       Alert.alert(
         'OTP Sent', 
@@ -331,11 +355,19 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
           {
             text: 'OK',
             onPress: () => {
+              console.log('\n🚀 Navigating to OTP Verification Screen');
+              console.log('📦 Navigation Params:', {
+                phoneNumber: formattedPhoneNumber,
+                hasConfirmation: !!result.confirmation,
+                countryCode: selectedCountry.code,
+                mobileNumber: mobileNumber,
+                fromCheckout: route?.params?.fromCheckout
+              });
               // Navigate to verification code screen with confirmation object
               if (navigation) {
                 navigation.navigate('LoginAccountMobileNumberVerificationCode', {
                   phoneNumber: formattedPhoneNumber,
-                  confirmation: confirmation,
+                  confirmation: result.confirmation,
                   countryCode: selectedCountry.code,
                   mobileNumber: mobileNumber,
                   fromCheckout: route?.params?.fromCheckout
@@ -347,10 +379,33 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
       );
       
     } catch (error) {
-      console.error('Phone authentication error:', error);
-      Alert.alert('Error', error.message || 'Failed to send OTP. Please try again.');
+      console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+      console.log('║                  ❌ PHONE LOGIN ERROR                         ║');
+      console.log('╚═══════════════════════════════════════════════════════════════╝');
+      console.error('❌ Error Type:', error.constructor.name);
+      console.error('❌ Error Code:', error.code);
+      console.error('❌ Error Message:', error.message);
+      console.error('❌ Full Error Object:', JSON.stringify(error, null, 2));
+      console.error('❌ Stack Trace:', error.stack);
+      
+      // Show user-friendly error message
+      let errorMessage = 'Failed to send OTP. Please try again.';
+      
+      if (error.code === 'auth/invalid-phone-number') {
+        errorMessage = 'Invalid phone number format. Please enter a valid phone number.';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many requests. Please try again later.';
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Network error. Please check your internet connection.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      console.log('📱 Showing Alert:', errorMessage);
+      Alert.alert('Authentication Error', errorMessage);
     } finally {
       setIsLoading(false);
+      console.log('╚═══════════════════════════════════════════════════════════════╝\n');
     }
   };
 
@@ -362,13 +417,24 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
   };
 
   const handleSocialLogin = async (provider) => {
+    const debugTimestamp = new Date().toISOString();
+    console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+    console.log(`║        🔐 ${provider.toUpperCase()} LOGIN DEBUG SESSION STARTED              ║`);
+    console.log('╚═══════════════════════════════════════════════════════════════╝');
+    console.log(`⏰ Timestamp: ${debugTimestamp}`);
+    console.log(`🔑 Provider: ${provider}`);
+    console.log(`📱 Platform: ${Platform.OS}`);
+    console.log(`🛒 From Checkout: ${route?.params?.fromCheckout ? 'YES' : 'NO'}`);
+    
     if (provider === 'apple') {
       if (Platform.OS !== 'ios') {
+        console.log('❌ Platform check failed: Not iOS');
         Alert.alert('Error', 'Apple Sign In is only available on iOS devices');
         return;
       }
 
       if (!appleAuthService.isAppleAuthAvailable()) {
+        console.log('❌ Apple Auth not available on device');
         Alert.alert('Error', 'Apple Sign In is not available on this device');
         return;
       }
@@ -376,25 +442,46 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
       setIsLoading(true);
       
       try {
-        console.log('Starting Apple Sign In...');
+        console.log('\n🔄 STEP 1: Initiating Apple Sign In');
+        console.log(`⏰ Apple Sign In Start: ${new Date().toISOString()}`);
         const userCredential = await appleAuthService.signInWithApple();
         
         // Handle cancellation (returns null)
         if (!userCredential) {
-          console.log('Apple Sign In was cancelled by user');
+          console.log('⚠️ Apple Sign In cancelled by user');
           return;
         }
         
-        const isNewUser = userCredential.additionalUserInfo?.isNewUser;
+        console.log('\n✅ STEP 1 SUCCESS: Apple Sign In completed');
+        console.log('📦 User Credential Details:');
+        console.log(`   - UID: ${userCredential.user.uid}`);
+        console.log(`   - Email: ${userCredential.user.email}`);
+        console.log(`   - Display Name: ${userCredential.user.displayName}`);
+        console.log(`   - Phone: ${userCredential.user.phoneNumber || 'N/A'}`);
+        console.log(`   - Email Verified: ${userCredential.user.emailVerified}`);
+        console.log(`   - Is Anonymous: ${userCredential.user.isAnonymous}`);
+        console.log(`   - Provider ID: ${userCredential.user.providerData?.[0]?.providerId || 'N/A'}`);
         
-        console.log('Apple Sign In successful, isNewUser:', isNewUser);
+        const isNewUser = userCredential.additionalUserInfo?.isNewUser;
+        console.log(`👤 User Type: ${isNewUser ? 'NEW USER' : 'EXISTING USER'}`);
+        console.log(`⏰ Sign In Complete Time: ${new Date().toISOString()}`);
+        
+        // Check Firebase authentication state
+        console.log('\n🔍 STEP 2: Verifying Firebase Auth State');
+        const firebaseUser = userCredential.user;
+        const firebaseToken = await firebaseUser.getIdToken(true);
+        console.log(`✅ Firebase Token Retrieved: ${firebaseToken.substring(0, 20)}...`);
+        console.log(`📝 Token Length: ${firebaseToken.length} characters`);
         
         // Navigate based on user type and context
         const fromCheckout = route?.params?.fromCheckout;
         
+        console.log('\n🚀 STEP 3: Determining Navigation Path');
+        console.log(`   - From Checkout: ${fromCheckout}`);
+        console.log(`   - Is New User: ${isNewUser}`);
+        
         if (fromCheckout) {
-          // From checkout: Always go to Terms & Conditions first
-          console.log('User from checkout - navigating to Terms & Conditions');
+          console.log('📍 Navigation Decision: Terms & Conditions (from checkout)');
           navigation.navigate('TermsAndConditions', { 
             previousScreen: 'AppleSignIn',
             user: userCredential.user,
@@ -402,7 +489,7 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
             fromCheckout: true
           });
         } else if (isNewUser) {
-          // New user not from checkout: Show terms and conditions
+          console.log('📍 Navigation Decision: Terms & Conditions (new user)');
           navigation.navigate('TermsAndConditions', { 
             previousScreen: 'AppleSignIn',
             user: userCredential.user,
@@ -410,20 +497,31 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
             fromCheckout: false
           });
         } else {
-          // Returning user not from checkout: Go directly to Home
-          console.log('Returning user - navigating directly to HomeScreen');
+          console.log('📍 Navigation Decision: Home (existing user)');
           navigation.navigate('Home');
         }
         
+        console.log('✅ STEP 3 SUCCESS: Navigation completed');
+        
       } catch (error) {
-        console.error('Apple Sign In error:', error);
+        console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+        console.log('║                  ❌ APPLE LOGIN ERROR                         ║');
+        console.log('╚═══════════════════════════════════════════════════════════════╝');
+        console.error('❌ Error Type:', error.constructor.name);
+        console.error('❌ Error Code:', error.code);
+        console.error('❌ Error Message:', error.message);
+        console.error('❌ Full Error Object:', JSON.stringify(error, null, 2));
+        console.error('❌ Stack Trace:', error.stack);
+        
         Alert.alert('Error', error.message || 'Apple Sign In failed. Please try again.');
       } finally {
         setIsLoading(false);
+        console.log('╚═══════════════════════════════════════════════════════════════╝\n');
       }
     } else if (provider === 'google') {
       // Check if Google Sign-in is available before proceeding
       if (!googleAuthService.isAvailable()) {
+        console.log('❌ Google Sign-in not available');
         Alert.alert(
           'Google Sign-in Unavailable', 
           'Google Sign-in is not available on this device. This may be due to missing Google Play Services or a configuration issue.'
@@ -434,38 +532,61 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
       setIsLoading(true);
       
       try {
-        console.log('Starting Google Sign In for', Platform.OS);
+        console.log('\n🔄 STEP 1: Starting Google Sign In');
+        console.log(`⏰ Google Sign In Start: ${new Date().toISOString()}`);
         
         // Android-specific pre-check
         if (Platform.OS === 'android') {
-          console.log('Performing Android-specific Google Sign In checks...');
+          console.log('🔍 Performing Android-specific checks...');
           const configCheck = await googleAuthService.checkAndroidConfiguration();
           
           if (!configCheck.success) {
+            console.error('❌ Android configuration check failed:', configCheck.message);
             throw new Error(configCheck.message);
           }
           
-          console.log('Android configuration check passed:', configCheck.message);
+          console.log('✅ Android configuration check passed:', configCheck.message);
         }
         
         const userCredential = await googleAuthService.signInWithGoogle();
         
         // Handle cancellation (returns null)
         if (!userCredential) {
-          console.log('Google Sign In was cancelled by user');
+          console.log('⚠️ Google Sign In cancelled by user');
           return;
         }
         
-        const isNewUser = userCredential.additionalUserInfo?.isNewUser;
+        console.log('\n✅ STEP 1 SUCCESS: Google Sign In completed');
+        console.log('📦 User Credential Details:');
+        console.log(`   - UID: ${userCredential.user.uid}`);
+        console.log(`   - Email: ${userCredential.user.email}`);
+        console.log(`   - Display Name: ${userCredential.user.displayName}`);
+        console.log(`   - Phone: ${userCredential.user.phoneNumber || 'N/A'}`);
+        console.log(`   - Email Verified: ${userCredential.user.emailVerified}`);
+        console.log(`   - Is Anonymous: ${userCredential.user.isAnonymous}`);
+        console.log(`   - Provider ID: ${userCredential.user.providerData?.[0]?.providerId || 'N/A'}`);
+        console.log(`   - Photo URL: ${userCredential.user.photoURL || 'N/A'}`);
         
-        console.log('Google Sign In successful, isNewUser:', isNewUser);
+        const isNewUser = userCredential.additionalUserInfo?.isNewUser;
+        console.log(`👤 User Type: ${isNewUser ? 'NEW USER' : 'EXISTING USER'}`);
+        console.log(`⏰ Sign In Complete Time: ${new Date().toISOString()}`);
+        
+        // Check Firebase authentication state
+        console.log('\n🔍 STEP 2: Verifying Firebase Auth State');
+        const firebaseUser = userCredential.user;
+        const firebaseToken = await firebaseUser.getIdToken(true);
+        console.log(`✅ Firebase Token Retrieved: ${firebaseToken.substring(0, 20)}...`);
+        console.log(`📝 Token Length: ${firebaseToken.length} characters`);
         
         // Navigate based on user type and context (same logic as Apple Sign In)
         const fromCheckout = route?.params?.fromCheckout;
         
+        console.log('\n🚀 STEP 3: Determining Navigation Path');
+        console.log(`   - From Checkout: ${fromCheckout}`);
+        console.log(`   - Is New User: ${isNewUser}`);
+        
         if (fromCheckout) {
-          // From checkout: Always go to Terms & Conditions first
-          console.log('User from checkout - navigating to Terms & Conditions');
+          console.log('📍 Navigation Decision: Terms & Conditions (from checkout)');
           navigation.navigate('TermsAndConditions', { 
             previousScreen: 'GoogleSignIn',
             user: userCredential.user,
@@ -473,7 +594,7 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
             fromCheckout: true
           });
         } else if (isNewUser) {
-          // New user not from checkout: Show terms and conditions
+          console.log('📍 Navigation Decision: Terms & Conditions (new user)');
           navigation.navigate('TermsAndConditions', { 
             previousScreen: 'GoogleSignIn',
             user: userCredential.user,
@@ -481,13 +602,21 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
             fromCheckout: false
           });
         } else {
-          // Returning user not from checkout: Go directly to Home
-          console.log('Returning user - navigating directly to Home');
+          console.log('📍 Navigation Decision: Home (existing user)');
           navigation.navigate('Home');
         }
         
+        console.log('✅ STEP 3 SUCCESS: Navigation completed');
+        
       } catch (error) {
-        console.error('Google Sign In error on', Platform.OS, ':', error);
+        console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+        console.log('║                 ❌ GOOGLE LOGIN ERROR                         ║');
+        console.log('╚═══════════════════════════════════════════════════════════════╝');
+        console.error('❌ Error Type:', error.constructor.name);
+        console.error('❌ Error Code:', error.code);
+        console.error('❌ Error Message:', error.message);
+        console.error('❌ Full Error Object:', JSON.stringify(error, null, 2));
+        console.error('❌ Stack Trace:', error.stack);
         
         let errorMessage = error.message || 'Google Sign In failed. Please try again.';
         
@@ -502,9 +631,11 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
           }
         }
         
+        console.log('📱 Showing Alert:', errorMessage);
         Alert.alert('Google Sign In Error', errorMessage);
       } finally {
         setIsLoading(false);
+        console.log('╚═══════════════════════════════════════════════════════════════╝\n');
       }
     }
   };

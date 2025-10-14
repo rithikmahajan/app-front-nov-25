@@ -1,32 +1,104 @@
 // Enhanced API Service for Yoraa App - Backend Integration
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
+import authStorageService from './authStorageService';
+import environment from '../config/environment';
 
 class YoraaAPIService {
   constructor() {
-    // Environment-based API URLs - ✅ Updated to working port 8001
-    this.baseURL = __DEV__ 
-      ? 'http://localhost:8001'        // Development (iOS Simulator) - Backend server port
-      : 'http://185.193.19.244:8001';  // Production (TestFlight/Physical Device)
+    // Environment-based API URLs - Use environment config for consistency
+    const apiUrl = environment.getApiUrl();
+    
+    // CRITICAL FIX: Properly handle the base URL - remove /api only if it exists at the end
+    // This fixes the localhost vs production URL mismatch
+    this.baseURL = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
+    
     this.userToken = null;
     this.adminToken = null;
     this.guestSessionId = null;
+    
+    // CRITICAL: Sign-in lock to prevent race conditions
+    this.isSigningIn = false;
+    this.signInPromise = null;
+    
+    // CRITICAL: Logout lock to prevent reinitialization during logout
+    this.isLoggingOut = false;
+    
+    // CRITICAL: Initialization lock to prevent duplicate initializations
+    this.isInitializing = false;
+    this.initializePromise = null;
+    
+    console.log('🌐 YoraaAPI initialized with baseURL:', this.baseURL);
+    console.log('🔧 Raw API URL from environment:', apiUrl);
+    console.log('🔧 Environment:', environment.env, '| Is Production:', environment.isProduction);
   }
 
   async initialize() {
     try {
-      this.userToken = await AsyncStorage.getItem('userToken');
-      this.adminToken = await AsyncStorage.getItem('adminToken');
-      
-      // Initialize or generate guest session ID
-      await this.initializeGuestSession();
-
-      // If no backend token but Firebase user is signed in, try to authenticate with backend
-      if (!this.userToken) {
-        await this.tryFirebaseBackendAuth();
+      // CRITICAL FIX: Prevent duplicate initializations
+      if (this.isInitializing) {
+        console.log('⏳ Initialization already in progress, waiting...');
+        return this.initializePromise;
       }
+      
+      if (this.userToken && this.guestSessionId) {
+        console.log('✅ Already initialized, skipping...');
+        return;
+      }
+      
+      this.isInitializing = true;
+      
+      this.initializePromise = (async () => {
+        console.log('🔄 Initializing YoraaAPI service...');
+        
+        // CRITICAL: Don't load token from storage if we're in the middle of logging out
+        if (this.isLoggingOut) {
+          console.log('⏳ Logout in progress, skipping token initialization');
+          await this.initializeGuestSession();
+          return;
+        }
+        
+        // Try new auth storage first
+        let token = await authStorageService.getAuthToken();
+        
+        // Fallback to legacy storage
+        if (!token) {
+          token = await AsyncStorage.getItem('userToken');
+          if (token) {
+            console.log('📦 Migrating token from legacy storage...');
+            // Migrate to new storage
+            const userData = await AsyncStorage.getItem('userData');
+            if (userData) {
+              await authStorageService.storeAuthData(token, JSON.parse(userData));
+            }
+          }
+        }
+        
+        this.userToken = token;
+        this.adminToken = await AsyncStorage.getItem('adminToken');
+        
+        if (this.userToken) {
+          console.log('✅ Backend authentication token loaded from storage');
+        } else {
+          console.log('⚠️ No backend authentication token found in storage');
+        }
+        
+        // Initialize or generate guest session ID
+        await this.initializeGuestSession();
+
+        // If no backend token but Firebase user is signed in, try to authenticate with backend
+        if (!this.userToken) {
+          await this.tryFirebaseBackendAuth();
+        }
+      })();
+      
+      await this.initializePromise;
+      
     } catch (error) {
-      console.error('Error loading tokens:', error);
+      console.error('❌ Error loading tokens:', error);
+    } finally {
+      this.isInitializing = false;
+      this.initializePromise = null;
     }
   }
 
@@ -55,14 +127,115 @@ class YoraaAPIService {
       const currentUser = auth().currentUser;
       
       if (currentUser) {
-        console.log('Found Firebase user, attempting backend authentication...');
+        console.log('🔄 Found Firebase user, attempting backend authentication...');
         const idToken = await currentUser.getIdToken();
         await this.firebaseLogin(idToken);
         console.log('✅ Successfully authenticated existing Firebase user with backend');
+        return true;
+      } else {
+        console.log('ℹ️ No Firebase user found for backend authentication');
+        
+        // If no Firebase user but we have a backend token, clear it
+        // This handles the case where Firebase logout happened but backend wasn't notified
+        if (this.userToken) {
+          console.log('⚠️ Backend token exists but no Firebase user - syncing state...');
+          await this.syncLogoutState();
+        }
+        
+        return false;
       }
     } catch (error) {
-      console.warn('Failed to authenticate existing Firebase user with backend:', error);
+      console.warn('⚠️ Failed to authenticate existing Firebase user with backend:', error.message);
+      return false;
     }
+  }
+
+  /**
+   * Sync logout state with backend
+   * Called when local state shows logged out but backend might not be aware
+   */
+  async syncLogoutState() {
+    try {
+      console.log('🔄 Syncing logout state with backend...');
+      const tokenForLogout = this.userToken;
+      
+      if (tokenForLogout) {
+        try {
+          const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenForLogout}`
+          };
+          
+          await fetch(`${this.baseURL}/api/auth/logout`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              reason: 'state_sync',
+              timestamp: new Date().toISOString()
+            })
+          });
+          
+          console.log('✅ Backend logout state synced');
+        } catch (error) {
+          console.warn('⚠️ Could not sync logout state with backend:', error.message);
+        }
+      }
+      
+      // Clear local tokens regardless
+      await this.clearAuthTokens();
+      console.log('✅ Local auth state cleared');
+    } catch (error) {
+      console.error('❌ Error syncing logout state:', error);
+      // Clear local state anyway
+      await this.clearAuthTokens();
+    }
+  }
+
+  /**
+   * Reinitialize API service - useful when app becomes active
+   * CRITICAL: Only reinitialize if not already authenticated to prevent race conditions
+   */
+  async reinitialize() {
+    console.log('🔄 Reinitializing YoraaAPI service...');
+    console.log(`   - Current userToken in memory: ${this.userToken ? '✅ EXISTS' : '❌ NULL'}`);
+    console.log(`   - Sign-in in progress: ${this.isSigningIn ? '⏳ YES' : '✅ NO'}`);
+    console.log(`   - Logout in progress: ${this.isLoggingOut ? '⏳ YES' : '✅ NO'}`);
+    
+    // CRITICAL: Don't reinitialize if logout is in progress
+    if (this.isLoggingOut) {
+      console.log('⏳ Logout in progress, skipping reinitialization');
+      return;
+    }
+    
+    // CRITICAL: If sign-in is in progress, wait for it to complete
+    if (this.isSigningIn && this.signInPromise) {
+      console.log('⏳ Sign-in in progress, waiting for completion...');
+      try {
+        await this.signInPromise;
+        console.log('✅ Sign-in completed, token should now be available');
+      } catch (error) {
+        console.error('❌ Sign-in failed during wait:', error.message);
+      }
+    }
+    
+    // If already authenticated in memory, skip reinitialization to prevent token loss
+    if (this.userToken) {
+      console.log('✅ Already authenticated in memory, skipping reinitialization');
+      
+      // Just verify Firebase auth is still valid
+      const currentUser = auth().currentUser;
+      if (!currentUser) {
+        console.warn('⚠️ Firebase user signed out, clearing backend token');
+        await this.clearAuthTokens();
+      } else {
+        console.log('✅ Firebase user still authenticated, maintaining session');
+      }
+      return;
+    }
+    
+    // Token not in memory - try to load from storage
+    console.log('⚠️ Token not in memory, attempting to load from storage...');
+    await this.initialize();
   }
 
   /**
@@ -126,14 +299,18 @@ class YoraaAPIService {
     }
 
     try {
+      const fullUrl = `${this.baseURL}${endpoint}`;
+      
       console.log('API Request:', { 
         method, 
-        url: `${this.baseURL}${endpoint}`, 
+        url: fullUrl,
+        baseURL: this.baseURL,
+        endpoint: endpoint,
         data: body, 
         hasToken: !!headers.Authorization 
       });
       
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      const response = await fetch(fullUrl, {
         method,
         headers,
         body: body ? JSON.stringify(body) : null,
@@ -151,7 +328,8 @@ class YoraaAPIService {
       
       console.log('API Response:', { 
         status: response.status, 
-        url: endpoint, 
+        url: fullUrl,
+        endpoint: endpoint, 
         data: data 
       });
 
@@ -169,7 +347,7 @@ class YoraaAPIService {
               headers.Authorization = `Bearer ${newToken}`;
               console.log('🔁 Retrying request with fresh Firebase token...');
               
-              const retryResponse = await fetch(`${this.baseURL}${endpoint}`, {
+              const retryResponse = await fetch(fullUrl, {
                 method,
                 headers,
                 body: body ? JSON.stringify(body) : null,
@@ -295,44 +473,30 @@ class YoraaAPIService {
 
   // Authentication methods
   async login(email, password) {
-    const response = await this.makeRequest('/api/auth/login', 'POST', { email, password });
-    if (response.token) {
-      this.userToken = response.token;
-      await AsyncStorage.setItem('userToken', response.token);
-      
-      // Transfer guest data after successful authentication
-      try {
-        await this.transferAllGuestData();
-      } catch (transferError) {
-        console.warn('⚠️ Guest data transfer failed (non-critical):', transferError);
-      }
-    }
-    return response;
-  }
-
-  async firebaseLogin(idToken) {
     try {
-      console.log('🔄 Authenticating with Yoraa backend...');
+      console.log('📧 Email/Password login to backend...');
       
-      const response = await this.makeRequest('/api/auth/login/firebase', 'POST', { idToken });
+      const response = await this.makeRequest('/api/auth/login', 'POST', { email, password });
       
       if (response.success && response.data) {
-        console.log('✅ Backend authentication successful');
-        console.log('ℹ️ Backend automatically links accounts with same email across different providers');
+        console.log('✅ Email/Password login successful');
         
-        // CRITICAL: Store the JWT token for future API calls
         const token = response.data.token;
         const userData = response.data.user;
         
         if (token) {
           this.userToken = token;
+          
+          // Store in both old and new storage systems
           await AsyncStorage.setItem('userToken', token);
           
           if (userData) {
             await AsyncStorage.setItem('userData', JSON.stringify(userData));
+            // 🔥 CRITICAL: Store in new auth storage service for persistence
+            await authStorageService.storeAuthData(token, userData);
           }
           
-          console.log('✅ Token stored successfully');
+          console.log('✅ Email/Password token and user data stored successfully');
           
           // Transfer guest data after successful authentication
           try {
@@ -345,13 +509,130 @@ class YoraaAPIService {
         } else {
           throw new Error('No token received from backend');
         }
+      } else if (response.token) {
+        // Fallback for old response format
+        const token = response.token;
+        const userData = response.user;
+        
+        this.userToken = token;
+        await AsyncStorage.setItem('userToken', token);
+        
+        if (userData) {
+          await AsyncStorage.setItem('userData', JSON.stringify(userData));
+          await authStorageService.storeAuthData(token, userData);
+        }
+        
+        try {
+          await this.transferAllGuestData();
+        } catch (transferError) {
+          console.warn('⚠️ Guest data transfer failed (non-critical):', transferError);
+        }
+        
+        return response;
       } else {
-        throw new Error(response.message || 'Backend authentication failed');
+        throw new Error(response.message || 'Email/Password login failed');
       }
     } catch (error) {
-      console.error('❌ Backend authentication failed:', error);
+      console.error('❌ Email/Password login failed:', error);
       throw error;
     }
+  }
+
+  async firebaseLogin(idToken) {
+    // Check if lock is already set by parent auth flow (e.g., appleAuthService)
+    const lockAlreadySet = this.isSigningIn;
+    
+    // CRITICAL: Set sign-in lock to prevent race conditions (if not already set)
+    if (!lockAlreadySet) {
+      this.isSigningIn = true;
+      console.log('🔒 Sign-in lock activated by firebaseLogin()');
+    } else {
+      console.log('🔒 Sign-in lock already active (set by parent auth flow)');
+    }
+    
+    // Store the promise so other operations can wait for it
+    this.signInPromise = (async () => {
+      try {
+        console.log('🔄 Authenticating with Yoraa backend...');
+        
+        const response = await this.makeRequest('/api/auth/login/firebase', 'POST', { idToken });
+        
+        if (response.success && response.data) {
+          console.log('✅ Backend authentication successful');
+          
+          // Extract backend user status
+          const token = response.data.token;
+          const userData = response.data.user;
+          const isNewUser = response.data.isNewUser || false;
+          const message = response.data.message || response.message;
+          
+          console.log(`📊 Backend Response: ${message || 'Login successful'}`);
+          console.log(`   - User Status: ${isNewUser ? '✨ NEW USER CREATED' : '👋 EXISTING USER'}`);
+          console.log(`   - User ID: ${userData?._id || userData?.id || 'Unknown'}`);
+          console.log(`   - Name: ${userData?.name || 'Not set'}`);
+          console.log(`   - Email: ${userData?.email || 'Not set'}`);
+          console.log('ℹ️ Backend automatically links accounts with same email across different providers');
+          
+          if (token) {
+            // CRITICAL FIX: Set token in memory IMMEDIATELY (synchronously)
+            // This prevents race conditions with reinitialize() calls
+            this.userToken = token;
+            console.log('✅ Token set in memory immediately');
+            
+            // Store in both old and new storage systems (async, but don't block)
+            // Using Promise.all to parallelize storage operations
+            const storagePromise = Promise.all([
+              AsyncStorage.setItem('userToken', token).catch(err => 
+                console.error('❌ Failed to store userToken:', err)
+              ),
+              userData ? AsyncStorage.setItem('userData', JSON.stringify(userData)).catch(err =>
+                console.error('❌ Failed to store userData:', err)
+              ) : Promise.resolve(),
+              userData ? authStorageService.storeAuthData(token, userData).catch(err =>
+                console.error('❌ Failed to store auth data:', err)
+              ) : Promise.resolve()
+            ]);
+            
+            // Wait for all storage operations to complete
+            await storagePromise;
+            console.log('✅ Token and user data stored successfully in all locations');
+            
+            // Transfer guest data after successful authentication (non-blocking)
+            this.transferAllGuestData().catch(transferError => {
+              console.warn('⚠️ Guest data transfer failed (non-critical):', transferError);
+            });
+            
+            // Only log release if we set the lock (parent flow will release if they set it)
+            if (!lockAlreadySet) {
+              console.log('🔓 Sign-in lock will be released by firebaseLogin()');
+            } else {
+              console.log('ℹ️ Sign-in lock will be released by parent auth flow');
+            }
+            
+            return response.data;
+          } else {
+            throw new Error('No token received from backend');
+          }
+        } else {
+          throw new Error(response.message || 'Backend authentication failed');
+        }
+      } catch (error) {
+        console.error('❌ Backend authentication failed:', error);
+        if (!lockAlreadySet) {
+          console.log('🔓 Sign-in lock released by firebaseLogin() (error)');
+        }
+        throw error;
+      } finally {
+        // CRITICAL: Only release the lock if we set it
+        // If parent auth flow set it, let them release it
+        if (!lockAlreadySet) {
+          this.isSigningIn = false;
+          this.signInPromise = null;
+        }
+      }
+    })();
+    
+    return this.signInPromise;
   }
 
   /**
@@ -379,6 +660,11 @@ class YoraaAPIService {
         // Update stored user data if provided
         if (response.data?.user) {
           await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+          // 🔥 CRITICAL: Update auth storage service too
+          const token = await authStorageService.getAuthToken();
+          if (token) {
+            await authStorageService.storeAuthData(token, response.data.user);
+          }
         }
         
         return response.data;
@@ -434,13 +720,17 @@ class YoraaAPIService {
         
         if (token) {
           this.userToken = token;
+          
+          // Store in both old and new storage systems
           await AsyncStorage.setItem('userToken', token);
           
           if (userData) {
             await AsyncStorage.setItem('userData', JSON.stringify(userData));
+            // CRITICAL: Store in new auth storage service for persistence
+            await authStorageService.storeAuthData(token, userData);
           }
           
-          console.log('✅ Apple token stored successfully');
+          console.log('✅ Apple token and user data stored successfully');
           
           // Transfer guest data after successful authentication
           try {
@@ -473,22 +763,89 @@ class YoraaAPIService {
   }
 
   async signup(userData) {
-    const response = await this.makeRequest('/api/auth/signup', 'POST', userData);
-    if (response.token) {
-      this.userToken = response.token;
-      await AsyncStorage.setItem('userToken', response.token);
+    try {
+      console.log('📝 Signing up new user...');
+      
+      const response = await this.makeRequest('/api/auth/signup', 'POST', userData);
+      
+      if (response.success && response.data) {
+        console.log('✅ Signup successful');
+        
+        const token = response.data.token;
+        const user = response.data.user;
+        
+        if (token) {
+          this.userToken = token;
+          
+          // Store in both old and new storage systems
+          await AsyncStorage.setItem('userToken', token);
+          
+          if (user) {
+            await AsyncStorage.setItem('userData', JSON.stringify(user));
+            // 🔥 CRITICAL: Store in new auth storage service for persistence
+            await authStorageService.storeAuthData(token, user);
+          }
+          
+          console.log('✅ Signup token and user data stored successfully');
+          
+          return response.data;
+        } else {
+          throw new Error('No token received from backend');
+        }
+      } else if (response.token) {
+        // Fallback for old response format
+        const token = response.token;
+        const user = response.user;
+        
+        this.userToken = token;
+        await AsyncStorage.setItem('userToken', token);
+        
+        if (user) {
+          await AsyncStorage.setItem('userData', JSON.stringify(user));
+          await authStorageService.storeAuthData(token, user);
+        }
+        
+        return response;
+      } else {
+        throw new Error(response.message || 'Signup failed');
+      }
+    } catch (error) {
+      console.error('❌ Signup failed:', error);
+      throw error;
     }
-    return response;
   }
 
   async logout() {
     try {
+      console.log('🔐 Starting logout process...');
+      
       // Store token before clearing it (for backend logout call)
       const tokenForLogout = this.userToken;
       
       // Clear local state first
       this.userToken = null;
-      await AsyncStorage.removeItem('userToken');
+      this.adminToken = null;
+      this.guestSessionId = null;
+      
+      // Clear all auth-related storage
+      const keysToRemove = [
+        'userToken',
+        'adminToken',
+        'userData',
+        'refreshToken',
+        'auth_token',
+        'guestSessionId',
+        'userEmail',
+        'userPhone',
+        'isAuthenticated'
+      ];
+      
+      await AsyncStorage.multiRemove(keysToRemove);
+      console.log('✅ Local storage cleared');
+      
+      // CRITICAL: Clear new auth storage service
+      await authStorageService.clearAuthData();
+      console.log('✅ Auth storage service cleared');
       
       // Try to call backend logout with the stored token
       if (tokenForLogout) {
@@ -524,9 +881,29 @@ class YoraaAPIService {
       console.error('❌ Logout error:', error);
       // Even if there's an error, try to clear local state
       this.userToken = null;
+      this.adminToken = null;
+      this.guestSessionId = null;
       await AsyncStorage.removeItem('userToken');
+      await AsyncStorage.removeItem('userData');
+      await authStorageService.clearAuthData();
       return { success: false, error: error.message };
     }
+  }
+
+  /**
+   * Clear authentication tokens (for sign-out scenarios)
+   * This is a lightweight version of logout that just clears tokens
+   */
+  async clearAuthTokens() {
+    console.log('🔐 Clearing authentication tokens...');
+    
+    this.userToken = null;
+    this.adminToken = null;
+    
+    await AsyncStorage.multiRemove(['userToken', 'adminToken', 'userData']);
+    await authStorageService.clearAuthData();
+    
+    console.log('✅ Authentication tokens cleared');
   }
 
   // Wishlist/Favorites methods
@@ -870,9 +1247,12 @@ class YoraaAPIService {
   // User Profile
   async getUserProfile() {
     try {
-      return await this.makeRequest('/api/profile', 'GET', null, true);
+      // Use the correct endpoint that's implemented on the backend
+      return await this.makeRequest('/api/profile', 'GET', null, true, false, { silent404: true });
     } catch (error) {
-      console.warn('⚠️ Profile endpoint not available, returning fallback data:', error.message);
+      // Silently return fallback data when backend endpoint is not implemented
+      // This is expected behavior since the endpoint doesn't exist yet
+      console.log('ℹ️ Using fallback profile data - backend endpoint not yet implemented');
       
       // Return fallback profile data when backend endpoint is missing
       return {
@@ -892,7 +1272,52 @@ class YoraaAPIService {
   }
 
   async updateUserProfile(profileData) {
-    return await this.makeRequest('/api/profile', 'PUT', profileData, true);
+    try {
+      console.log('💾 Updating user profile:', profileData);
+      
+      // Ensure we have backend authentication
+      // Check if we have a backend JWT token
+      if (!this.userToken) {
+        console.log('⚠️ No backend token found, attempting to authenticate with Firebase...');
+        
+        // Try to get Firebase user and authenticate with backend
+        const currentUser = auth().currentUser;
+        if (!currentUser) {
+          throw new Error('Authentication required. Please log in.');
+        }
+        
+        // Get Firebase ID token and exchange it for backend JWT
+        const idToken = await currentUser.getIdToken();
+        await this.firebaseLogin(idToken);
+        
+        console.log('✅ Backend authentication successful');
+      }
+      
+      // Verify we now have a token
+      if (!this.userToken) {
+        throw new Error('Failed to authenticate. Please log in again.');
+      }
+      
+      // Make the PUT request to the correct backend endpoint
+      const response = await this.makeRequest('/api/profile', 'PUT', profileData, true);
+      
+      if (response && response.success) {
+        console.log('✅ Profile updated successfully on backend');
+        
+        // Store updated user data locally
+        if (response.data) {
+          await authStorageService.updateUserData(response.data);
+          console.log('✅ Updated user data stored locally');
+        }
+        
+        return response;
+      } else {
+        throw new Error(response?.message || 'Failed to update profile');
+      }
+    } catch (error) {
+      console.error('❌ Error updating user profile:', error);
+      throw error;
+    }
   }
 
   // Points & Rewards Methods
@@ -1079,7 +1504,18 @@ class YoraaAPIService {
 
   // Get current user token
   getUserToken() {
-    return this.userToken;
+    const token = this.userToken;
+    console.log(`🔍 getUserToken() called - Token ${token ? 'EXISTS ✅' : 'NULL ❌'}`);
+    if (token) {
+      console.log(`   - Token preview: ${token.substring(0, 30)}...`);
+    }
+    return token;
+  }
+
+  // Set sign-in lock (called by auth services to prevent race conditions)
+  setSignInLock(isLocked) {
+    this.isSigningIn = isLocked;
+    console.log(`🔒 Sign-in lock ${isLocked ? 'ACTIVATED' : 'RELEASED'}`);
   }
 
   // Get user data from storage
@@ -1127,17 +1563,30 @@ class YoraaAPIService {
 
   async logoutComplete() {
     try {
+      console.log('🔐 Starting complete logout process...');
+      
+      // CRITICAL: Set logout flag FIRST to prevent any reinitializations
+      this.isLoggingOut = true;
+      this.isInitializing = false; // Cancel any pending initialization
+      this.initializePromise = null;
+      console.log('🔒 Logout lock activated');
+      
       // Store token before clearing it (for backend logout call)
       const tokenForLogout = this.userToken;
+      const currentUser = auth().currentUser;
       
-      // Clear local state
+      // CRITICAL: Clear tokens from memory IMMEDIATELY (synchronously)
+      // This prevents race conditions where other components try to reinitialize
+      // and load the token from storage before we clear it
       this.userToken = null;
-      await AsyncStorage.multiRemove(['userToken', 'userData']);
+      this.adminToken = null;
+      console.log('✅ Tokens cleared from memory immediately (prevents race conditions)');
       
-      // Try to call backend logout with the stored token
+      // STEP 1: Notify backend FIRST (using saved token)
+      // This ensures the backend is aware of the logout state
       if (tokenForLogout) {
         try {
-          // Make request with explicit token instead of using requireAuth
+          console.log('📤 Notifying backend of logout state...');
           const headers = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${tokenForLogout}`
@@ -1146,26 +1595,76 @@ class YoraaAPIService {
           const response = await fetch(`${this.baseURL}/api/auth/logout`, {
             method: 'POST',
             headers,
-            body: null
+            body: JSON.stringify({
+              userId: currentUser?.uid,
+              timestamp: new Date().toISOString(),
+              reason: 'user_initiated_logout'
+            })
           });
           
           if (response.ok) {
-            console.log('✅ Backend logout successful (logoutComplete)');
+            const data = await response.json();
+            console.log('✅ Backend notified of logout:', data);
           } else {
-            console.warn('⚠️ Backend logout returned non-200 status (logoutComplete)');
+            const errorText = await response.text();
+            console.warn('⚠️ Backend logout returned non-200 status:', response.status, errorText);
           }
         } catch (apiError) {
-          console.warn('⚠️ Backend logout failed (logoutComplete):', apiError.message);
+          console.warn('⚠️ Backend logout notification failed:', apiError.message);
           // Don't throw - local logout is more important
         }
+      } else {
+        console.log('ℹ️ No token available - skipping backend logout notification');
       }
       
-      console.log('✅ User logged out successfully');
+      // STEP 2: Clear guest session from memory (DON'T generate new one yet)
+      const oldGuestSessionId = this.guestSessionId;
+      this.guestSessionId = null;
+      
+      // STEP 3: Clear all auth-related storage keys
+      const keysToRemove = [
+        'userToken',
+        'adminToken',
+        'userData',
+        'refreshToken',
+        'auth_token',
+        'guestSessionId',
+        'userEmail',
+        'userPhone',
+        'isAuthenticated'
+      ];
+      
+      await AsyncStorage.multiRemove(keysToRemove);
+      console.log('✅ All auth storage cleared');
+      
+      // STEP 4: Clear auth storage service
+      await authStorageService.clearAuthData();
+      console.log('✅ Auth storage service cleared');
+      
+      // STEP 5: Generate new guest session for post-logout state
+      // CRITICAL FIX: Wait 100ms to ensure all components have processed the logout
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await this.initializeGuestSession();
+      console.log('✅ New guest session initialized for logged-out state');
+      
+      // CRITICAL: Release logout lock
+      this.isLoggingOut = false;
+      console.log('🔓 Logout lock released');
+      
+      console.log('✅ Complete logout process finished - backend notified, local state cleared');
+      console.log('📊 Old guest session:', oldGuestSessionId, '→ New:', this.guestSessionId);
     } catch (error) {
-      console.error('Error during logout:', error);
+      console.error('❌ Error during logout:', error);
       // Ensure local state is cleared even if there's an error
       this.userToken = null;
-      await AsyncStorage.multiRemove(['userToken', 'userData']);
+      this.adminToken = null;
+      this.guestSessionId = null;
+      await AsyncStorage.multiRemove(['userToken', 'userData', 'adminToken', 'guestSessionId']);
+      await authStorageService.clearAuthData();
+      
+      // CRITICAL: Release logout lock even on error
+      this.isLoggingOut = false;
+      console.log('🔓 Logout lock released (after error)');
     }
   }
 
@@ -1724,28 +2223,6 @@ class YoraaAPIService {
       }
     } catch (error) {
       console.error('❌ Error submitting product rating:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get detailed product ratings (Size, Comfort, Durability stats)
-   */
-  async getProductDetailedRatings(productId) {
-    try {
-      console.log(`📊 Fetching detailed ratings for product: ${productId}`);
-      
-      const response = await this.makeRequest(`/api/products/${productId}/detailed-ratings`, 'GET', null, false);
-      
-      if (response.success) {
-        console.log('✅ Product detailed ratings fetched successfully');
-        return response;
-      } else {
-        console.error('❌ Failed to fetch product detailed ratings:', response.message);
-        return response;
-      }
-    } catch (error) {
-      console.error('❌ Error fetching product detailed ratings:', error);
       throw error;
     }
   }

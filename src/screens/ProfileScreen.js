@@ -68,6 +68,7 @@ const ProfileScreen = React.memo(({ navigation }) => {
   const [showContactUsModal, setShowContactUsModal] = useState(false);
   const [userName, setUserName] = useState('Guest User');
   const [isLoadingUserName, setIsLoadingUserName] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const handleEditProfile = useCallback(() => {
     if (navigation?.navigate) {
@@ -153,11 +154,10 @@ const ProfileScreen = React.memo(({ navigation }) => {
       // The actual logout logic is now handled by the LogoutModal
       // This callback is called after the logout process is complete
       
-      // Optionally refresh the profile screen state
-      setUserName('');
-      setIsLoadingUserName(false);
+      // Don't manually clear state - let the auth state listener handle it
+      // The onAuthStateChanged listener will set userName to 'Guest User'
       
-      console.log('✅ Profile screen sign out complete');
+      console.log('✅ Profile screen sign out complete - waiting for auth state update');
       
     } catch (error) {
       console.error('❌ Profile screen sign out error:', error);
@@ -177,19 +177,58 @@ const ProfileScreen = React.memo(({ navigation }) => {
           email: currentUser.email
         });
 
-        // Ensure backend authentication is synced
-        await authManager.syncBackendAuth();
+        // CRITICAL FOR TESTFLIGHT: Ensure backend is authenticated before loading profile
+        try {
+          const isBackendAuth = yoraaAPI.isAuthenticated();
+          console.log('🔍 Backend auth status:', isBackendAuth ? 'AUTHENTICATED' : 'NOT AUTHENTICATED');
+          
+          if (!isBackendAuth) {
+            console.log('⚠️ Backend not authenticated, syncing now...');
+            const syncSuccess = await authManager.syncBackendAuth();
+            
+            if (!syncSuccess) {
+              console.warn('❌ Initial backend sync failed, retrying once...');
+              // Wait a bit and retry
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              const retrySuccess = await authManager.syncBackendAuth();
+              
+              if (!retrySuccess) {
+                console.error('❌ Backend sync failed after retry - will try to use cached data');
+              } else {
+                console.log('✅ Backend sync successful on retry');
+              }
+            } else {
+              console.log('✅ Backend sync successful in ProfileScreen');
+            }
+          } else {
+            console.log('✅ Backend already authenticated');
+          }
+        } catch (syncError) {
+          console.error('❌ Backend sync error in ProfileScreen:', syncError);
+          // Continue anyway - try to load what we can
+        }
 
         // Try to get profile from backend API
         try {
           const profile = await yoraaAPI.getUserProfile();
           console.log('📊 Profile data for ProfileScreen:', profile);
           
-          if (profile && profile.success && profile.data) {
-            // Use backend profile name if available
-            const backendName = profile.data.name || profile.data.displayName;
-            if (backendName) {
-              setUserName(backendName);
+          if (profile && profile.success && profile.data && !profile.data.fallback) {
+            // Use backend profile name - prioritize firstName + lastName
+            let displayName = '';
+            
+            if (profile.data.firstName && profile.data.lastName) {
+              displayName = `${profile.data.firstName} ${profile.data.lastName}`;
+            } else if (profile.data.firstName) {
+              displayName = profile.data.firstName;
+            } else if (profile.data.name || profile.data.displayName) {
+              displayName = profile.data.name || profile.data.displayName;
+            }
+            
+            if (displayName) {
+              setUserName(displayName);
+              setIsAuthenticated(true);
+              console.log('✅ Using backend profile name:', displayName);
               return;
             }
           }
@@ -197,34 +236,45 @@ const ProfileScreen = React.memo(({ navigation }) => {
           // Fallback to Firebase user displayName
           if (currentUser.displayName) {
             setUserName(currentUser.displayName);
+            setIsAuthenticated(true);
+            console.log('✅ Using Firebase displayName:', currentUser.displayName);
           } else if (currentUser.email) {
             // Extract name from email if no displayName
             const emailName = currentUser.email.split('@')[0];
-            setUserName(emailName.charAt(0).toUpperCase() + emailName.slice(1));
+            const formattedName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
+            setUserName(formattedName);
+            setIsAuthenticated(true);
+            console.log('✅ Using email-derived name:', formattedName);
           } else {
             setUserName('User');
+            setIsAuthenticated(true);
           }
           
         } catch (profileError) {
-          console.warn('⚠️ Could not load backend profile for ProfileScreen, using Firebase data:', profileError);
+          console.warn('⚠️ Could not load backend profile for ProfileScreen:', profileError.message);
           
           // Fallback to Firebase user data
           if (currentUser.displayName) {
             setUserName(currentUser.displayName);
+            setIsAuthenticated(true);
           } else if (currentUser.email) {
             const emailName = currentUser.email.split('@')[0];
             setUserName(emailName.charAt(0).toUpperCase() + emailName.slice(1));
+            setIsAuthenticated(true);
           } else {
             setUserName('User');
+            setIsAuthenticated(true);
           }
         }
       } else {
         console.log('❌ No authenticated user found for ProfileScreen');
         setUserName('Guest User');
+        setIsAuthenticated(false);
       }
     } catch (error) {
       console.error('❌ Error loading user name for ProfileScreen:', error);
       setUserName('Guest User');
+      setIsAuthenticated(false);
     } finally {
       setIsLoadingUserName(false);
     }
@@ -233,6 +283,22 @@ const ProfileScreen = React.memo(({ navigation }) => {
   // Load user name on component mount
   useEffect(() => {
     loadUserName();
+  }, [loadUserName]);
+
+  // Add auth state listener to reload when user signs in/out
+  useEffect(() => {
+    const unsubscribe = auth().onAuthStateChanged((user) => {
+      if (user) {
+        console.log('🔄 Auth state changed in ProfileScreen, reloading user data...');
+        loadUserName();
+      } else {
+        setUserName('Guest User');
+        setIsAuthenticated(false);
+        setIsLoadingUserName(false);
+      }
+    });
+
+    return unsubscribe;
   }, [loadUserName]);
 
   return (
@@ -248,15 +314,17 @@ const ProfileScreen = React.memo(({ navigation }) => {
           ) : (
             <Text style={styles.clientName} accessibilityRole="header">{userName}</Text>
           )}
-          <TouchableOpacity 
-            style={styles.editProfileButton} 
-            onPress={handleEditProfile}
-            accessibilityRole="button"
-            accessibilityLabel="Edit profile"
-            accessibilityHint="Navigate to edit profile screen"
-          >
-            <Text style={styles.editProfileText}>Edit Profile</Text>
-          </TouchableOpacity>
+          {isAuthenticated && (
+            <TouchableOpacity 
+              style={styles.editProfileButton} 
+              onPress={handleEditProfile}
+              accessibilityRole="button"
+              accessibilityLabel="Edit profile"
+              accessibilityHint="Navigate to edit profile screen"
+            >
+              <Text style={styles.editProfileText}>Edit Profile</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Navigation Buttons */}
@@ -393,17 +461,19 @@ const ProfileScreen = React.memo(({ navigation }) => {
           <ArrowIcon />
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[styles.menuItem, styles.lastMenuItem]} 
-          onPress={handleLogout}
-          accessibilityRole="button"
-          accessibilityLabel="Logout"
-          accessibilityHint="Sign out of your account"
-        >
-          <View style={styles.menuItemContent}>
-            <Text style={styles.menuItemTitle}>Logout</Text>
-          </View>
-        </TouchableOpacity>
+        {isAuthenticated && (
+          <TouchableOpacity 
+            style={[styles.menuItem, styles.lastMenuItem]} 
+            onPress={handleLogout}
+            accessibilityRole="button"
+            accessibilityLabel="Logout"
+            accessibilityHint="Sign out of your account"
+          >
+            <View style={styles.menuItemContent}>
+              <Text style={styles.menuItemTitle}>Logout</Text>
+            </View>
+          </TouchableOpacity>
+        )}
       </ScrollView>
       
       <LogoutModal

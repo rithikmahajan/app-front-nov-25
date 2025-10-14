@@ -10,8 +10,9 @@ import {
   Modal,
   Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
-// import DatePicker from 'react-native-date-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import auth from '@react-native-firebase/auth';
 import GlobalBackButton from '../components/GlobalBackButton';
 import yoraaAPI from '../services/yoraaAPI';
@@ -20,8 +21,8 @@ import authManager from '../services/authManager';
 const EditProfile = ({ navigation }) => {
   // Loading and user state
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState(null); // Firebase user state
-  const [profileData, setProfileData] = useState(null); // Backend profile data
+  const [user, setUser] = useState(null); // Firebase user state - used for tracking
+  const [profileData, setProfileData] = useState(null); // Backend profile data - used for tracking
   const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -31,7 +32,6 @@ const EditProfile = ({ navigation }) => {
     confirmPassword: '',
     phone: '',
     dateOfBirth: new Date(1999, 4, 6),
-    gender: '',
     // Address fields
     firstName: '',
     lastName: '',
@@ -51,15 +51,12 @@ const EditProfile = ({ navigation }) => {
   const [showCountryCodeDropdown, setShowCountryCodeDropdown] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [addressAdded, setAddressAdded] = useState(true);
-  const [showGenderDropdown, setShowGenderDropdown] = useState(false);
-  // const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Memoized static options to prevent recreation on each render
   const stateOptions = useMemo(() => [
     'Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad'
   ], []);
-  
-  const genderOptions = useMemo(() => ['Male', 'Female', 'Other'], []);
   
   const countryCodeOptions = useMemo(() => [
     { code: '+1', country: 'US', flag: '🇺🇸' },
@@ -85,15 +82,33 @@ const EditProfile = ({ navigation }) => {
           provider: currentUser.providerData[0]?.providerId || 'unknown'
         });
 
-        // Ensure backend authentication is synced
-        await authManager.syncBackendAuth();
+        // CRITICAL FOR TESTFLIGHT: Ensure backend authentication is synced
+        try {
+          const isBackendAuth = yoraaAPI.isAuthenticated();
+          console.log('🔍 Backend auth status in EditProfile:', isBackendAuth ? 'AUTHENTICATED' : 'NOT AUTHENTICATED');
+          
+          if (!isBackendAuth) {
+            console.log('⚠️ Backend not authenticated in EditProfile, syncing...');
+            const syncSuccess = await authManager.syncBackendAuth();
+            if (!syncSuccess) {
+              console.warn('❌ Backend sync failed in EditProfile - will retry');
+              // Retry once more
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              await authManager.syncBackendAuth();
+            }
+          } else {
+            console.log('✅ Backend already authenticated in EditProfile');
+          }
+        } catch (syncError) {
+          console.error('❌ Backend sync error in EditProfile:', syncError);
+        }
 
         // Try to get profile from backend API
         try {
           const profile = await yoraaAPI.getUserProfile();
           console.log('📊 Profile from backend:', profile);
           
-          if (profile && profile.success && profile.data) {
+          if (profile && profile.success && profile.data && !profile.data.fallback) {
             setProfileData(profile.data);
             populateFormWithProfileData(profile.data, currentUser);
           } else if (profile && profile.data && profile.data.fallback) {
@@ -126,14 +141,30 @@ const EditProfile = ({ navigation }) => {
     loadUserProfile();
   }, [loadUserProfile]);
 
+  // Add auth state listener to reload when user data changes
+  // Only reload if not currently editing to avoid losing user's changes
+  useEffect(() => {
+    const unsubscribe = auth().onAuthStateChanged((firebaseUser) => {
+      if (firebaseUser && !isSaving) {
+        console.log('🔄 Auth state changed in EditProfile, reloading profile...');
+        loadUserProfile();
+      } else if (isSaving) {
+        console.log('⚠️ Skipping profile reload - save operation in progress');
+      }
+    });
+
+    return unsubscribe;
+  }, [loadUserProfile, isSaving]);
+
   const populateFormWithProfileData = useCallback((backendProfileData, firebaseUser) => {
+    console.log('📊 Populating form with backend profile data:', backendProfileData);
+    
     // Merge backend profile data with Firebase user data
     setFormData(prev => ({
       ...prev,
       name: backendProfileData.name || backendProfileData.displayName || firebaseUser.displayName || '',
       email: backendProfileData.email || firebaseUser.email || '',
       phone: backendProfileData.phone || firebaseUser.phoneNumber || '',
-      gender: backendProfileData.gender || '',
       // Keep address fields if they exist in profile
       firstName: backendProfileData.firstName || '',
       lastName: backendProfileData.lastName || '',
@@ -163,7 +194,6 @@ const EditProfile = ({ navigation }) => {
       name: '',
       email: '',
       phone: '',
-      gender: '',
     }));
   }, []);
 
@@ -175,18 +205,14 @@ const EditProfile = ({ navigation }) => {
     }));
   }, []);
 
-  const getPasswordDisplayValue = useCallback((field) => {
-    if (formData[field]) {
-      return '•'.repeat(formData[field].length);
-    }
-    return '';
-  }, [formData]);
-
   const handleSave = useCallback(async () => {
     if (isSaving) return; // Prevent multiple simultaneous saves
     
     try {
       setIsSaving(true);
+      
+      console.log('💾 === SAVE STARTED ===');
+      console.log('📊 Full formData at save:', JSON.stringify(formData, null, 2));
       
       // Validate required fields
       if (!formData.name.trim()) {
@@ -194,49 +220,90 @@ const EditProfile = ({ navigation }) => {
         return;
       }
       
-      if (!formData.email.trim()) {
-        Alert.alert('Validation Error', 'Email is required');
+      // Email is only required if user signed up with email/password
+      // Apple Sign-In users may not have an email
+      // Only validate email format if it's provided
+      if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+        Alert.alert('Validation Error', 'Please enter a valid email address');
         return;
       }
 
-      // Prepare profile data for API
-      const profileUpdateData = {
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        gender: formData.gender,
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
-        address: formData.address.trim(),
-        apartment: formData.apartment.trim(),
-        city: formData.city.trim(),
-        state: formData.state,
-        pin: formData.pin.trim(),
-        country: formData.country.trim(),
-        phoneNumber: formData.phoneNumber.trim(),
-      };
+      // Split name into firstName and lastName if not already set
+      let firstName = formData.firstName.trim();
+      let lastName = formData.lastName.trim();
+      
+      if (!firstName && formData.name.trim()) {
+        const nameParts = formData.name.trim().split(' ');
+        firstName = nameParts[0];
+        lastName = nameParts.slice(1).join(' ');
+      }
 
-      console.log('💾 Saving profile data:', profileUpdateData);
+      // Prepare profile data matching backend's expected format
+      const profileUpdateData = {
+        firstName: firstName,
+        lastName: lastName,
+        phone: formData.phone.trim() || formData.phoneNumber.trim(),
+      };
+      
+      // Only include email if it's provided (Apple Sign-In users may not have email)
+      if (formData.email.trim()) {
+        profileUpdateData.email = formData.email.trim();
+      }
+      
+      // Add date of birth if available
+      if (formData.dateOfBirth) {
+        // Format date as ISO string for backend
+        profileUpdateData.dateOfBirth = formData.dateOfBirth.toISOString();
+        console.log('📅 Date of Birth added to payload:', profileUpdateData.dateOfBirth);
+      }
+      
+      // Add preferences if available
+      if (formData.currency || formData.language) {
+        profileUpdateData.preferences = {
+          currency: formData.currency || 'INR',
+          language: formData.language || 'en',
+          notifications: true
+        };
+      }
+
+      console.log('💾 === PROFILE UPDATE PAYLOAD ===');
+      console.log('💾 Saving profile data to backend:', JSON.stringify(profileUpdateData, null, 2));
+      console.log('🎯 Gender in payload:', profileUpdateData.gender);
+      console.log('🎯 Has gender field:', 'gender' in profileUpdateData);
 
       // Update profile via API
       const result = await yoraaAPI.updateUserProfile(profileUpdateData);
       
       if (result && result.success) {
-        console.log('✅ Profile updated successfully');
-        Alert.alert('Success', 'Profile updated successfully!');
+        console.log('✅ Profile updated successfully:', result.data);
+        console.log('🎯 Gender in backend response:', result.data?.gender);
         
-        // Also update Firebase user profile if displayName changed
+        // Update Firebase user profile to match backend
         const firebaseUser = auth().currentUser;
-        if (firebaseUser && firebaseUser.displayName !== formData.name) {
-          try {
-            await firebaseUser.updateProfile({ displayName: formData.name });
-            console.log('✅ Firebase profile updated');
-          } catch (firebaseError) {
-            console.warn('⚠️ Could not update Firebase profile:', firebaseError);
+        if (firebaseUser) {
+          const fullName = `${firstName} ${lastName}`.trim();
+          if (firebaseUser.displayName !== fullName) {
+            try {
+              await firebaseUser.updateProfile({ displayName: fullName });
+              console.log('✅ Firebase profile updated');
+            } catch (firebaseError) {
+              console.warn('⚠️ Could not update Firebase profile:', firebaseError);
+            }
           }
         }
         
-        // Refresh profile data
+        // Update local state with the response data to immediately reflect changes
+        if (result.data) {
+          setProfileData(result.data);
+          // Update form data with the saved values to ensure UI reflects the update
+          populateFormWithProfileData(result.data, firebaseUser);
+          console.log('✅ Local state updated with saved profile data');
+        }
+        
+        // Show success message after state is updated
+        Alert.alert('Success', 'Profile updated successfully!');
+        
+        // Refresh profile data from backend to ensure consistency
         await loadUserProfile();
       } else {
         throw new Error(result?.message || 'Failed to update profile');
@@ -244,11 +311,28 @@ const EditProfile = ({ navigation }) => {
       
     } catch (error) {
       console.error('❌ Error saving profile:', error);
-      Alert.alert('Error', `Failed to save profile: ${error.message}`);
+      
+      // Provide user-friendly error messages
+      let errorMessage = 'Failed to save profile. Please try again.';
+      
+      if (error.message.includes('Authentication required') || error.message.includes('log in')) {
+        errorMessage = 'Authentication required. Please log in.';
+        
+        // Navigate to login screen after showing error
+        setTimeout(() => {
+          navigation.navigate('login');
+        }, 2000);
+      } else if (error.message.includes('Network')) {
+        errorMessage = 'Network error. Please check your connection.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsSaving(false);
     }
-  }, [formData, isSaving, loadUserProfile]);
+  }, [formData, isSaving, loadUserProfile, navigation, populateFormWithProfileData]);
 
   const handleAddOtherDetails = useCallback(() => {
     setOtherDetailsExpanded(!otherDetailsExpanded);
@@ -291,25 +375,34 @@ const EditProfile = ({ navigation }) => {
     setShowCountryCodeDropdown(false);
   }, []);
 
-  const handleGenderSelect = useCallback((gender) => {
-    setFormData(prev => ({
-      ...prev,
-      gender: gender
-    }));
-    setShowGenderDropdown(false);
+  const handleDatePickerPress = useCallback(() => {
+    console.log('📅 Date picker opened');
+    setShowDatePicker(true);
   }, []);
 
-  // const handleDatePickerPress = () => {
-  //   setShowDatePicker(true);
-  // };
+  const handleDateChange = useCallback((event, selectedDate) => {
+    console.log('📅 Date picker event:', event.type);
+    
+    // On iOS, the picker stays open, on Android it closes after selection
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    
+    if (event.type === 'set' && selectedDate) {
+      console.log('📅 Date selected:', selectedDate);
+      setFormData(prev => ({
+        ...prev,
+        dateOfBirth: selectedDate
+      }));
+    } else if (event.type === 'dismissed') {
+      console.log('📅 Date picker dismissed');
+    }
+  }, []);
 
-  // const handleDateChange = (date) => {
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     dateOfBirth: date
-  //   }));
-  //   setShowDatePicker(false);
-  // };
+  const handleDatePickerDone = useCallback(() => {
+    console.log('✅ Date picker done - selected date:', formData.dateOfBirth);
+    setShowDatePicker(false);
+  }, [formData.dateOfBirth]);
 
   // Memoized computed value
   const getFormattedAddress = useMemo(() => {
@@ -375,34 +468,6 @@ const EditProfile = ({ navigation }) => {
             </View>
           </View>
 
-          {/* Change Password Field */}
-          <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.floatingLabel}>Change Password</Text>
-              <TextInput
-                style={styles.textInput}
-                value={getPasswordDisplayValue('changePassword')}
-                onChangeText={(value) => handleInputChange('changePassword', value)}
-                placeholder=""
-                secureTextEntry={false}
-              />
-            </View>
-          </View>
-
-          {/* Confirm Password Field */}
-          <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.floatingLabel}>Confirm Password</Text>
-              <TextInput
-                style={styles.textInput}
-                value={getPasswordDisplayValue('confirmPassword')}
-                onChangeText={(value) => handleInputChange('confirmPassword', value)}
-                placeholder=""
-                secureTextEntry={false}
-              />
-            </View>
-          </View>
-
           {/* Phone Field */}
           <View style={styles.inputContainer}>
             <View style={styles.inputWrapper}>
@@ -418,10 +483,61 @@ const EditProfile = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Additional Sections */}
+        {/* Other Details Section Header */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Other Details</Text>
+          <TouchableOpacity onPress={handleAddOtherDetails}>
+            <Text style={styles.addButton}>+ Add</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Date of Birth Field - Same structure as Name/Email/Phone */}
+        <View style={styles.inputContainer}>
+          <View style={styles.inputWrapper}>
+            <Text style={styles.floatingLabel}>Date of Birth</Text>
+            <TouchableOpacity 
+              style={styles.datePickerInput}
+              onPress={handleDatePickerPress}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.genderInputText}>
+                {formData.dateOfBirth.toLocaleDateString('en-US', {
+                  month: '2-digit',
+                  day: '2-digit',
+                  year: 'numeric'
+                })}
+              </Text>
+              <View style={styles.calendarIconContainer}>
+                <Text style={styles.calendarIcon}>📅</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Address Section Header */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Address</Text>
+          <TouchableOpacity onPress={handleAddAddress}>
+            <Text style={styles.addButton}>+ Add</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Address Field - Same structure as Name/Email/Phone */}
+        {addressAdded && (
+          <View style={styles.inputContainer}>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.floatingLabel}>Address</Text>
+              <View style={styles.addressDisplayContainer}>
+                <Text style={styles.addressText}>{getFormattedAddress}</Text>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* Additional Sections - Keep old structure temporarily for backward compatibility */}
         <View style={styles.additionalContainer}>
-          {/* Other Details Container - Always visible as per Figma */}
-          <View style={styles.otherDetailsMainContainer}>
+          {/* Other Details Container - Hidden but kept for functionality */}
+          <View style={[styles.otherDetailsMainContainer, { display: 'none' }]}>
             <View style={styles.otherDetailsHeader}>
               <Text style={styles.otherDetailsTitle}>Other Details</Text>
               <TouchableOpacity onPress={handleAddOtherDetails}>
@@ -433,7 +549,11 @@ const EditProfile = ({ navigation }) => {
             <View style={styles.figmaInputContainer}>
               <View style={styles.figmaInputWrapper}>
                 <Text style={styles.figmaFloatingLabel}>Date of Birth</Text>
-                <TouchableOpacity style={styles.figmaDatePickerContainer}>
+                <TouchableOpacity 
+                  style={styles.figmaDatePickerContainer}
+                  onPress={handleDatePickerPress}
+                  activeOpacity={0.7}
+                >
                   <Text style={styles.figmaDateText}>
                     {formData.dateOfBirth.toLocaleDateString('en-US', {
                       month: '2-digit',
@@ -447,43 +567,10 @@ const EditProfile = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
             </View>
-
-            {/* Gender Field */}
-            <View style={styles.figmaInputContainer}>
-              <View style={styles.figmaInputWrapper}>
-                <Text style={styles.figmaFloatingLabel}>Gender</Text>
-                <TouchableOpacity 
-                  style={styles.figmaGenderPickerContainer} 
-                  onPress={() => setShowGenderDropdown(!showGenderDropdown)}
-                >
-                  <Text style={styles.figmaGenderText}>{formData.gender}</Text>
-                  <Text style={styles.figmaDropdownArrow}>▼</Text>
-                </TouchableOpacity>
-                
-                {showGenderDropdown && (
-                  <View style={styles.figmaGenderDropdown}>
-                    {genderOptions.map((option) => (
-                      <TouchableOpacity
-                        key={option}
-                        style={styles.figmaDropdownOption}
-                        onPress={() => handleGenderSelect(option)}
-                      >
-                        <Text style={[
-                          styles.figmaDropdownOptionText,
-                          formData.gender === option && styles.selectedOption
-                        ]}>
-                          {option}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
-              </View>
-            </View>
           </View>
 
-          {/* Address Section */}
-          <View style={styles.addressMainContainer}>
+          {/* Address Section - Hidden but kept for functionality */}
+          <View style={[styles.addressMainContainer, { display: 'none' }]}>
             <View style={styles.addressHeader}>
               <Text style={styles.addressTitle}>Address</Text>
               <TouchableOpacity onPress={handleAddAddress}>
@@ -707,7 +794,37 @@ const EditProfile = ({ navigation }) => {
         </View>
       </Modal>
 
-  {/* Date Picker Modal removed for stable build */}
+      {/* Date Picker Modal */}
+      {showDatePicker && (
+        <Modal
+          visible={showDatePicker}
+          transparent={true}
+          animationType="slide"
+        >
+          <View style={styles.datePickerModalOverlay}>
+            <View style={styles.datePickerModalContent}>
+              <View style={styles.datePickerHeader}>
+                <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                  <Text style={styles.datePickerCancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <Text style={styles.datePickerTitle}>Select Date of Birth</Text>
+                <TouchableOpacity onPress={handleDatePickerDone}>
+                  <Text style={styles.datePickerDoneText}>Done</Text>
+                </TouchableOpacity>
+              </View>
+              <DateTimePicker
+                value={formData.dateOfBirth}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={handleDateChange}
+                maximumDate={new Date()}
+                minimumDate={new Date(1900, 0, 1)}
+                style={styles.datePickerStyle}
+              />
+            </View>
+          </View>
+        </Modal>
+      )}
 
       {/* Save Button */}
       <View style={styles.saveButtonContainer}>
@@ -828,6 +945,116 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     fontFamily: 'Montserrat-Regular',
   },
+  // Section Header Styles (for Other Details and Address)
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginTop: 30,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000000',
+    fontFamily: 'Montserrat-Bold',
+  },
+  // Date Picker Styles (matching textInput structure)
+  datePickerInput: {
+    borderWidth: 1.5,
+    borderColor: '#000000',
+    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  calendarIconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 24,
+    height: 24,
+  },
+  calendarIcon: {
+    fontSize: 18,
+  },
+  // Gender Picker Styles (matching textInput structure)
+  genderPickerInput: {
+    borderWidth: 1.5,
+    borderColor: '#000000',
+    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  genderInputText: {
+    fontSize: 14,
+    color: '#000000',
+    fontFamily: 'Montserrat-Regular',
+  },
+  dropdownArrow: {
+    fontSize: 12,
+    color: '#666666',
+  },
+  genderDropdown: {
+    position: 'absolute',
+    top: 55,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#000000',
+    borderRadius: 12,
+    zIndex: 1000,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  dropdownOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  dropdownOptionText: {
+    fontSize: 14,
+    color: '#000000',
+    fontFamily: 'Montserrat-Regular',
+  },
+  selectedOption: {
+    fontWeight: '600',
+    color: '#007AFF',
+    fontFamily: 'Montserrat-SemiBold',
+  },
+  placeholderText: {
+    color: '#999999',
+  },
+  // Address Display Styles (matching textInput structure)
+  addressDisplayContainer: {
+    borderWidth: 1.5,
+    borderColor: '#000000',
+    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: '#FFFFFF',
+    minHeight: 50,
+  },
+  addressText: {
+    fontSize: 14,
+    color: '#000000',
+    fontFamily: 'Montserrat-Regular',
+  },
   additionalContainer: {
     paddingHorizontal: 20,
     marginTop: 20,
@@ -867,9 +1094,6 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontFamily: 'Montserrat-ExtraBold',
   },
-  addressDisplayContainer: {
-    paddingTop: 15,
-  },
   addressLabel: {
     fontSize: 14,
     fontWeight: '500',
@@ -904,10 +1128,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
   },
-  datePickerStyle: {
-    flex: 1,
-    height: 40,
-  },
   dateText: {
     fontSize: 16,
     color: '#000000',
@@ -927,10 +1147,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000000',
   },
-  dropdownArrow: {
-    fontSize: 12,
-    color: '#666666',
-  },
   dropdownOptions: {
     position: 'absolute',
     top: 70,
@@ -949,18 +1165,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-  },
-  dropdownOption: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-  },
-  dropdownOptionText: {
-    fontSize: 16,
-    color: '#000000',
-  },
-  selectedOption: {
-    fontWeight: '600',
-    color: '#007AFF',
   },
   // Modal Styles
   modalContainer: {
@@ -1099,6 +1303,54 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  // Date Picker Modal Styles
+  datePickerModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  datePickerModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 40,
+    alignItems: 'center',
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    width: '100%',
+  },
+  datePickerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    flex: 1,
+    textAlign: 'center',
+  },
+  datePickerCancelText: {
+    fontSize: 16,
+    color: '#666666',
+    width: 60,
+  },
+  datePickerDoneText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+    width: 60,
+    textAlign: 'right',
+  },
+  datePickerStyle: {
+    width: '100%',
+    height: 200,
+    alignSelf: 'center',
+    justifyContent: 'center',
+  },
   spacer: {
     height: 100,
   },
@@ -1127,13 +1379,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#000000',
     fontFamily: 'Montserrat-Regular',
-  },
-  calendarIconContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  calendarIcon: {
-    fontSize: 18,
   },
   saveButtonContainer: {
     paddingHorizontal: 20,

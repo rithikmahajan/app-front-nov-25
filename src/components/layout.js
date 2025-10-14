@@ -269,6 +269,8 @@ const EnhancedLayout = () => {
           return renderScreen('DeliveryOptionsStepOneScreen', { navigation });
         case 'deliveryoptionsstepone':
           return renderScreen('DeliveryOptionsStepOneScreen', { navigation, route: { params: routeParams } });
+        case 'deliveryaddress':
+          return renderScreen('DeliveryAddress', { navigation, route: { params: routeParams } });
         case 'DeliveryOptionsStepTwo':
           return renderScreen('DeliveryOptionsStepTwoScreen', { navigation, route: { params: routeParams } });
         case 'Language':

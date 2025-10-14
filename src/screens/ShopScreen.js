@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -34,191 +34,116 @@ import { GlobalCartIcon } from '../assets/icons';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useBag } from '../contexts/BagContext';
 
-// Sample data for new arrivals and trending now
-const NEW_ARRIVALS = [
-    { 
-    id: '1', 
-    name: 'Product One', 
-    price: '$99', 
-    isNewArrival: true, 
-    image: 'https://via.placeholder.com/150x200/CCCCCC/000000?text=Product+1'
-  },
-  { 
-    id: '2', 
-    name: 'Product Two', 
-    price: '$149', 
-    isNewArrival: true, 
-    image: 'https://via.placeholder.com/150x200/CCCCCC/000000?text=Product+2'
-  },
-  { 
-    id: '3', 
-    name: 'Product Three', 
-    price: '$199', 
-    isNewArrival: true, 
-    image: 'https://via.placeholder.com/150x200/CCCCCC/000000?text=Product+3'
-  },
-];
-
-const TRENDING_NOW = [
-  {
-    id: '1',
-    name: 'Nike Life',
-    price: 'US$180',
-    image: null,
-  },
-  {
-    id: '2',
-    name: 'Nike Life',
-    price: 'US$120',
-    image: null,
-  },
-  {
-    id: '3',
-    name: 'Adidas Originals',
-    price: 'US$160',
-    image: null,
-  },
-];
-
-const SALE_CATEGORIES = [
-  {
-    id: '1',
-    name: 'T-Shirts',
-    image: null,
-  },
-  {
-    id: '2',
-    name: 'Trousers',
-    image: null,
-  },
-];
-
-const TABS = ['Men', 'Women', 'Kids'];
-
 const ShopScreen = React.memo(({ navigation }) => {
-  const [selectedTab, setSelectedTab] = useState('Men');
-  const [dynamicSaleItems, setDynamicSaleItems] = useState([
-    {
-      _id: 'initial-sale-1',
-      productName: 'T-Shirts',
-      price: 2999,
-      salePrice: 1999,
-      discountPercentage: 33,
-      isSale: true,
-      category: 'men',
-      subcategory: 'shirts',
-      images: []
-    },
-    {
-      _id: 'initial-sale-2',
-      productName: 'Trousers',
-      price: 4999,
-      salePrice: 3499,
-      discountPercentage: 30,
-      isSale: true,
-      category: 'men',
-      subcategory: 'pants',
-      images: []
-    }
-  ]);
+  const [selectedTab, setSelectedTab] = useState('Women'); // Default to Women (first category)
   const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [newArrivals, setNewArrivals] = useState([]);
+  const [trendingItems, setTrendingItems] = useState([]);
+  const [saleItems, setSaleItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Use contexts instead of local state
   const { toggleFavorite, isFavorite } = useFavorites();
   const { addToBag } = useBag();
 
-  // Fetch dynamic sale items and categories
-  const fetchSaleData = useCallback(async () => {
+  // Fetch all data from backend
+  const fetchShopData = useCallback(async () => {
     try {
-      
-      // Create mock sale data immediately as fallback
-      const mockSaleItems = [
-        {
-          _id: 'mock-sale-1',
-          productName: `${selectedTab} T-Shirt`,
-          price: 2999,
-          salePrice: 1999,
-          discountPercentage: 33,
-          isSale: true,
-          category: selectedTab.toLowerCase(),
-          subcategory: 'shirts',
-          images: []
-        },
-        {
-          _id: 'mock-sale-2',
-          productName: `${selectedTab} Jeans`,
-          price: 4999,
-          salePrice: 3499,
-          discountPercentage: 30,
-          isSale: true,
-          category: selectedTab.toLowerCase(),
-          subcategory: 'pants',
-          images: []
-        }
-      ];
+      setLoading(true);
+      setError(null);
 
-      // Set fallback data immediately
-      setDynamicSaleItems(mockSaleItems);
-      
-      // Try to fetch real data (but don't block UI)
-      try {
-        const categoriesResponse = await apiService.getCategories();
-        if (categoriesResponse && categoriesResponse.success) {
-          setCategories(categoriesResponse.data || []);
-        }
+      // Fetch categories
+      const categoriesResponse = await apiService.getCategories();
+      if (categoriesResponse?.success && categoriesResponse?.data) {
+        const cats = categoriesResponse.data;
+        setCategories(cats);
         
-        // Try to get sale items
-        const saleResponse = await yoraaAPI.getSaleItems(1, 10, selectedTab.toLowerCase());
-        if (saleResponse && saleResponse.success && saleResponse.data) {
-          const products = saleResponse.data.products || saleResponse.data.items || saleResponse.data || [];
-          if (products.length > 0) {
-            setDynamicSaleItems(products);
-          }
+        // Set initial tab to first category or Women if available
+        if (cats.length > 0) {
+          const womenCategory = cats.find(cat => cat.name.toLowerCase() === 'women');
+          setSelectedTab(womenCategory ? womenCategory.name : cats[0].name);
         }
-      } catch (apiError) {
-        console.log('API not available, using mock data:', apiError.message);
-        // Keep mock data - already set above
       }
-    } catch (error) {
-      console.error('Error in fetchSaleData:', error);
-      // Ensure we have some data
-      const fallbackItems = [
-        {
-          _id: 'fallback-1',
-          productName: 'Sale Item',
-          price: 1999,
-          salePrice: 1299,
-          isSale: true,
-          category: selectedTab.toLowerCase(),
-          images: []
+
+      // Fetch subcategories for the selected category
+      const subcategoriesResponse = await apiService.getSubcategories();
+      if (subcategoriesResponse?.success && subcategoriesResponse?.data) {
+        setSubcategories(subcategoriesResponse.data);
+      }
+
+      // Fetch new arrivals
+      try {
+        const newArrivalsResponse = await yoraaAPI.getNewArrivals(1, 10);
+        if (newArrivalsResponse?.success && newArrivalsResponse?.data) {
+          const products = newArrivalsResponse.data.products || newArrivalsResponse.data.items || [];
+          setNewArrivals(products);
         }
-      ];
-      setDynamicSaleItems(fallbackItems);
+      } catch (err) {
+        console.log('New arrivals not available:', err.message);
+      }
+
+      // Fetch trending items
+      try {
+        const trendingResponse = await yoraaAPI.getTrendingItems(1, 10);
+        if (trendingResponse?.success && trendingResponse?.data) {
+          const products = trendingResponse.data.products || trendingResponse.data.items || [];
+          setTrendingItems(products);
+        }
+      } catch (err) {
+        console.log('Trending items not available:', err.message);
+      }
+
+      // Fetch sale items
+      try {
+        const saleResponse = await yoraaAPI.getSaleItems(1, 10);
+        if (saleResponse?.success && saleResponse?.data) {
+          const products = saleResponse.data.products || saleResponse.data.items || [];
+          setSaleItems(products);
+        }
+      } catch (err) {
+        console.log('Sale items not available:', err.message);
+      }
+
+    } catch (fetchError) {
+      console.error('Error fetching shop data:', fetchError);
+      setError('Failed to load shop data. Please try again.');
     } finally {
-      // Loading removed - show content immediately
+      setLoading(false);
     }
-  }, [selectedTab]);
+  }, []);
 
-  // Load data on mount and tab change
+  // Fetch category-specific subcategories when tab changes
+  const fetchCategorySubcategories = useCallback(async () => {
+    try {
+      const selectedCategory = categories.find(
+        cat => cat.name.toLowerCase() === selectedTab.toLowerCase()
+      );
+      
+      if (selectedCategory) {
+        const response = await apiService.getSubcategoriesByCategory(selectedCategory._id);
+        if (response?.success && response?.data) {
+          setSubcategories(response.data);
+        }
+      }
+    } catch (fetchError) {
+      console.log('Error fetching category subcategories:', fetchError);
+    }
+  }, [selectedTab, categories]);
+
+  // Load initial data
   useEffect(() => {
-    fetchSaleData();
-  }, [fetchSaleData]);
+    fetchShopData();
+  }, [fetchShopData]);
 
-  // Memoize static data arrays to prevent recreation on each render
-  const newArrivals = useMemo(() => NEW_ARRIVALS, []);
-  const trendingNow = useMemo(() => TRENDING_NOW, []);
-  const saleCategories = useMemo(() => {
-    // Use dynamic sale items if available, otherwise fallback to static
-    if (dynamicSaleItems.length > 0) {
-      return dynamicSaleItems.slice(0, 5).map(item => ({
-        id: item._id,
-        name: item.productName || item.name,
-        image: item.images?.[0]?.url,
-      }));
+  // Update subcategories when category changes
+  useEffect(() => {
+    if (categories.length > 0) {
+      fetchCategorySubcategories();
     }
-    return SALE_CATEGORIES;
-  }, [dynamicSaleItems]);
-  const tabs = useMemo(() => TABS, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTab, fetchCategorySubcategories]);
 
   // Optimized handlers with useCallback
   const handleNavigateToSearch = useCallback(() => {
@@ -251,77 +176,95 @@ const ShopScreen = React.memo(({ navigation }) => {
   }, [addToBag]);
 
   // Memoized render functions for better performance
-  const renderProductItem = useCallback(({ item }) => (
-    <TouchableOpacity 
-      style={styles.productCard}
-      accessibilityRole="button"
-      accessibilityLabel={`${item.name}, ${item.price}`}
-      accessibilityHint="View product details"
-    >
-      <View style={styles.productImageContainer}>
-        <Image
-          source={{ uri: item.image }}
-          style={styles.productImagePlaceholder}
-          resizeMode="cover"
-        />
-        <AnimatedHeartIcon
-          isFavorite={isFavorite(item.id)}
-          onPress={() => toggleFavorite(item.id)}
-          size={13}
-          containerStyle={styles.favoriteButton}
-          filledColor="#000000"
-          unfilledColor="#000000"
-        />
-        <TouchableOpacity 
-          style={styles.cartButton}
-          onPress={() => handleAddToBag(item)}
-          accessibilityRole="button"
-          accessibilityLabel="Add to cart"
-          accessibilityHint="Add product to shopping cart"
-        >
-          <GlobalCartIcon />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.productInfo}>
-        <Text style={styles.productName}>{item.name}</Text>
-        <Text style={styles.productPrice}>{item.price}</Text>
-      </View>
-    </TouchableOpacity>
-  ), [toggleFavorite, isFavorite, handleAddToBag]);
+  const renderProductItem = useCallback(({ item }) => {
+    const imageUrl = item.images?.[0]?.url || item.image;
+    const productName = item.productName || item.name;
+    const productPrice = item.salePrice || item.price;
+    const itemId = item._id || item.id;
 
-  const renderSaleCategoryItem = useCallback(({ item }) => (
-    <TouchableOpacity 
-      style={styles.saleCategoryCard}
-      onPress={() => {
-        // Navigate to sale category with item details
-        const selectedCategory = categories.find(cat => 
-          cat.name.toLowerCase() === selectedTab.toLowerCase()
-        );
-        navigation?.navigate('SaleCategoryScreen', {
-          categoryId: selectedCategory?._id,
-          categoryName: selectedCategory?.name,
-          subcategoryId: item.subcategoryId,
-          subcategoryName: item.name
-        });
-      }}
-      accessibilityRole="button"
-      accessibilityLabel={`${item.name} sale category`}
-      accessibilityHint="Browse sale products in this category"
-    >
-      {item.image ? (
-        <Image 
-          source={{ uri: item.image }}
-          style={styles.saleCategoryImage}
-          resizeMode="cover"
-        />
-      ) : (
-        <View style={styles.saleCategoryImagePlaceholder} />
-      )}
-      <View style={styles.saleCategoryOverlay}>
-        <Text style={styles.saleCategoryText}>{item.name}</Text>
-      </View>
-    </TouchableOpacity>
-  ), [categories, selectedTab, navigation]);
+    return (
+      <TouchableOpacity 
+        style={styles.productCard}
+        onPress={() => navigation?.navigate('ProductDetail', { productId: itemId })}
+        accessibilityRole="button"
+        accessibilityLabel={`${productName}, ${productPrice}`}
+        accessibilityHint="View product details"
+      >
+        <View style={styles.productImageContainer}>
+          {imageUrl ? (
+            <Image
+              source={{ uri: imageUrl }}
+              style={styles.productImagePlaceholder}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.productImagePlaceholder} />
+          )}
+          <AnimatedHeartIcon
+            isFavorite={isFavorite(itemId)}
+            onPress={() => toggleFavorite(itemId)}
+            size={13}
+            containerStyle={styles.favoriteButton}
+            filledColor="#000000"
+            unfilledColor="#000000"
+          />
+          <TouchableOpacity 
+            style={styles.cartButton}
+            onPress={() => handleAddToBag(item)}
+            accessibilityRole="button"
+            accessibilityLabel="Add to cart"
+            accessibilityHint="Add product to shopping cart"
+          >
+            <GlobalCartIcon />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.productInfo}>
+          <Text style={styles.productName}>{productName}</Text>
+          <Text style={styles.productPrice}>₹{productPrice}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }, [toggleFavorite, isFavorite, handleAddToBag, navigation]);
+
+  const renderSaleCategoryItem = useCallback(({ item }) => {
+    const imageUrl = item.images?.[0]?.url || item.image;
+    const categoryName = item.subcategoryName || item.name;
+    const itemId = item._id || item.id;
+
+    return (
+      <TouchableOpacity 
+        style={styles.saleCategoryCard}
+        onPress={() => {
+          // Navigate to sale category with item details
+          const selectedCategory = categories.find(cat => 
+            cat.name.toLowerCase() === selectedTab.toLowerCase()
+          );
+          navigation?.navigate('SaleCategoryScreen', {
+            categoryId: selectedCategory?._id,
+            categoryName: selectedCategory?.name,
+            subcategoryId: itemId,
+            subcategoryName: categoryName
+          });
+        }}
+        accessibilityRole="button"
+        accessibilityLabel={`${categoryName} sale category`}
+        accessibilityHint="Browse sale products in this category"
+      >
+        {imageUrl ? (
+          <Image 
+            source={{ uri: imageUrl }}
+            style={styles.saleCategoryImage}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={styles.saleCategoryImagePlaceholder} />
+        )}
+        <View style={styles.saleCategoryOverlay}>
+          <Text style={styles.saleCategoryText}>{categoryName}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }, [categories, selectedTab, navigation]);
 
   const renderTab = useCallback((tab) => (
     <TouchableOpacity
@@ -354,145 +297,143 @@ const ShopScreen = React.memo(({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* New Arrivals Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle} accessibilityRole="header">New Arrivals</Text>
-          <FlatList
-            data={newArrivals}
-            renderItem={renderProductItem}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalList}
-            accessibilityLabel="New arrivals product list"
-            removeClippedSubviews={true}
-            maxToRenderPerBatch={5}
-            initialNumToRender={5}
-            windowSize={7}
-            getItemLayout={(data, index) => {
-              // Safer getItemLayout with additional validation
-              const safeIndex = Math.max(0, index || 0);
-              const itemLength = 180;
-              return {
-                length: itemLength,
-                offset: itemLength * safeIndex,
-                index: safeIndex,
-              };
-            }}
-          />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading...</Text>
         </View>
-
-        {/* Trending Now Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle} accessibilityRole="header">Trending Now</Text>
-          <FlatList
-            data={trendingNow}
-            renderItem={renderProductItem}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalList}
-            accessibilityLabel="Trending products list"
-            removeClippedSubviews={true}
-            maxToRenderPerBatch={5}
-            initialNumToRender={5}
-            windowSize={7}
-            getItemLayout={(data, index) => {
-              // Safer getItemLayout with additional validation
-              const safeIndex = Math.max(0, index || 0);
-              const itemLength = 180;
-              return {
-                length: itemLength,
-                offset: itemLength * safeIndex,
-                index: safeIndex,
-              };
-            }}
-          />
-        </View>
-
-        {/* Sale Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.saleTitle} accessibilityRole="header">Sale</Text>
-            <TouchableOpacity 
-              onPress={handleNavigateToSale}
-              style={styles.viewAllButton}
-              accessibilityRole="button"
-              accessibilityLabel="View all sale items"
-            >
-              <Text style={styles.viewAllText}>View All</Text>
-            </TouchableOpacity>
-          </View>
-          
-          {/* Dynamic Sale Items Preview */}
-          {dynamicSaleItems.length > 0 ? (
-            <View style={styles.dynamicSalePreview}>
-              <TouchableOpacity 
-                style={styles.salePreviewCard}
-                onPress={handleNavigateToSale}
-                accessibilityRole="button"
-                accessibilityLabel="View sale items"
-              >
-                <Text style={styles.salePreviewTitle}>
-                  🔥 {dynamicSaleItems.length} Items on Sale
-                </Text>
-                <Text style={styles.salePreviewSubtitle}>
-                  Up to 50% off on {selectedTab} collection
-                </Text>
-                <Text style={styles.salePreviewAction}>Shop Now →</Text>
-              </TouchableOpacity>
-            </View>
-          ) : null}
-          
-          {/* Tabs */}
-          <View style={styles.tabContainer} accessibilityRole="tablist">
-            {tabs.map(renderTab)}
-          </View>
-
-          {/* Sale Categories */}
-          <FlatList
-            data={saleCategories}
-            renderItem={renderSaleCategoryItem}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalList}
-            accessibilityLabel="Sale categories list"
-            removeClippedSubviews={true}
-            maxToRenderPerBatch={4}
-            initialNumToRender={4}
-            windowSize={6}
-            getItemLayout={(data, index) => {
-              // Safer getItemLayout with additional validation
-              const safeIndex = Math.max(0, index || 0);
-              const itemLength = 120;
-              return {
-                length: itemLength,
-                offset: itemLength * safeIndex,
-                index: safeIndex,
-              };
-            }}
-          />
-        </View>
-
-        {/* Collection Button */}
-        <View style={styles.section}>
+      ) : error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity 
-            style={styles.collectionButton}
-            onPress={handleNavigateToCollection}
-            accessibilityRole="button"
-            accessibilityLabel="View all items collection"
+            style={styles.retryButton}
+            onPress={fetchShopData}
           >
-            <Text style={styles.collectionButtonText}>
-              🛍️ View All Collection
-            </Text>
-            <Text style={styles.collectionButtonSubtext}>
-              Browse all items from Men, Women & Kids
-            </Text>
+            <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      ) : (
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {/* New Arrivals Section */}
+          {newArrivals.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle} accessibilityRole="header">New Arrivals</Text>
+              <FlatList
+                data={newArrivals}
+                renderItem={renderProductItem}
+                keyExtractor={(item) => item._id || item.id}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.horizontalList}
+                accessibilityLabel="New arrivals product list"
+                removeClippedSubviews={true}
+                maxToRenderPerBatch={5}
+                initialNumToRender={5}
+                windowSize={7}
+              />
+            </View>
+          )}
+
+          {/* Trending Now Section */}
+          {trendingItems.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle} accessibilityRole="header">Trending Now</Text>
+              <FlatList
+                data={trendingItems}
+                renderItem={renderProductItem}
+                keyExtractor={(item) => item._id || item.id}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.horizontalList}
+                accessibilityLabel="Trending products list"
+                removeClippedSubviews={true}
+                maxToRenderPerBatch={5}
+                initialNumToRender={5}
+                windowSize={7}
+              />
+            </View>
+          )}
+
+          {/* Sale Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.saleTitle} accessibilityRole="header">Sale</Text>
+              <TouchableOpacity 
+                onPress={handleNavigateToSale}
+                style={styles.viewAllButton}
+                accessibilityRole="button"
+                accessibilityLabel="View all sale items"
+              >
+                <Text style={styles.viewAllText}>View All</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {/* Dynamic Sale Items Preview */}
+            {saleItems.length > 0 && (
+              <View style={styles.dynamicSalePreview}>
+                <TouchableOpacity 
+                  style={styles.salePreviewCard}
+                  onPress={handleNavigateToSale}
+                  accessibilityRole="button"
+                  accessibilityLabel="View sale items"
+                >
+                  <Text style={styles.salePreviewTitle}>
+                    🔥 {saleItems.length} Items on Sale
+                  </Text>
+                  <Text style={styles.salePreviewSubtitle}>
+                    Up to 50% off on {selectedTab} collection
+                  </Text>
+                  <Text style={styles.salePreviewAction}>Shop Now →</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            
+            {/* Category Tabs */}
+            {categories.length > 0 && (
+              <View style={styles.tabContainer} accessibilityRole="tablist">
+                {categories.map(cat => renderTab(cat.name))}
+              </View>
+            )}
+
+            {/* Subcategories */}
+            {subcategories.length > 0 ? (
+              <FlatList
+                data={subcategories}
+                renderItem={renderSaleCategoryItem}
+                keyExtractor={(item) => item._id || item.id}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.horizontalList}
+                accessibilityLabel="Sale categories list"
+                removeClippedSubviews={true}
+                maxToRenderPerBatch={4}
+                initialNumToRender={4}
+                windowSize={6}
+              />
+            ) : (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No subcategories available</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Collection Button */}
+          <View style={styles.section}>
+            <TouchableOpacity 
+              style={styles.collectionButton}
+              onPress={handleNavigateToCollection}
+              accessibilityRole="button"
+              accessibilityLabel="View all items collection"
+            >
+              <Text style={styles.collectionButtonText}>
+                🛍️ View All Collection
+              </Text>
+              <Text style={styles.collectionButtonSubtext}>
+                Browse all items from all categories
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      )}
     </View>
   );
 });
@@ -729,6 +670,51 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#FFFFFF',
     fontFamily: 'Montserrat-Medium',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#767676',
+    fontFamily: 'Montserrat-Regular',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#FF3B30',
+    fontFamily: 'Montserrat-Regular',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: '#000000',
+    borderRadius: BorderRadius.md,
+  },
+  retryButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#FFFFFF',
+    fontFamily: 'Montserrat-Medium',
+  },
+  emptyContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#767676',
+    fontFamily: 'Montserrat-Regular',
   },
 });
 

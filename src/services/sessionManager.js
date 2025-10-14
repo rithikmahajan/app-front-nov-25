@@ -106,6 +106,7 @@ class SessionManager {
 
   /**
    * Check if current session is valid
+   * Enhanced for TestFlight - ensures backend auth is synchronized
    */
   async isSessionValid() {
     try {
@@ -119,8 +120,8 @@ class SessionManager {
       // Check if tokens exist (sessionId is optional - only for chat)
       const userToken = await AsyncStorage.getItem('userToken');
       if (!userToken) {
-        console.log('❌ No user token found');
-        return false;
+        console.log('❌ No user token found in storage');
+        // Don't clear session yet - might be in memory
       }
 
       // Check Firebase auth state
@@ -132,30 +133,38 @@ class SessionManager {
         return false;
       }
 
-      // Check if backend is authenticated
+      // CRITICAL FOR TESTFLIGHT: Check if backend is authenticated
       const backendAuth = yoraaAPI.isAuthenticated();
+      console.log('🔍 Backend authentication status:', backendAuth ? 'AUTHENTICATED' : 'NOT AUTHENTICATED');
+      
       if (!backendAuth) {
-        console.log('❌ Backend not authenticated');
+        console.log('⚠️ Backend not authenticated, attempting to re-sync...');
         // Try to re-authenticate with backend
         try {
-          await this.ensureBackendAuthentication();
-          const isAuthenticated = yoraaAPI.isAuthenticated();
-          if (!isAuthenticated) {
-            console.log('❌ Failed to re-authenticate backend, clearing session');
+          const idToken = await firebaseUser.getIdToken(true);
+          await yoraaAPI.firebaseLogin(idToken);
+          
+          const isNowAuthenticated = yoraaAPI.isAuthenticated();
+          if (!isNowAuthenticated) {
+            console.log('❌ Failed to re-authenticate backend after token refresh - clearing invalid session');
+            // CRITICAL FIX: Clear session when backend auth definitively fails
             await this.clearSession();
             return false;
           }
+          console.log('✅ Backend re-authenticated successfully during session validation');
           return true;
         } catch (error) {
           // Handle "no-current-user" errors gracefully
           if (error.message?.includes('no-current-user') || 
               error.message?.includes('User signed out') ||
               error.message?.includes('No user currently signed in')) {
-            console.warn('⚠️ User signed out during session validation');
+            console.warn('⚠️ User signed out during session validation - clearing session');
             await this.clearSession();
             return false;
           }
-          console.error('❌ Failed to re-authenticate backend:', error);
+          console.error('❌ Failed to re-authenticate backend:', error.message);
+          // CRITICAL FIX: Clear session on persistent backend auth failure
+          console.log('🧹 Clearing session due to backend auth failure');
           await this.clearSession();
           return false;
         }
@@ -165,7 +174,7 @@ class SessionManager {
       return true;
     } catch (error) {
       console.error('❌ Session validation error:', error);
-      await this.clearSession();
+      // Don't clear session on validation errors - might be temporary
       return false;
     }
   }
@@ -210,14 +219,18 @@ class SessionManager {
     try {
       // Check if session data is complete
       if (!sessionData.userId || (!sessionData.email && !sessionData.phone)) {
-        console.log('❌ Incomplete session data');
+        console.log('❌ Incomplete session data - clearing all auth data');
+        // CRITICAL: Clear all auth tokens when session is invalid
+        await this.clearAllAuthData();
         return false;
       }
 
       // Check if tokens exist
       const userToken = await AsyncStorage.getItem('userToken');
       if (!userToken) {
-        console.log('❌ No stored token found');
+        console.log('❌ No stored token found - clearing session');
+        // CRITICAL: Clear session when no token exists
+        await this.clearAllAuthData();
         return false;
       }
 
@@ -225,7 +238,41 @@ class SessionManager {
       return true;
     } catch (error) {
       console.error('❌ Session validation error:', error);
+      // CRITICAL: Clear all auth on validation error
+      await this.clearAllAuthData();
       return false;
+    }
+  }
+
+  /**
+   * Clear ALL authentication data including tokens
+   * Called when session validation fails to prevent auto-login with stale data
+   */
+  async clearAllAuthData() {
+    try {
+      console.log('🧹 Clearing ALL authentication data (session + tokens)...');
+      
+      // Import authStorageService dynamically to avoid circular dependency
+      const { default: authStorageService } = await import('./authStorageService');
+      
+      // Clear auth tokens
+      await authStorageService.clearAuthData();
+      
+      // Clear legacy tokens
+      await AsyncStorage.multiRemove([
+        'userToken',
+        'firebaseToken',
+        'backendAuthToken',
+        'guestSessionId'
+      ]);
+      
+      // Clear session data
+      await AsyncStorage.removeItem('sessionData');
+      await AsyncStorage.setItem('isAuthenticated', 'false');
+      
+      console.log('✅ All auth data cleared - app will start in logged-out state');
+    } catch (error) {
+      console.error('❌ Failed to clear all auth data:', error);
     }
   }
 
@@ -293,7 +340,14 @@ class SessionManager {
       await AsyncStorage.removeItem('sessionData');
       await AsyncStorage.setItem('isAuthenticated', 'false');
       
-      console.log('✅ Session cleared');
+      // IMPORTANT: Also clear auth tokens to prevent auto-login
+      await AsyncStorage.multiRemove([
+        'userToken',
+        'firebaseToken',
+        'backendAuthToken'
+      ]);
+      
+      console.log('✅ Session cleared (including auth tokens)');
       
       this.notifySessionListeners();
     } catch (error) {

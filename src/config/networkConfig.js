@@ -1,5 +1,14 @@
 /**
- * 🌐// 🚀 SIMPLIFIED: Direct localhost connection (no IP needed!)
+ * �� Configuration Service for React Native
+ * Handles platform-specific networking requirements for connecting to backend
+ */
+
+import NetInfo from '@react-native-community/netinfo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+
+// 🚀 SIMPLIFIED: Using direct localhost connection (no IP needed!)
+const USE_LOCALHOST = true; // Much simpler approach!
 
 // Network configuration for different environments and platforms
 export const NetworkConfig = {
@@ -11,51 +20,15 @@ export const NetworkConfig = {
     WEBSOCKET_URL: 'ws://localhost:8001',
   },
   production: {
-    API_URL: 'https://yoraa.in.net/api',
-    WEBSOCKET_URL: 'wss://yoraa.in.net',
-  }
-}; Configuration Service for React Native
- * Handles platform-specific networking requirements for connecting to backend
- */
-
-import NetInfo from '@react-native-netinfo/netinfo';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
-
-// � SIMPLIFIED: Using direct localhost connection (no IP needed!)
-const USE_LOCALHOST = true; // Much simpler approach!
-
-// Network configuration for different environments and platforms
-export const NetworkConfig = {
-  development: {
-    // React Native specific URLs - cannot use localhost!
-    IOS_URL: `http://${YOUR_COMPUTER_IP}:8001/api`,           // iOS Simulator
-    ANDROID_EMULATOR_URL: 'http://10.0.2.2:8001/api',        // Android Emulator  
-    ANDROID_DEVICE_URL: `http://${YOUR_COMPUTER_IP}:8001/api`, // Android Physical Device
-    WEBSOCKET_URL: `ws://${YOUR_COMPUTER_IP}:8001`,
-  },
-  production: {
-    API_URL: 'https://yoraa.in.net/api',
-    WEBSOCKET_URL: 'wss://yoraa.in.net',
+    API_URL: 'http://185.193.19.244:8000/api',
+    WEBSOCKET_URL: 'ws://185.193.19.244:8000',
   }
 };
 
 // Auto-detect the appropriate API URL based on platform and environment
 export const getApiUrl = () => {
-  if (__DEV__) {
-    // Development mode
-    if (Platform.OS === 'ios') {
-      return NetworkConfig.development.IOS_URL;
-    } else if (Platform.OS === 'android') {
-      // You can switch between emulator and device URLs as needed
-      return NetworkConfig.development.ANDROID_EMULATOR_URL;
-      // For physical Android device, use:
-      // return NetworkConfig.development.ANDROID_DEVICE_URL;
-    }
-  }
-  
-  // Production mode
-  return NetworkConfig.production.API_URL;
+  // 🔧 USING PRODUCTION SERVER (port 8000 is the actual working port)
+  return 'http://185.193.19.244:8000/api';
 };
 
 // Network connectivity checker
@@ -170,7 +143,7 @@ export const DevUtils = {
     const urls = [
       NetworkConfig.development.IOS_URL,
       NetworkConfig.development.ANDROID_EMULATOR_URL,
-      'http://localhost:8001/api', // Direct localhost test
+      'http://localhost:8001/api',
     ];
 
     for (const url of urls) {

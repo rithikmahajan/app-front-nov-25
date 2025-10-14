@@ -1,0 +1,2849 @@
+info A dev server is already running for this project on port 8081.
+info Found Xcode workspace "Yoraa.xcworkspace"
+info Found booted iPhone 16 Pro, Rithik’s iPhone
+info Building (using "xcodebuild -workspace Yoraa.xcworkspace -configuration Debug -scheme Yoraa -destination id=EF1E4738-7F98-4AF3-92CB-15029D1C6049")
+▸ Running script '[CP-User] [Hermes] Replace Hermes for the right configuration, if needed'
+▸ Running script '[CP] Copy XCFrameworks'
+▸ Copying Pods-YoraaApp-umbrella.h
+▸ Copying react-native-voice-umbrella.h
+▸ Copying Voice.h
+▸ Copying react-native-slider-umbrella.h
+▸ Copying RNCSliderState.h
+▸ Copying RNCSliderShadowNode.h
+▸ Copying RNCSliderMeasurementsManager.h
+▸ Copying RNCSliderComponentView.h
+▸ Copying RNCSliderComponentDescriptor.h
+▸ Copying RNCSlider.h
+▸ Copying react-native-razorpay-umbrella.h
+▸ Copying RazorpayEventEmitter.h
+▸ Copying RazorpayCheckout.h
+▸ Copying react-native-config-umbrella.h
+▸ Copying RNCConfigModule.h
+▸ Copying RNCConfig.h
+▸ Copying react-native-image-picker-umbrella.h
+▸ Copying ImagePickerUtils.h
+▸ Copying ImagePickerManager.h
+▸ Copying pb_encode.h
+▸ Copying pb_decode.h
+▸ Copying pb_common.h
+▸ Copying pb.h
+▸ Copying nanopb-umbrella.h
+▸ Copying vlog_is_on.h
+▸ Copying stl_logging.h
+▸ Copying raw_logging.h
+▸ Copying logging.h
+▸ Copying log_severity.h
+▸ Copying glog-umbrella.h
+▸ Copying fmt-umbrella.h
+▸ Copying Yoga-umbrella.h
+▸ Copying VisionCamera-umbrella.h
+▸ Copying CameraBridge.h
+▸ Copying SocketRocket-umbrella.h
+▸ Copying SocketRocket.h
+▸ Copying SRWebSocket.h
+▸ Copying SRSecurityPolicy.h
+▸ Copying NSURLRequest+SRWebSocket.h
+▸ Copying NSRunLoop+SRWebSocket.h
+▸ Copying RecaptchaInterop.h
+▸ Copying RecaptchaInterop-umbrella.h
+▸ Copying RCARecaptchaProtocol.h
+▸ Copying RCARecaptchaClientProtocol.h
+▸ Copying RCAActionProtocol.h
+▸ Copying ReactCommon-umbrella.h
+▸ Copying ReactCodegen-umbrella.h
+▸ Copying RCTAppDependencyProvider.h
+▸ Copying ReactAppDependencyProvider-umbrella.h
+▸ Copying React-utils-umbrella.h
+▸ Copying React-runtimescheduler-umbrella.h
+▸ Copying React-rendererdebug-umbrella.h
+▸ Copying React-renderercss-umbrella.h
+▸ Copying React-rendererconsistency-umbrella.h
+▸ Copying React-performancetimeline-umbrella.h
+▸ Copying ReactPerfettoLogger.h
+▸ Copying ReactPerfettoCategories.h
+▸ Copying ReactPerfetto.h
+▸ Copying React-perflogger-umbrella.h
+▸ Copying NativeModulePerfLogger.h
+▸ Copying HermesPerfettoDataSource.h
+▸ Copying FuseboxTracer.h
+▸ Copying FuseboxPerfettoDataSource.h
+▸ Copying BridgeNativeModulePerfLogger.h
+▸ Copying React-oscompat-umbrella.h
+▸ Copying OSCompat.h
+▸ Copying React-microtasksnativemodule-umbrella.h
+▸ Copying React-logger-umbrella.h
+▸ Processing ResourceBundle-RNImagePickerPrivacyInfo-react-native-image-picker-Info.plist
+▸ Copying react_native_log.h
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/react-native-image-picker/RNImagePickerPrivacyInfo.bundle/PrivacyInfo.xcprivacy
+▸ Processing ResourceBundle-nanopb_Privacy-nanopb-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/nanopb/nanopb_Privacy.bundle/PrivacyInfo.xcprivacy
+▸ Copying React-jsitooling-umbrella.h
+▸ Copying React-jsinspectortracing-umbrella.h
+▸ Copying React-jsinspectornetwork-umbrella.h
+▸ Copying React-jsinspectorcdp-umbrella.h
+▸ Processing ResourceBundle-glog_privacy-glog-Info.plist
+▸ Processing fmt-Info.plist
+▸ Copying WebSocketInterfaces.h
+▸ Copying Utf8.h
+▸ Copying WeakList.h
+▸ Copying UniqueMonostate.h
+▸ Copying TracingAgent.h
+▸ Copying StackTrace.h
+▸ Copying SessionState.h
+▸ Copying ScopedExecutor.h
+▸ Copying RuntimeTarget.h
+▸ Copying RuntimeAgentDelegate.h
+▸ Copying RuntimeAgent.h
+▸ Copying ReactCdp.h
+▸ Copying React-jsinspector-umbrella.h
+▸ Copying InstanceTarget.h
+▸ Copying NetworkIOAgent.h
+▸ Copying InstanceAgent.h
+▸ Copying InspectorUtilities.h
+▸ Copying InspectorPackagerConnectionImpl.h
+▸ Copying InspectorPackagerConnection.h
+▸ Copying InspectorInterfaces.h
+▸ Copying InspectorFlags.h
+▸ Copying HostTarget.h
+▸ Copying HostCommand.h
+▸ Copying HostAgent.h
+▸ Copying FallbackRuntimeTargetDelegate.h
+▸ Copying FallbackRuntimeAgentDelegate.h
+▸ Copying ExecutionContextManager.h
+▸ Copying ExecutionContext.h
+▸ Copying ConsoleMessage.h
+▸ Copying Base64.h
+▸ Copying JSINativeModules.h
+▸ Copying JSIExecutor.h
+▸ Copying React-jsiexecutor-umbrella.h
+▸ Processing ResourceBundle-boost_privacy-boost-Info.plist
+▸ Copying jsilib.h
+▸ Copying threadsafe.h
+▸ Copying jsi.h
+▸ Copying jsi-inl.h
+▸ Copying instrumentation.h
+▸ Copying decorator.h
+▸ Copying React-jsi-umbrella.h
+▸ Copying JSIDynamic.h
+▸ Copying React-jserrorhandler-umbrella.h
+▸ Copying React-idlecallbacksnativemodule-umbrella.h
+▸ Copying HermesExecutorFactory.h
+▸ Copying React-hermes-umbrella.h
+▸ Copying React-graphics-umbrella.h
+▸ Processing Yoga-Info.plist
+▸ Copying React-featureflagsnativemodule-umbrella.h
+▸ Processing SocketRocket-Info.plist
+▸ Processing RecaptchaInterop-Info.plist
+▸ Copying React-featureflags-umbrella.h
+▸ Copying React-domnativemodule-umbrella.h
+▸ Copying React-defaultsnativemodule-umbrella.h
+▸ Processing React-rendererconsistency-Info.plist
+▸ Processing React-oscompat-Info.plist
+▸ Copying React-debug-umbrella.h
+▸ Copying TraceSection.h
+▸ Copying SystraceSection.h
+▸ Copying SharedProxyCxxModule.h
+▸ Copying RecoverableError.h
+▸ Copying ReactNativeVersion.h
+▸ Copying ReactMarker.h
+▸ Copying React-cxxreact-umbrella.h
+▸ Copying RAMBundleRegistry.h
+▸ Copying NativeToJsBridge.h
+▸ Copying MoveWrapper.h
+▸ Copying NativeModule.h
+▸ Copying ModuleRegistry.h
+▸ Copying MethodCall.h
+▸ Copying MessageQueueThread.h
+▸ Copying JsArgumentHelpers.h
+▸ Copying JsArgumentHelpers-inl.h
+▸ Copying JSModulesUnbundle.h
+▸ Copying JSIndexedRAMBundle.h
+▸ Copying JSExecutor.h
+▸ Copying JSBundleType.h
+▸ Copying JSBigString.h
+▸ Copying Instance.h
+▸ Copying ErrorUtils.h
+▸ Copying CxxNativeModule.h
+▸ Copying CxxModule.h
+▸ Copying React-RuntimeHermes-umbrella.h
+▸ Copying React-RuntimeCore-umbrella.h
+▸ Copying React-RuntimeApple-umbrella.h
+▸ Copying React-RCTVibration-umbrella.h
+▸ Copying RCTVirtualTextViewManager.h
+▸ Copying React-RCTText-umbrella.h
+▸ Copying RCTVirtualTextView.h
+▸ Copying RCTVirtualTextShadowView.h
+▸ Copying RCTUITextView.h
+▸ Copying RCTUITextField.h
+▸ Copying RCTTextViewManager.h
+▸ Copying RCTTextView.h
+▸ Copying RCTTextTransform.h
+▸ Copying RCTTextShadowView.h
+▸ Copying RCTTextSelection.h
+▸ Copying RCTTextAttributes.h
+▸ Copying RCTSinglelineTextInputViewManager.h
+▸ Copying RCTSinglelineTextInputView.h
+▸ Copying RCTRawTextViewManager.h
+▸ Copying RCTRawTextShadowView.h
+▸ Copying RCTMultilineTextInputViewManager.h
+▸ Copying RCTMultilineTextInputView.h
+▸ Copying RCTInputAccessoryViewManager.h
+▸ Copying RCTInputAccessoryViewContent.h
+▸ Copying RCTInputAccessoryView.h
+▸ Copying RCTInputAccessoryShadowView.h
+▸ Copying RCTDynamicTypeRamp.h
+▸ Copying RCTConvert+Text.h
+▸ Copying RCTBaseTextViewManager.h
+▸ Copying RCTBaseTextShadowView.h
+▸ Copying RCTBaseTextInputViewManager.h
+▸ Copying RCTBaseTextInputView.h
+▸ Copying RCTBaseTextInputShadowView.h
+▸ Copying RCTBackedTextInputViewProtocol.h
+▸ Copying RCTBackedTextInputDelegateAdapter.h
+▸ Copying RCTBackedTextInputDelegate.h
+▸ Copying NSTextStorage+FontScaling.h
+▸ Copying React-RCTSettings-umbrella.h
+▸ Copying React-RCTRuntime-umbrella.h
+▸ Copying React-RCTNetwork-umbrella.h
+▸ Copying React-RCTLinking-umbrella.h
+▸ Copying React-RCTImage-umbrella.h
+▸ Copying UIView+ComponentViewProtocol.h
+▸ Copying React-RCTFabric-umbrella.h
+▸ Copying RCTViewComponentView.h
+▸ Copying RCTViewAccessibilityElement.h
+▸ Copying RCTUnimplementedViewComponentView.h
+▸ Copying RCTUnimplementedNativeComponentView.h
+▸ Copying RCTTouchableComponentViewProtocol.h
+▸ Copying RCTTextInputUtils.h
+▸ Copying RCTTextInputNativeCommands.h
+▸ Copying RCTTextInputComponentView.h
+▸ Copying RCTSwitchComponentView.h
+▸ Copying RCTSurfaceTouchHandler.h
+▸ Copying RCTSurfaceRegistry.h
+▸ Copying RCTSurfacePresenterBridgeAdapter.h
+▸ Copying RCTSurfacePresenter.h
+▸ Copying RCTSurfacePointerHandler.h
+▸ Copying RCTScrollViewComponentView.h
+▸ Copying RCTScheduler.h
+▸ Copying RCTSafeAreaViewComponentView.h
+▸ Copying RCTRootComponentView.h
+▸ Copying RCTReactTaggedView.h
+▸ Copying RCTRadialGradient.h
+▸ Copying RCTPullToRefreshViewComponentView.h
+▸ Copying RCTPrimitives.h
+▸ Copying RCTParagraphComponentView.h
+▸ Copying RCTParagraphComponentAccessibilityProvider.h
+▸ Copying RCTMountingTransactionObserving.h
+▸ Copying RCTMountingTransactionObserverCoordinator.h
+▸ Copying RCTMountingManagerDelegate.h
+▸ Copying RCTMountingManager.h
+▸ Copying RCTModalHostViewComponentView.h
+▸ Copying RCTLocalizationProvider.h
+▸ Copying RCTLinearGradient.h
+▸ Copying RCTLegacyViewManagerInteropCoordinatorAdapter.h
+▸ Copying RCTLegacyViewManagerInteropComponentView.h
+▸ Copying RCTInputAccessoryContentView.h
+▸ Copying RCTInputAccessoryComponentView.h
+▸ Copying RCTImageResponseObserverProxy.h
+▸ Copying RCTImageResponseDelegate.h
+▸ Copying RCTImageComponentView.h
+▸ Copying RCTIdentifierPool.h
+▸ Copying RCTGradientUtils.h
+▸ Copying RCTGenericDelegateSplitter.h
+▸ Copying RCTFabricSurface.h
+▸ Copying RCTFabricModalHostViewController.h
+▸ Copying RCTFabricComponentsPlugins.h
+▸ Copying RCTEnhancedScrollView.h
+▸ Copying RCTDebuggingOverlayComponentView.h
+▸ Copying RCTCustomPullToRefreshViewProtocol.h
+▸ Copying RCTConversions.h
+▸ Copying RCTComponentViewRegistry.h
+▸ Copying RCTComponentViewProtocol.h
+▸ Copying RCTComponentViewFactory.h
+▸ Copying RCTComponentViewDescriptor.h
+▸ Copying RCTComponentViewClassDescriptor.h
+▸ Copying RCTColorSpaceUtils.h
+▸ Copying RCTBoxShadow.h
+▸ Copying RCTActivityIndicatorViewComponentView.h
+▸ Copying RCTAccessibilityElement.h
+▸ Copying PlatformRunLoopObserver.h
+▸ Copying AppleEventBeat.h
+▸ Copying React-RCTFBReactNativeSpec-umbrella.h
+▸ Copying FBReactNativeSpecJSI.h
+▸ Copying FBReactNativeSpec.h
+▸ Copying RCTFileReaderModule.h
+▸ Copying React-RCTBlob-umbrella.h
+▸ Copying RCTBlobPlugins.h
+▸ Copying RCTBlobManager.h
+▸ Copying RCTBlobCollector.h
+▸ Copying React-RCTAppDelegate-umbrella.h
+▸ Copying RCTUIConfiguratorProtocol.h
+▸ Copying RCTRootViewFactory.h
+▸ Copying RCTReactNativeFactory.h
+▸ Copying RCTJSRuntimeConfiguratorProtocol.h
+▸ Copying RCTDependencyProvider.h
+▸ Copying RCTDefaultReactNativeFactoryDelegate.h
+▸ Copying RCTArchConfiguratorProtocol.h
+▸ Copying RCTAppSetupUtils.h
+▸ Copying RCTAppDelegate.h
+▸ Copying React-RCTAnimation-umbrella.h
+▸ Copying RCTValueAnimatedNode.h
+▸ Copying RCTTransformAnimatedNode.h
+▸ Copying RCTTrackingAnimatedNode.h
+▸ Copying RCTSubtractionAnimatedNode.h
+▸ Copying RCTStyleAnimatedNode.h
+▸ Copying RCTSpringAnimation.h
+▸ Copying RCTPropsAnimatedNode.h
+▸ Copying RCTObjectAnimatedNode.h
+▸ Copying RCTNativeAnimatedTurboModule.h
+▸ Copying RCTNativeAnimatedNodesManager.h
+▸ Copying RCTNativeAnimatedModule.h
+▸ Copying RCTMultiplicationAnimatedNode.h
+▸ Copying RCTModuloAnimatedNode.h
+▸ Copying RCTInterpolationAnimatedNode.h
+▸ Copying RCTFrameAnimation.h
+▸ Copying RCTEventAnimation.h
+▸ Copying RCTDivisionAnimatedNode.h
+▸ Copying RCTDiffClampAnimatedNode.h
+▸ Copying RCTDecayAnimation.h
+▸ Copying RCTColorAnimatedNode.h
+▸ Copying RCTAnimationUtils.h
+▸ Copying RCTAnimationPlugins.h
+▸ Copying RCTAnimationDriver.h
+▸ Copying RCTAnimatedNode.h
+▸ Copying RCTAdditionAnimatedNode.h
+▸ Copying React-NativeModulesApple-umbrella.h
+▸ Copying React-Mapbuffer-umbrella.h
+▸ Copying React-ImageManager-umbrella.h
+▸ Copying React-FabricImage-umbrella.h
+▸ Touching RNImagePickerPrivacyInfo.bundle (in target 'react-native-image-picker-RNImagePickerPrivacyInfo' from project 'Pods')
+▸ Touching nanopb_Privacy.bundle (in target 'nanopb-nanopb_Privacy' from project 'Pods')
+▸ Touching glog_privacy.bundle (in target 'glog-glog_privacy' from project 'Pods')
+▸ Running script '[CP] Copy XCFrameworks'
+▸ Touching boost_privacy.bundle (in target 'boost-boost_privacy' from project 'Pods')
+▸ Copying React-FabricComponents-umbrella.h
+▸ Processing React-debug-Info.plist
+▸ Copying React-Fabric-umbrella.h
+▸ Copying React-CoreModules-umbrella.h
+▸ Copying RCTObjcExecutor.h
+▸ Copying RCTNativeModule.h
+▸ Copying RCTMessageThread.h
+▸ Copying RCTJSIExecutorRuntimeInstaller.h
+▸ Copying RCTFollyConvert.h
+▸ Copying RCTDefaultCxxLogFunction.h
+▸ Copying RCTCxxUtils.h
+▸ Copying RCTCxxModule.h
+▸ Copying RCTCxxMethod.h
+▸ Copying RCTCxxInspectorWebSocketAdapter.h
+▸ Copying RCTCxxInspectorPackagerConnectionDelegate.h
+▸ Copying RCTCxxInspectorPackagerConnection.h
+▸ Copying RCTCxxBridgeDelegate.h
+▸ Copying NSDataBigString.h
+▸ Copying DispatchMessageQueueThread.h
+▸ Copying UIView+React.h
+▸ Copying UIView+Private.h
+▸ Copying React-Core-umbrella.h
+▸ Copying RCTWrapperViewController.h
+▸ Copying RCTWebSocketModule.h
+▸ Copying RCTVirtualTextViewManager.h
+▸ Copying RCTVirtualTextView.h
+▸ Copying RCTVirtualTextShadowView.h
+▸ Copying RCTViewUtils.h
+▸ Copying RCTViewManager.h
+▸ Copying RCTView.h
+▸ Copying RCTVibrationPlugins.h
+▸ Copying RCTVibration.h
+▸ Copying RCTVersion.h
+▸ Copying RCTValueAnimatedNode.h
+▸ Copying RCTUtilsUIOverride.h
+▸ Copying RCTUtils.h
+▸ Copying RCTURLRequestHandler.h
+▸ Copying RCTURLRequestDelegate.h
+▸ Copying RCTUITextView.h
+▸ Copying RCTUITextField.h
+▸ Copying RCTUIManagerUtils.h
+▸ Copying RCTUIManagerObserverCoordinator.h
+▸ Copying RCTUIManager.h
+▸ Copying RCTUIImageViewAnimated.h
+▸ Copying RCTTurboModuleRegistry.h
+▸ Copying RCTTransformAnimatedNode.h
+▸ Copying RCTTrackingAnimatedNode.h
+▸ Copying RCTTouchHandler.h
+▸ Copying RCTTouchEvent.h
+▸ Copying RCTTiming.h
+▸ Copying RCTTextViewManager.h
+▸ Copying RCTTextView.h
+▸ Copying RCTTextTransform.h
+▸ Copying RCTTextShadowView.h
+▸ Copying RCTTextSelection.h
+▸ Copying RCTTextDecorationLineType.h
+▸ Copying RCTTextAttributes.h
+▸ Copying RCTSwitchManager.h
+▸ Copying RCTSwitch.h
+▸ Copying RCTSurfaceView.h
+▸ Copying RCTSurfaceView+Internal.h
+▸ Copying RCTSurfaceStage.h
+▸ Copying RCTSurfaceSizeMeasureMode.h
+▸ Copying RCTSurfaceRootView.h
+▸ Copying RCTSurfaceRootShadowViewDelegate.h
+▸ Copying RCTSurfaceRootShadowView.h
+▸ Copying RCTSurfaceProtocol.h
+▸ Copying RCTSurfacePresenterStub.h
+▸ Copying RCTSurfaceHostingView.h
+▸ Copying RCTSurfaceHostingProxyRootView.h
+▸ Copying RCTSurfaceDelegate.h
+▸ Copying RCTSurface.h
+▸ Copying RCTSubtractionAnimatedNode.h
+▸ Copying RCTStyleAnimatedNode.h
+▸ Copying RCTStatusBarManager.h
+▸ Copying RCTSpringAnimation.h
+▸ Copying RCTSourceCode.h
+▸ Copying RCTSinglelineTextInputViewManager.h
+▸ Copying RCTSinglelineTextInputView.h
+▸ Copying RCTShadowView.h
+▸ Copying RCTShadowView+Layout.h
+▸ Copying RCTShadowView+Internal.h
+▸ Copying RCTSettingsPlugins.h
+▸ Copying RCTSettingsManager.h
+▸ Copying RCTScrollableProtocol.h
+▸ Copying RCTScrollViewManager.h
+▸ Copying RCTScrollView.h
+▸ Copying RCTScrollEvent.h
+▸ Copying RCTScrollContentViewManager.h
+▸ Copying RCTScrollContentView.h
+▸ Copying RCTScrollContentShadowView.h
+▸ Copying RCTSafeAreaViewManager.h
+▸ Copying RCTSafeAreaViewLocalData.h
+▸ Copying RCTSafeAreaView.h
+▸ Copying RCTSafeAreaShadowView.h
+▸ Copying RCTRootViewInternal.h
+▸ Copying RCTRootViewDelegate.h
+▸ Copying RCTRootView.h
+▸ Copying RCTRootShadowView.h
+▸ Copying RCTRootContentView.h
+▸ Copying RCTResizeMode.h
+▸ Copying RCTReloadCommand.h
+▸ Copying RCTRefreshableProtocol.h
+▸ Copying RCTRefreshControlManager.h
+▸ Copying RCTRefreshControl.h
+▸ Copying RCTRedBoxSetEnabled.h
+▸ Copying RCTRedBoxExtraDataViewController.h
+▸ Copying RCTRedBox.h
+▸ Copying RCTReconnectingWebSocket.h
+▸ Copying RCTRawTextViewManager.h
+▸ Copying RCTRawTextShadowView.h
+▸ Copying RCTPropsAnimatedNode.h
+▸ Copying RCTProfile.h
+▸ Copying RCTPointerEvents.h
+▸ Copying RCTPlatform.h
+▸ Copying RCTPerformanceLoggerLabels.h
+▸ Copying RCTPerformanceLogger.h
+▸ Copying RCTPausedInDebuggerOverlayController.h
+▸ Copying RCTParserUtils.h
+▸ Copying RCTPackagerConnection.h
+▸ Copying RCTPackagerClient.h
+▸ Copying RCTPLTag.h
+▸ Copying RCTObjectAnimatedNode.h
+▸ Copying RCTNullability.h
+▸ Copying RCTNetworking.h
+▸ Copying RCTNetworkTask.h
+▸ Copying RCTNetworkPlugins.h
+▸ Copying RCTNativeAnimatedTurboModule.h
+▸ Copying RCTNativeAnimatedNodesManager.h
+▸ Copying RCTNativeAnimatedModule.h
+▸ Copying RCTMultiplicationAnimatedNode.h
+▸ Copying RCTMultipartStreamReader.h
+▸ Copying RCTMultipartDataTask.h
+▸ Copying RCTMultilineTextInputViewManager.h
+▸ Copying RCTMultilineTextInputView.h
+▸ Copying RCTModuloAnimatedNode.h
+▸ Copying RCTModuleMethod.h
+▸ Copying RCTModuleData.h
+▸ Copying RCTModalManager.h
+▸ Copying RCTModalHostViewManager.h
+▸ Copying RCTModalHostViewController.h
+▸ Copying RCTModalHostView.h
+▸ Copying RCTMockDef.h
+▸ Copying RCTManagedPointer.h
+▸ Copying RCTMacros.h
+▸ Copying RCTLogBoxView.h
+▸ Copying RCTLogBox.h
+▸ Copying RCTLog.h
+▸ Copying RCTLocalizedString.h
+▸ Copying RCTLocalAssetImageLoader.h
+▸ Copying RCTLinkingPlugins.h
+▸ Copying RCTLinkingManager.h
+▸ Copying RCTLayoutAnimationGroup.h
+▸ Copying RCTLayoutAnimation.h
+▸ Copying RCTLayout.h
+▸ Copying RCTKeyboardObserver.h
+▸ Copying RCTKeyCommands.h
+▸ Copying RCTJavaScriptLoader.h
+▸ Copying RCTJavaScriptExecutor.h
+▸ Copying RCTJSThread.h
+▸ Copying RCTJSStackFrame.h
+▸ Copying RCTInvalidating.h
+▸ Copying RCTInterpolationAnimatedNode.h
+▸ Copying RCTInspectorUtils.h
+▸ Copying RCTInspectorPackagerConnection.h
+▸ Copying RCTInspectorNetworkReporter.h
+▸ Copying RCTInspectorNetworkHelper.h
+▸ Copying RCTInspectorDevServerHelper.h
+▸ Copying RCTInspector.h
+▸ Copying RCTInputAccessoryViewManager.h
+▸ Copying RCTInputAccessoryViewContent.h
+▸ Copying RCTInputAccessoryView.h
+▸ Copying RCTInputAccessoryShadowView.h
+▸ Copying RCTInitializing.h
+▸ Copying RCTImageViewManager.h
+▸ Copying RCTImageView.h
+▸ Copying RCTImageUtils.h
+▸ Copying RCTImageURLLoaderWithAttribution.h
+▸ Copying RCTImageURLLoader.h
+▸ Copying RCTImageStoreManager.h
+▸ Copying RCTImageSource.h
+▸ Copying RCTImageShadowView.h
+▸ Copying RCTImagePlugins.h
+▸ Copying RCTImageLoaderWithAttributionProtocol.h
+▸ Copying RCTImageLoaderProtocol.h
+▸ Copying RCTImageLoaderLoggable.h
+▸ Copying RCTImageLoader.h
+▸ Copying RCTImageEditingManager.h
+▸ Copying RCTImageDataDecoder.h
+▸ Copying RCTImageCache.h
+▸ Copying RCTImageBlurUtils.h
+▸ Copying RCTI18nUtil.h
+▸ Copying RCTI18nManager.h
+▸ Copying RCTHTTPRequestHandler.h
+▸ Copying RCTGIFImageDecoder.h
+▸ Copying RCTFrameUpdate.h
+▸ Copying RCTFrameAnimation.h
+▸ Copying RCTFont.h
+▸ Copying RCTFileRequestHandler.h
+▸ Copying RCTFileReaderModule.h
+▸ Copying RCTFPSGraph.h
+▸ Copying RCTExceptionsManager.h
+▸ Copying RCTEventEmitter.h
+▸ Copying RCTEventDispatcherProtocol.h
+▸ Copying RCTEventDispatcher.h
+▸ Copying RCTEventAnimation.h
+▸ Copying RCTErrorInfo.h
+▸ Copying RCTErrorCustomizer.h
+▸ Copying RCTDynamicTypeRamp.h
+▸ Copying RCTDivisionAnimatedNode.h
+▸ Copying RCTDisplayWeakRefreshable.h
+▸ Copying RCTDisplayLink.h
+▸ Copying RCTDiffClampAnimatedNode.h
+▸ Copying RCTDeviceInfo.h
+▸ Copying RCTDevToolsRuntimeSettingsModule.h
+▸ Copying RCTDevSettings.h
+▸ Copying RCTDevMenu.h
+▸ Copying RCTDevLoadingViewSetEnabled.h
+▸ Copying RCTDevLoadingViewProtocol.h
+▸ Copying RCTDevLoadingView.h
+▸ Copying RCTDefines.h
+▸ Copying RCTDecayAnimation.h
+▸ Copying RCTDebuggingOverlayManager.h
+▸ Copying RCTDebuggingOverlay.h
+▸ Copying RCTDataRequestHandler.h
+▸ Copying RCTCxxConvert.h
+▸ Copying RCTCursor.h
+▸ Copying RCTConvert.h
+▸ Copying RCTConvert+Transform.h
+▸ Copying RCTConvert+Text.h
+▸ Copying RCTConvert+CoreLocation.h
+▸ Copying RCTConstants.h
+▸ Copying RCTComponentEvent.h
+▸ Copying RCTComponentData.h
+▸ Copying RCTComponent.h
+▸ Copying RCTColorAnimatedNode.h
+▸ Copying RCTClipboard.h
+▸ Copying RCTCallInvokerModule.h
+▸ Copying RCTCallInvoker.h
+▸ Copying RCTBundleURLProvider.h
+▸ Copying RCTBundleManager.h
+▸ Copying RCTBundleAssetImageLoader.h
+▸ Copying RCTBridgeProxy.h
+▸ Copying RCTBridgeProxy+Cxx.h
+▸ Copying RCTBridgeModuleDecorator.h
+▸ Copying RCTBridgeModule.h
+▸ Copying RCTBridgeMethod.h
+▸ Copying RCTBridgeDelegate.h
+▸ Copying RCTBridgeConstants.h
+▸ Copying RCTBridge.h
+▸ Copying RCTBridge+Private.h
+▸ Copying RCTBridge+Inspector.h
+▸ Copying RCTBorderStyle.h
+▸ Copying RCTBorderDrawing.h
+▸ Copying RCTBorderCurve.h
+▸ Copying RCTBlobManager.h
+▸ Copying RCTBaseTextViewManager.h
+▸ Copying RCTBaseTextShadowView.h
+▸ Copying RCTBaseTextInputViewManager.h
+▸ Copying RCTBaseTextInputView.h
+▸ Copying RCTBaseTextInputShadowView.h
+▸ Copying RCTBackedTextInputViewProtocol.h
+▸ Copying RCTBackedTextInputDelegateAdapter.h
+▸ Copying RCTBackedTextInputDelegate.h
+▸ Copying RCTAutoInsetsProtocol.h
+▸ Copying RCTAssert.h
+▸ Copying RCTAppearance.h
+▸ Copying RCTAppState.h
+▸ Copying RCTAnimationUtils.h
+▸ Copying RCTAnimationType.h
+▸ Copying RCTAnimationPlugins.h
+▸ Copying RCTAnimationDriver.h
+▸ Copying RCTAnimatedNode.h
+▸ Copying RCTAnimatedImage.h
+▸ Copying RCTAlertManager.h
+▸ Copying RCTAlertController.h
+▸ Copying RCTAdditionAnimatedNode.h
+▸ Copying RCTActivityIndicatorViewManager.h
+▸ Copying RCTActivityIndicatorView.h
+▸ Copying RCTActionSheetManager.h
+▸ Copying RCTAccessibilityManager.h
+▸ Copying RCTAccessibilityManager+Internal.h
+▸ Copying NSTextStorage+FontScaling.h
+▸ Copying FBXXHashUtils.h
+▸ Copying CoreModulesPlugins.h
+▸ Compiling vlog_is_on.cc
+▸ Compiling utilities.cc
+▸ Compiling symbolize.cc
+▸ Compiling signalhandler.cc
+▸ Compiling raw_logging.cc
+▸ Compiling logging.cc
+▸ Compiling demangle.cc
+▸ Compiling format.cc
+▸ Compiling ShadowTreeRevisionConsistencyManager.cpp
+▸ Compiling OSCompatWindows.cpp
+▸ Compiling OSCompatPosix.cpp
+▸ Compiling nanopb_vers.c
+▸ Compiling glog_vers.c
+▸ Processing nanopb-Info.plist
+▸ Processing glog-Info.plist
+▸ Compiling fmt_vers.c
+▸ Compiling SocketRocket_vers.c
+▸ Compiling pb_encode.c
+▸ Compiling pb_decode.c
+▸ Compiling pb_common.c
+▸ Compiling RecaptchaInterop_vers.c
+▸ Compiling React_rendererconsistency_vers.c
+▸ Processing ResourceBundle-React-cxxreact_privacy-React-cxxreact-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/React-cxxreact/React-cxxreact_privacy.bundle/PrivacyInfo.xcprivacy
+▸ Copying RNSVGVectorEffect.h
+▸ Copying RNSVGVBMOS.h
+▸ Copying RNSVGViewBox.h
+▸ Copying RNSVGUseManager.h
+▸ Copying RNSVGUse.h
+▸ Copying RNSVGUnits.h
+▸ Copying RNSVGUIKit.h
+▸ Copying RNSVGTopAlignedLabel.h
+▸ Copying RNSVGTextProperties.h
+▸ Copying RNSVGTextPathManager.h
+▸ Copying RNSVGTextPath.h
+▸ Copying RNSVGTextManager.h
+▸ Copying RNSVGText.h
+▸ Copying RNSVGTSpanManager.h
+▸ Copying RNSVGTSpan.h
+▸ Copying RNSVGSymbolManager.h
+▸ Copying RNSVGSymbol.h
+▸ Copying RNSVGSvgViewModule.h
+▸ Copying RNSVGSvgViewManager.h
+▸ Copying RNSVGSvgView.h
+▸ Copying RNSVGSolidColorBrush.h
+▸ Copying RNSVGShadowNodes.h
+▸ Copying RNSVGRenderableModule.h
+▸ Copying RNSVGRenderableManager.h
+▸ Copying RNSVGRenderable.h
+▸ Copying RNSVGRenderUtils.h
+▸ Copying RNSVGRectManager.h
+▸ Copying RNSVGRect.h
+▸ Copying RNSVGRadialGradientManager.h
+▸ Copying RNSVGRadialGradient.h
+▸ Copying RNSVGPropHelper.h
+▸ Copying RNSVGPatternManager.h
+▸ Copying RNSVGPattern.h
+▸ Copying RNSVGPathParser.h
+▸ Copying RNSVGPathMeasure.h
+▸ Copying RNSVGPathManager.h
+▸ Copying RNSVGPath.h
+▸ Copying RNSVGPainterBrush.h
+▸ Copying RNSVGPainter.h
+▸ Copying RNSVGNodeManager.h
+▸ Copying RNSVGNode.h
+▸ Copying RNSVGMaskType.h
+▸ Copying RNSVGMaskManager.h
+▸ Copying RNSVGMask.h
+▸ Copying RNSVGMarkerPosition.h
+▸ Copying RNSVGMarkerManager.h
+▸ Copying RNSVGMarker.h
+▸ Copying RNSVGLinearGradientManager.h
+▸ Copying RNSVGLinearGradient.h
+▸ Copying RNSVGLineManager.h
+▸ Copying RNSVGLine.h
+▸ Copying RNSVGLength.h
+▸ Copying RNSVGLayoutableShadowNode.h
+▸ Copying RNSVGImageState.h
+▸ Copying RNSVGImageShadowNode.h
+▸ Copying RNSVGImageManager.h
+▸ Copying RNSVGImageComponentDescriptor.h
+▸ Copying RNSVGImage.h
+▸ Copying RNSVGGroupManager.h
+▸ Copying RNSVGGroup.h
+▸ Copying RNSVGGlyphContext.h
+▸ Copying RNSVGForeignObjectManager.h
+▸ Copying RNSVGForeignObject.h
+▸ Copying RNSVGFontData.h
+▸ Copying RNSVGFilterRegion.h
+▸ Copying RNSVGFilterPrimitiveManager.h
+▸ Copying RNSVGFilterPrimitive.h
+▸ Copying RNSVGFilterManager.h
+▸ Copying RNSVGFilter.h
+▸ Copying RNSVGFeOffsetManager.h
+▸ Copying RNSVGFeOffset.h
+▸ Copying RNSVGFeMergeManager.h
+▸ Copying RNSVGFeMerge.h
+▸ Copying RNSVGFeGaussianBlurManager.h
+▸ Copying RNSVGFeGaussianBlur.h
+▸ Copying RNSVGFeFloodManager.h
+▸ Copying RNSVGFeFlood.h
+▸ Copying RNSVGFeCompositeManager.h
+▸ Copying RNSVGFeComposite.h
+▸ Copying RNSVGFeColorMatrixManager.h
+▸ Copying RNSVGFeColorMatrix.h
+▸ Copying RNSVGFeBlendManager.h
+▸ Copying RNSVGFeBlend.h
+▸ Copying RNSVGFabricConversions.h
+▸ Copying RNSVGEllipse.h
+▸ Copying RNSVGEllipseManager.h
+▸ Copying RNSVGEdgeMode.h
+▸ Copying RNSVGDefsManager.h
+▸ Copying RNSVGDefs.h
+▸ Copying RNSVGCustomFilter.h
+▸ Copying RNSVGConvert.h
+▸ Copying RNSVGContextBrush.h
+▸ Copying RNSVGContainer.h
+▸ Copying RNSVGConcreteShadowNode.h
+▸ Copying RNSVGCompositeXor.h
+▸ Copying RNSVGCompositeOperator.h
+▸ Copying RNSVGComponentDescriptors.h
+▸ Copying RNSVGColorMatrixType.h
+▸ Copying RNSVGClipPathManager.h
+▸ Copying RNSVGClipPath.h
+▸ Copying RNSVGCircleManager.h
+▸ Copying RNSVGCircle.h
+▸ Copying RNSVGCGFCRule.h
+▸ Copying RNSVGBrushType.h
+▸ Copying RNSVGBrush.h
+▸ Copying RNSVGBlendMode.h
+▸ Copying RNSVGBezierElement.h
+▸ Copying RNSVGArithmeticFilter.h
+▸ Copying RNSVG-umbrella.h
+▸ Copying RCTConvert+RNSVG.h
+▸ Copying RNPermissions.h
+▸ Copying RNPermissions-umbrella.h
+▸ Copying RNPermissionHandlerSpeechRecognition.h
+▸ Copying RNPermissionHandlerMicrophone.h
+▸ Copying RNPermissionHandlerCamera.h
+▸ Compiling event.cpp
+▸ Compiling YGValue.cpp
+▸ Compiling YGPixelGrid.cpp
+▸ Compiling YGNodeStyle.cpp
+▸ Compiling YGNodeLayout.cpp
+▸ Compiling YGNode.cpp
+▸ Compiling YGEnums.cpp
+▸ Compiling YGConfig.cpp
+▸ Compiling PixelGrid.cpp
+▸ Compiling Node.cpp
+▸ Compiling Log.cpp
+▸ Compiling LayoutResults.cpp
+▸ Compiling FlexLine.cpp
+▸ Compiling Config.cpp
+▸ Compiling CalculateLayout.cpp
+▸ Compiling Cache.cpp
+▸ Compiling Baseline.cpp
+▸ Compiling AssertFatal.cpp
+▸ Compiling AbsoluteLayout.cpp
+▸ Compiling oscompat_vers.c
+▸ Compiling react_native_assert.cpp
+▸ Compiling yoga_vers.c
+▸ Compiling React_debug_vers.c
+▸ Copying RNGoogleSignin.h
+▸ Copying RNGoogleSignin-umbrella.h
+▸ Copying RNGoogleSignInButtonComponentView.h
+▸ Copying RNGoogleSignInButton.h
+▸ Copying RCTConvert+RNGoogleSignin.h
+▸ Copying RNTapHandler.h
+▸ Copying RNRotationHandler.h
+▸ Copying RNRootViewGestureRecognizer.h
+▸ Copying RNPinchHandler.h
+▸ Copying RNPanHandler.h
+▸ Copying RNNativeViewHandler.h
+▸ Copying RNManualHandler.h
+▸ Copying RNManualActivationRecognizer.h
+▸ Copying RNLongPressHandler.h
+▸ Copying RNHoverHandler.h
+▸ Copying RNGestureHandlerStateManager.h
+▸ Copying RNGestureHandlerState.h
+▸ Copying RNGestureHandlerRegistry.h
+▸ Copying RNGestureHandlerPointerType.h
+▸ Copying RNGestureHandlerPointerTracker.h
+▸ Copying RNGestureHandlerManager.h
+▸ Copying RNGestureHandlerModule.h
+▸ Copying RNGestureHandlerEvents.h
+▸ Copying RNGestureHandlerDirection.h
+▸ Copying RNGestureHandlerButtonManager.h
+▸ Copying RNGestureHandlerButtonComponentView.h
+▸ Copying RNGestureHandlerButton.h
+▸ Copying RNGestureHandlerActionType.h
+▸ Copying RNGestureHandler.h
+▸ Copying RNGestureHandler-umbrella.h
+▸ Copying RNGHVector.h
+▸ Copying RNGHUIKit.h
+▸ Copying RNGHTouchEventType.h
+▸ Copying RNGHStylusData.h
+▸ Copying RNForceTouchHandler.h
+▸ Copying RNFlingHandler.h
+▸ Copying RNFBMessagingSerializer.h
+▸ Copying RNFBMessagingModule.h
+▸ Copying RNFBMessaging-umbrella.h
+▸ Copying RNFBMessaging+UNUserNotificationCenter.h
+▸ Copying RNFBMessaging+NSNotificationCenter.h
+▸ Copying RNFBMessaging+FIRMessagingDelegate.h
+▸ Copying RNFBMessaging+AppDelegate.h
+▸ Copying RNFBAuthModule.h
+▸ Copying RNFBAuth-umbrella.h
+▸ Copying RNFBVersion.h
+▸ Copying RNFBUtilsModule.h
+▸ Copying RNFBSharedUtils.h
+▸ Copying RNFBRCTEventEmitter.h
+▸ Copying RNFBPreferences.h
+▸ Copying RNFBMeta.h
+▸ Copying RNFBJSON.h
+▸ Copying RNFBAppModule.h
+▸ Copying RNFBApp-umbrella.h
+▸ Copying RCTConvert+FIROptions.h
+▸ Copying RCTConvert+FIRApp.h
+▸ Copying RNCAsyncStorageDelegate.h
+▸ Copying RNCAsyncStorage.h
+▸ Copying RNCAsyncStorage-umbrella.h
+▸ Copying RNAppleAuthentication-umbrella.h
+▸ Copying RNAppleAuthUtils.h
+▸ Copying RNAppleAuthModule.h
+▸ Copying RNAppleAuthButtonView.h
+▸ Copying RNAppleAuthASAuthorizationDelegates.h
+▸ Copying RCTConvert+ASAuthorizationAppleIDRequest.h
+▸ Copying RCTTypedModuleConstants.h
+▸ Copying RCTTypeSafety-umbrella.h
+▸ Copying RCTConvertHelpers.h
+▸ Copying RCTDeprecation.h
+▸ Copying RCTDeprecation-umbrella.h
+▸ Copying RCT-Folly-umbrella.h
+▸ Processing ResourceBundle-React-Core_privacy-React-Core-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/React-Core/React-Core_privacy.bundle/PrivacyInfo.xcprivacy
+▸ Processing ResourceBundle-RNSVGFilters-RNSVG-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/RNSVG/RNSVGFilters.bundle/RNSVGCompositeXor.iphoneos.metallib
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/RNSVG/RNSVGFilters.bundle/RNSVGArithmeticFilter.iphoneos.metallib
+▸ Copying PromisesObjC-umbrella.h
+▸ Copying FBLPromisePrivate.h
+▸ Copying FBLPromises.h
+▸ Copying FBLPromiseError.h
+▸ Copying FBLPromise.h
+▸ Copying FBLPromise+Wrap.h
+▸ Copying FBLPromise+Validate.h
+▸ Copying FBLPromise+Timeout.h
+▸ Copying FBLPromise+Then.h
+▸ Copying FBLPromise+Testing.h
+▸ Copying FBLPromise+Retry.h
+▸ Copying FBLPromise+Reduce.h
+▸ Copying FBLPromise+Recover.h
+▸ Copying FBLPromise+Race.h
+▸ Copying FBLPromise+Do.h
+▸ Copying FBLPromise+Delay.h
+▸ Copying FBLPromise+Catch.h
+▸ Copying FBLPromise+Await.h
+▸ Copying FBLPromise+Async.h
+▸ Copying FBLPromise+Any.h
+▸ Copying FBLPromise+Always.h
+▸ Copying FBLPromise+All.h
+▸ Processing ResourceBundle-RNPermissionsPrivacyInfo-RNPermissions-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/RNPermissions/RNPermissionsPrivacyInfo.bundle/PrivacyInfo.xcprivacy
+▸ Copying GoogleUtilities-umbrella.h
+▸ Copying GULUserDefaults.h
+▸ Copying GULSceneDelegateSwizzler.h
+▸ Copying GULReachabilityChecker.h
+▸ Copying GULNetworkURLSession.h
+▸ Copying GULNetworkMessageCode.h
+▸ Copying GULNetworkLoggerProtocol.h
+▸ Copying GULNetworkInfo.h
+▸ Copying GULNetworkConstants.h
+▸ Copying GULNetwork.h
+▸ Copying GULNSData+zlib.h
+▸ Copying GULMutableDictionary.h
+▸ Copying GULLoggerLevel.h
+▸ Copying GULLogger.h
+▸ Copying GULKeychainUtils.h
+▸ Copying GULKeychainStorage.h
+▸ Copying GULApplication.h
+▸ Copying GULAppEnvironmentUtil.h
+▸ Copying GULAppDelegateSwizzler.h
+▸ Copying GoogleSignIn.h
+▸ Copying GoogleSignIn-umbrella.h
+▸ Copying GIDToken.h
+▸ Copying GIDSignInResult.h
+▸ Copying GIDSignInButton.h
+▸ Copying GIDSignIn.h
+▸ Copying GIDProfileData.h
+▸ Copying GIDGoogleUser.h
+▸ Copying GIDConfiguration.h
+▸ Copying GIDAppCheckError.h
+▸ Copying GoogleDataTransport.h
+▸ Copying GoogleDataTransport-umbrella.h
+▸ Copying GDTCORTransport.h
+▸ Copying GDTCORTargets.h
+▸ Copying GDTCORProductData.h
+▸ Copying GDTCOREventTransformer.h
+▸ Copying GDTCOREventDataObject.h
+▸ Copying GDTCOREvent.h
+▸ Copying GDTCOREndpoints.h
+▸ Copying GDTCORConsoleLogger.h
+▸ Copying GDTCORClock.h
+▸ Copying GTMSessionUploadFetcher.h
+▸ Copying GTMSessionFetcherLogging.h
+▸ Copying GTMSessionFetcherService.h
+▸ Copying GTMSessionFetcher.h
+▸ Copying GTMSessionFetcher-umbrella.h
+▸ Copying GTMAppAuth-umbrella.h
+▸ Copying FirebaseMessaging.h
+▸ Copying FIRMessagingExtensionHelper.h
+▸ Copying FirebaseMessaging-umbrella.h
+▸ Copying FIRMessaging.h
+▸ Copying FIRMessaging+ExtensionHelper.h
+▸ Copying FirebaseInstallations.h
+▸ Copying FirebaseInstallations-umbrella.h
+▸ Copying FIRInstallationsErrors.h
+▸ Copying FIRInstallationsAuthTokenResult.h
+▸ Copying FIRInstallations.h
+▸ Processing ResourceBundle-RNCAsyncStorage_resources-RNCAsyncStorage-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/RNCAsyncStorage/RNCAsyncStorage_resources.bundle/PrivacyInfo.xcprivacy
+▸ Touching React-cxxreact_privacy.bundle (in target 'React-cxxreact-React-cxxreact_privacy' from project 'Pods')
+▸ Copying FirebaseCoreInternal-umbrella.h
+▸ Copying FirebaseCoreInternal.h
+▸ Copying FirebaseCoreExtension-umbrella.h
+▸ Copying FIRLogger.h
+▸ Copying FIRLibrary.h
+▸ Copying FIRHeartbeatLogger.h
+▸ Copying FIRComponentType.h
+▸ Copying FIRComponentContainer.h
+▸ Copying FIRComponent.h
+▸ Copying FIRAppInternal.h
+▸ Copying FirebaseCore-umbrella.h
+▸ Copying FirebaseCore.h
+▸ Copying FIRVersion.h
+▸ Copying FIRTimestamp.h
+▸ Copying FIROptions.h
+▸ Copying FIRLoggerLevel.h
+▸ Copying FIRConfiguration.h
+▸ Copying FIRApp.h
+▸ Copying FirebaseAuthInterop-umbrella.h
+▸ Copying FIRAuthInterop.h
+▸ Copying FirebaseAuth.h
+▸ Copying FirebaseAuth-umbrella.h
+▸ Copying FIRUser.h
+▸ Copying FIRTwitterAuthProvider.h
+▸ Copying FIRPhoneAuthProvider.h
+▸ Copying FIRMultiFactor.h
+▸ Copying FIRGoogleAuthProvider.h
+▸ Copying FIRGitHubAuthProvider.h
+▸ Copying FIRGameCenterAuthProvider.h
+▸ Copying FIRFederatedAuthProvider.h
+▸ Copying FIRFacebookAuthProvider.h
+▸ Copying FIREmailAuthProvider.h
+▸ Copying FIRAuthErrors.h
+▸ Copying FIRAuth.h
+▸ Copying FirebaseAppCheckInterop.h
+▸ Copying FirebaseAppCheckInterop-umbrella.h
+▸ Copying FIRAppCheckTokenResultInterop.h
+▸ Copying FIRAppCheckInterop.h
+▸ Processing RCTDeprecation-Info.plist
+▸ Processing ResourceBundle-RCT-Folly_privacy-RCT-Folly-Info.plist
+▸ Copying utils.h
+▸ Copying ieee.h
+▸ Copying strtod.h
+▸ Copying fixed-dtoa.h
+▸ Copying fast-dtoa.h
+▸ Copying double-conversion.h
+▸ Copying diy-fp.h
+▸ Copying cached-powers.h
+▸ Copying bignum.h
+▸ Copying bignum-dtoa.h
+▸ Copying DoubleConversion-umbrella.h
+▸ Copying GACDeviceCheckProvider.h
+▸ Copying GACAppCheckTokenResult.h
+▸ Copying GACAppCheckTokenDelegate.h
+▸ Copying GACAppCheckToken.h
+▸ Copying GACAppCheckSettings.h
+▸ Copying GACAppCheckProvider.h
+▸ Copying GACAppCheckLogger.h
+▸ Copying GACAppCheckErrors.h
+▸ Copying GACAppCheckDebugProvider.h
+▸ Copying GACAppCheckAvailability.h
+▸ Copying GACAppCheck.h
+▸ Copying GACAppAttestProvider.h
+▸ Copying AppCheckCore.h
+▸ Copying AppCheckCore-umbrella.h
+▸ Copying OIDTokenUtilities.h
+▸ Copying OIDURLSessionProvider.h
+▸ Copying OIDURLQueryComponent.h
+▸ Copying OIDTokenResponse.h
+▸ Copying OIDTokenRequest.h
+▸ Copying OIDServiceDiscovery.h
+▸ Copying OIDServiceConfiguration.h
+▸ Copying OIDScopes.h
+▸ Copying OIDScopeUtilities.h
+▸ Copying OIDResponseTypes.h
+▸ Copying OIDRegistrationResponse.h
+▸ Copying OIDRegistrationRequest.h
+▸ Copying OIDIDToken.h
+▸ Copying OIDGrantTypes.h
+▸ Copying OIDFieldMapping.h
+▸ Copying OIDExternalUserAgentSession.h
+▸ Copying OIDExternalUserAgentRequest.h
+▸ Copying OIDExternalUserAgentIOSCustomBrowser.h
+▸ Copying OIDExternalUserAgentIOS.h
+▸ Copying OIDExternalUserAgentCatalyst.h
+▸ Copying OIDExternalUserAgent.h
+▸ Copying OIDErrorUtilities.h
+▸ Copying OIDError.h
+▸ Copying OIDEndSessionResponse.h
+▸ Copying OIDEndSessionRequest.h
+▸ Copying OIDDefines.h
+▸ Copying OIDClientMetadataParameters.h
+▸ Copying OIDAuthorizationService.h
+▸ Copying OIDAuthorizationService+IOS.h
+▸ Copying OIDAuthorizationResponse.h
+▸ Copying OIDAuthorizationRequest.h
+▸ Copying OIDAuthStateErrorDelegate.h
+▸ Copying OIDAuthStateChangeDelegate.h
+▸ Copying OIDAuthState.h
+▸ Copying OIDAuthState+IOS.h
+▸ Copying AppAuthCore.h
+▸ Copying AppAuth.h
+▸ Copying AppAuth-umbrella.h
+▸ Processing ResourceBundle-FBLPromises_Privacy-PromisesObjC-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/PromisesObjC/FBLPromises_Privacy.bundle/PrivacyInfo.xcprivacy
+▸ Processing ResourceBundle-GoogleUtilities_Privacy-GoogleUtilities-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleUtilities/GoogleUtilities_Privacy.bundle/PrivacyInfo.xcprivacy
+▸ Processing ResourceBundle-GoogleSignIn-GoogleSignIn-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/zh_TW.lproj
+▸ Compiling RCTDeprecation_vers.c
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/zh_CN.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/vi.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/uk.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/tr.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/th.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/sv.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/sk.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/ru.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/ro.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/pt_PT.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/pt_BR.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/pt.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/pl.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/nl.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/nb.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/ms.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/ko.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/ja.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/it.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/id.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/hu.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/hr.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/hi.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/he.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/fr_CA.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/fr.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/fi.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/es_MX.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/es.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/en_GB.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/en.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/el.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/de.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/da.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/cs.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/ca.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/ar.lproj
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/Roboto-Bold.ttf
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleSignIn/GoogleSignIn.bundle/PrivacyInfo.xcprivacy
+▸ Processing ResourceBundle-GoogleDataTransport_Privacy-GoogleDataTransport-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GoogleDataTransport/GoogleDataTransport_Privacy.bundle/PrivacyInfo.xcprivacy
+▸ Compiling FBLPromises_vers.c
+▸ Compiling FBLPromiseError.m
+▸ Compiling PromisesObjC-dummy.m
+▸ Compiling FBLPromise.m
+▸ Compiling FBLPromise+Wrap.m
+▸ Compiling FBLPromise+Validate.m
+▸ Compiling FBLPromise+Testing.m
+▸ Compiling FBLPromise+Timeout.m
+▸ Compiling FBLPromise+Retry.m
+▸ Compiling FBLPromise+Then.m
+▸ Compiling FBLPromise+Recover.m
+▸ Compiling FBLPromise+Reduce.m
+▸ Compiling FBLPromise+Race.m
+▸ Compiling FBLPromise+Do.m
+▸ Compiling FBLPromise+Delay.m
+▸ Compiling FBLPromise+Catch.m
+▸ Compiling FBLPromise+Await.m
+▸ Compiling FBLPromise+Async.m
+▸ Compiling FBLPromise+Any.m
+▸ Compiling FBLPromise+All.m
+▸ Compiling FBLPromise+Always.m
+▸ Compiling GoogleUtilities_vers.c
+▸ Compiling nanopb-dummy.m
+▸ Compiling glog-dummy.m
+▸ Compiling fmt-dummy.m
+▸ Processing ResourceBundle-GTMSessionFetcher_Core_Privacy-GTMSessionFetcher-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GTMSessionFetcher/GTMSessionFetcher_Core_Privacy.bundle/PrivacyInfo.xcprivacy
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Compiling Yoga-dummy.m
+▸ Compiling SRWebSocket.m
+▸ Compiling SocketRocket-dummy.m
+▸ Compiling SRURLUtilities.m
+▸ Compiling SRSecurityPolicy.m
+▸ Compiling SRSIMDHelpers.m
+▸ Compiling SRRunLoopThread.m
+▸ Compiling SRRandom.m
+▸ Compiling SRProxyConnect.m
+▸ Compiling SRPinningSecurityPolicy.m
+▸ Compiling SRMutex.m
+▸ Compiling SRLog.m
+▸ Compiling SRIOConsumerPool.m
+▸ Compiling SRIOConsumer.m
+▸ Compiling SRHash.m
+▸ Compiling SRHTTPConnectMessage.m
+▸ Compiling SRError.m
+▸ Compiling SRDelegateController.m
+▸ Compiling SRConstants.m
+▸ Compiling NSURLRequest+SRWebSocket.m
+▸ Compiling NSRunLoop+SRWebSocket.m
+▸ Compiling placeholder.m
+▸ Compiling RecaptchaInterop-dummy.m
+▸ Compiling React-rendererconsistency-dummy.m
+▸ Compiling React-oscompat-dummy.m
+▸ Compiling React-debug-dummy.m
+▸ Compiling RCTDeprecation-dummy.m
+▸ Compiling GoogleDataTransport_vers.c
+▸ Compiling IsAppEncrypted.m
+▸ Compiling external_privacy_context.nanopb.c
+▸ Compiling external_prequest_context.nanopb.c
+▸ Compiling compliance.nanopb.c
+▸ Compiling client_metrics.nanopb.c
+▸ Compiling cct.nanopb.c
+▸ Processing ResourceBundle-GTMAppAuth_Privacy-GTMAppAuth-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/GTMAppAuth/GTMAppAuth_Privacy.bundle/PrivacyInfo.xcprivacy
+▸ Processing ResourceBundle-FirebaseMessaging_Privacy-FirebaseMessaging-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/FirebaseMessaging/FirebaseMessaging_Privacy.bundle/PrivacyInfo.xcprivacy
+▸ Processing ResourceBundle-FirebaseInstallations_Privacy-FirebaseInstallations-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/FirebaseInstallations/FirebaseInstallations_Privacy.bundle/PrivacyInfo.xcprivacy
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Touching React-Core_privacy.bundle (in target 'React-Core-React-Core_privacy' from project 'Pods')
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Touching RNSVGFilters.bundle (in target 'RNSVG-RNSVGFilters' from project 'Pods')
+▸ Compiling GTMSessionFetcher_vers.c
+▸ Compiling GTMSessionUploadFetcher.m
+▸ Compiling GTMSessionFetcherLogging.m
+▸ Compiling GTMSessionFetcherService.m
+▸ Touching RNPermissionsPrivacyInfo.bundle (in target 'RNPermissions-RNPermissionsPrivacyInfo' from project 'Pods')
+▸ Processing ResourceBundle-FirebaseCoreInternal_Privacy-FirebaseCoreInternal-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/FirebaseCoreInternal/FirebaseCoreInternal_Privacy.bundle/PrivacyInfo.xcprivacy
+▸ Processing ResourceBundle-FirebaseCoreExtension_Privacy-FirebaseCoreExtension-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/FirebaseCoreExtension/FirebaseCoreExtension_Privacy.bundle/PrivacyInfo.xcprivacy
+▸ Processing ResourceBundle-FirebaseCore_Privacy-FirebaseCore-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/FirebaseCore/FirebaseCore_Privacy.bundle/PrivacyInfo.xcprivacy
+▸ Compiling GTMSessionFetcher.m
+▸ Processing FirebaseAuthInterop-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/FirebaseAuth/FirebaseAuth_Privacy.bundle/PrivacyInfo.xcprivacy
+▸ Processing ResourceBundle-FirebaseAuth_Privacy-FirebaseAuth-Info.plist
+▸ Processing FirebaseAppCheckInterop-Info.plist
+▸ Compiling GTMSessionFetcher-dummy.m
+▸ Compiling FirebaseAuthInterop_vers.c
+▸ Compiling FirebaseAppCheckInterop_vers.c
+▸ Compiling dummy.m
+▸ Compiling FirebaseAuthInterop-dummy.m
+▸ Compiling dummy.m
+▸ Compiling FirebaseAppCheckInterop-dummy.m
+▸ Processing DoubleConversion-Info.plist
+▸ Processing ResourceBundle-AppAuthCore_Privacy-AppAuth-Info.plist
+▸ Copying /Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/AppAuth/AppAuthCore_Privacy.bundle/PrivacyInfo.xcprivacy
+▸ Compiling strtod.cc
+▸ Compiling fixed-dtoa.cc
+▸ Compiling fast-dtoa.cc
+▸ Compiling GoogleUtilities-dummy.m
+▸ Compiling GULUserDefaults.m
+▸ Compiling GULReachabilityChecker.m
+▸ Compiling GULNetworkURLSession.m
+▸ Compiling GULNetworkConstants.m
+▸ Compiling GULNetwork.m
+▸ Compiling GULNSData+zlib.m
+▸ Compiling GULMutableDictionary.m
+▸ Compiling GULLogger.m
+▸ Compiling GULKeychainUtils.m
+▸ Compiling GULKeychainStorage.m
+▸ Compiling double-conversion.cc
+▸ Compiling diy-fp.cc
+▸ Compiling cached-powers.cc
+▸ Compiling bignum.cc
+▸ Compiling bignum-dtoa.cc
+▸ Compiling GACURLSessionDataResponse.m
+▸ Compiling GULNetworkInfo.m
+▸ Compiling GoogleDataTransport-dummy.m
+▸ Compiling GDTCORUploadBatch.m
+▸ Compiling GDTCORStorageMetadata.m
+▸ Compiling GDTCORStorageEventSelector.m
+▸ Compiling RCTDeprecation.m
+▸ Compiling GDTCORProductData.m
+▸ Compiling GDTCORMetricsMetadata.m
+▸ Compiling GDTCORMetrics.m
+▸ Compiling GDTCORLogSourceMetrics.m
+▸ Compiling GDTCOREvent+GDTMetricsSupport.m
+▸ Compiling GDTCOREvent+GDTCCTSupport.m
+▸ Compiling GDTCOREndpoints.m
+▸ Compiling GDTCORConsoleLogger.m
+▸ Compiling GDTCORClock.m
+▸ Compiling GDTCORAssert.m
+▸ Compiling GDTCCTURLSessionDataResponse.m
+▸ Compiling GDTCCTCompressionHelper.m
+▸ Compiling DoubleConversion_vers.c
+▸ Compiling GACAppCheckTokenResult.m
+▸ Compiling DoubleConversion-dummy.m
+▸ Compiling GACAppCheckTokenRefresher.m
+▸ Compiling GACAppCheckTokenRefreshResult.m
+▸ Compiling GACAppCheckToken.m
+▸ Compiling GACAppCheckTimer.m
+▸ Compiling GACAppCheckStoredToken.m
+▸ Compiling GACAppCheckStoredToken+GACAppCheckToken.m
+▸ Compiling GACAppCheckLogger.m
+▸ Compiling GACAppCheckSettings.m
+▸ Compiling GACAppCheckErrors.m
+▸ Compiling GACAppCheckHTTPError.m
+▸ Compiling GACAppAttestStoredArtifact.m
+▸ Compiling GACAppAttestRejectionError.m
+▸ Compiling GACAppCheckCryptoUtils.m
+▸ Compiling GACAppAttestAttestationResponse.m
+▸ Compiling GACAppAttestProviderState.m
+▸ Compiling AppCheckCore_vers.c
+▸ Touching RNCAsyncStorage_resources.bundle (in target 'RNCAsyncStorage-RNCAsyncStorage_resources' from project 'Pods')
+▸ Compiling GULSceneDelegateSwizzler.m
+▸ Compiling GULAppEnvironmentUtil.m
+▸ Compiling GULAppDelegateSwizzler.m
+▸ Compiling DCAppAttestService+GACAppAttestService.m
+▸ Compiling DCDevice+GACDeviceCheckTokenGenerator.m
+▸ Compiling AppCheckCore-dummy.m
+▸ Touching RCT-Folly_privacy.bundle (in target 'RCT-Folly-RCT-Folly_privacy' from project 'Pods')
+▸ Compiling GACAppCheckErrorUtil.m
+▸ Compiling NSURLSession+GACPromises.m
+▸ Compiling GACDeviceCheckProvider.m
+▸ Compiling GACDeviceCheckAPIService.m
+▸ Compiling GACAppCheckToken+APIResponse.m
+▸ Compiling GACAppCheckStorage.m
+▸ Compiling GACAppCheckDebugProviderAPIService.m
+▸ Compiling GACAppCheckDebugProvider.m
+▸ Compiling GACAppCheckBackoffWrapper.m
+▸ Compiling GACAppCheckAPIService.m
+▸ Compiling GACAppCheck.m
+▸ Compiling GACAppAttestProvider.m
+▸ Compiling GACAppAttestKeyIDStorage.m
+▸ Compiling GACAppAttestArtifactStorage.m
+▸ Compiling GACAppAttestAPIService.m
+▸ Compiling GDTCORUploadCoordinator.m
+▸ Compiling GDTCORTransport.m
+▸ Compiling GDTCORTransformer.m
+▸ Compiling GDTCORRegistrar.m
+▸ Compiling GDTCORReachability.m
+▸ Compiling GDTCORPlatform.m
+▸ Compiling GDTCORLifecycle.m
+▸ Compiling GDTCORFlatFileStorage.m
+▸ Compiling GDTCOREvent.m
+▸ Compiling GDTCORDirectorySizeTracker.m
+▸ Compiling GDTCCTUploader.m
+▸ Compiling GDTCORMetrics+GDTCCTSupport.m
+▸ Compiling GDTCCTNanopbHelpers.m
+▸ Compiling GDTCORMetricsController.m
+▸ Compiling GDTCORFlatFileStorage+Promises.m
+▸ Compiling GDTCCTUploadOperation.m
+▸ Compiling FirebaseCoreInternal_vers.c
+▸ Compiling OIDTokenUtilities.m
+▸ Compiling FirebaseCoreInternal-dummy.m
+▸ Compiling OIDURLQueryComponent.m
+▸ Compiling OIDURLSessionProvider.m
+▸ Compiling OIDTokenResponse.m
+▸ Compiling OIDTokenRequest.m
+▸ Compiling OIDServiceDiscovery.m
+▸ Compiling OIDServiceConfiguration.m
+▸ Compiling OIDScopes.m
+▸ Compiling OIDScopeUtilities.m
+▸ Compiling OIDResponseTypes.m
+▸ Compiling OIDIDToken.m
+▸ Compiling OIDRegistrationResponse.m
+▸ Compiling OIDRegistrationRequest.m
+▸ Compiling OIDGrantTypes.m
+▸ Compiling OIDFieldMapping.m
+▸ Compiling OIDExternalUserAgentIOSCustomBrowser.m
+▸ Compiling OIDErrorUtilities.m
+▸ Compiling OIDAuthorizationService+IOS.m
+▸ Compiling OIDError.m
+▸ Compiling OIDEndSessionRequest.m
+▸ Compiling OIDEndSessionResponse.m
+▸ Compiling OIDAuthorizationService.m
+▸ Compiling OIDClientMetadataParameters.m
+▸ Compiling OIDAuthorizationResponse.m
+▸ Compiling OIDAuthorizationRequest.m
+▸ Compiling AppAuth_vers.c
+▸ Compiling OIDExternalUserAgentIOS.m
+▸ Compiling OIDExternalUserAgentCatalyst.m
+▸ Compiling OIDAuthState+IOS.m
+▸ Compiling OIDAuthState.m
+▸ Compiling AppAuth-dummy.m
+▸ Compiling GTMAppAuth_vers.c
+▸ Touching nanopb.framework (in target 'nanopb' from project 'Pods')
+▸ Touching FBLPromises_Privacy.bundle (in target 'PromisesObjC-FBLPromises_Privacy' from project 'Pods')
+▸ Touching glog.framework (in target 'glog' from project 'Pods')
+▸ Touching fmt.framework (in target 'fmt' from project 'Pods')
+▸ Touching GoogleUtilities_Privacy.bundle (in target 'GoogleUtilities-GoogleUtilities_Privacy' from project 'Pods')
+▸ Processing PromisesObjC-Info.plist
+▸ Processing GoogleUtilities-Info.plist
+▸ Touching GoogleSignIn.bundle (in target 'GoogleSignIn-GoogleSignIn' from project 'Pods')
+▸ Touching GoogleDataTransport_Privacy.bundle (in target 'GoogleDataTransport-GoogleDataTransport_Privacy' from project 'Pods')
+▸ Touching GTMSessionFetcher_Core_Privacy.bundle (in target 'GTMSessionFetcher-GTMSessionFetcher_Core_Privacy' from project 'Pods')
+▸ Compiling GTMAppAuth-dummy.m
+▸ Compiling FirebaseMessaging_vers.c
+▸ Compiling NSError+FIRMessaging.m
+▸ Compiling NSDictionary+FIRMessaging.m
+▸ Compiling FirebaseMessaging-dummy.m
+▸ Compiling FIRMessagingTopicOperation.m
+▸ Compiling me.nanopb.c
+▸ Compiling FIRMessagingTokenStore.m
+▸ Compiling FIRMessagingTokenInfo.m
+▸ Compiling FIRMessagingTokenDeleteOperation.m
+▸ Compiling FIRMessagingSyncMessageManager.m
+▸ Compiling FIRMessagingTokenManager.m
+▸ Compiling FIRMessagingRmqManager.m
+▸ Compiling FIRMessagingPersistentSyncMessage.m
+▸ Compiling FIRMessagingTokenFetchOperation.m
+▸ Compiling FIRMessagingPendingTopicsList.m
+▸ Compiling FIRMessagingKeychain.m
+▸ Compiling FIRMessagingLogger.m
+▸ Compiling FIRMessagingUtilities.m
+▸ Compiling FIRMessagingTokenOperation.m
+▸ Compiling FIRMessagingRemoteNotificationsProxy.m
+▸ Compiling FIRMessagingPubSub.m
+▸ Compiling FIRMessagingConstants.m
+▸ Compiling FIRMessagingContextManagerService.m
+▸ Compiling FIRMessagingCheckinStore.m
+▸ Compiling FIRMessagingCheckinService.m
+▸ Compiling FIRMessagingCheckinPreferences.m
+▸ Compiling FIRMessagingExtensionHelper.m
+▸ Compiling FIRMessagingBackupExcludedPlist.m
+▸ Compiling FIRMessagingAuthService.m
+▸ Compiling FIRMessagingAuthKeychain.m
+▸ Compiling FIRMessagingAnalytics.m
+▸ Compiling FIRMessagingAPNSInfo.m
+▸ Compiling FIRMessaging+ExtensionHelper.m
+▸ Compiling FirebaseInstallations_vers.c
+▸ Compiling FIRMessaging.m
+▸ Compiling FirebaseInstallations-dummy.m
+▸ Compiling FIRInstallationsItem.m
+▸ Compiling FIRInstallationsItem+RegisterInstallationAPI.m
+▸ Compiling FIRInstallationsStoredItem.m
+▸ Compiling FIRInstallationsStoredAuthToken.m
+▸ Compiling FIRInstallationsLogger.m
+▸ Compiling FIRInstallationsHTTPError.m
+▸ Compiling FIRInstallationsSingleOperationPromiseCache.m
+▸ Compiling FIRInstallationsIIDStore.m
+▸ Compiling FIRInstallationsBackoffController.m
+▸ Compiling FIRInstallationsAuthTokenResult.m
+▸ Compiling FIRInstallationsErrorUtil.m
+▸ Compiling FirebaseCoreExtension_vers.c
+▸ Compiling FIRInstallationsStore.m
+▸ Compiling FIRInstallationsIIDTokenStore.m
+▸ Compiling FIRInstallationsIDController.m
+▸ Compiling FIRInstallationsAPIService.m
+▸ Compiling FIRCurrentDateProvider.m
+▸ Compiling FirebaseCore_vers.c
+▸ Compiling FIRInstallations.m
+▸ Compiling FirebaseCoreExtension-dummy.m
+▸ Compiling dummy.m
+▸ Touching RecaptchaInterop.framework (in target 'RecaptchaInterop' from project 'Pods')
+▸ Compiling GoogleSignIn_vers.c
+▸ Touching FirebaseMessaging_Privacy.bundle (in target 'FirebaseMessaging-FirebaseMessaging_Privacy' from project 'Pods')
+▸ Compiling FirebaseAuth_vers.c
+▸ Processing GTMSessionFetcher-Info.plist
+▸ Compiling FirebaseAuth-dummy.m
+▸ Compiling FIRAuthProvider.m
+▸ Compiling FIRMultiFactorConstants.m
+▸ Compiling FIRAuthErrorUtils.m
+▸ Compiling FIRAuth.m
+▸ Touching SocketRocket.framework (in target 'SocketRocket' from project 'Pods')
+▸ Touching oscompat.framework (in target 'React-oscompat' from project 'Pods')
+▸ Touching React_debug.framework (in target 'React-debug' from project 'Pods')
+▸ Touching GTMAppAuth_Privacy.bundle (in target 'GTMAppAuth-GTMAppAuth_Privacy' from project 'Pods')
+▸ Touching FirebaseInstallations_Privacy.bundle (in target 'FirebaseInstallations-FirebaseInstallations_Privacy' from project 'Pods')
+▸ Touching FirebaseCoreInternal_Privacy.bundle (in target 'FirebaseCoreInternal-FirebaseCoreInternal_Privacy' from project 'Pods')
+▸ Touching FirebaseCoreExtension_Privacy.bundle (in target 'FirebaseCoreExtension-FirebaseCoreExtension_Privacy' from project 'Pods')
+▸ Touching yoga.framework (in target 'Yoga' from project 'Pods')
+▸ Touching React_rendererconsistency.framework (in target 'React-rendererconsistency' from project 'Pods')
+▸ Touching RCTDeprecation.framework (in target 'RCTDeprecation' from project 'Pods')
+▸ Touching FirebaseCore_Privacy.bundle (in target 'FirebaseCore-FirebaseCore_Privacy' from project 'Pods')
+▸ Touching FirebaseAuth_Privacy.bundle (in target 'FirebaseAuth-FirebaseAuth_Privacy' from project 'Pods')
+▸ Touching AppAuthCore_Privacy.bundle (in target 'AppAuth-AppAuthCore_Privacy' from project 'Pods')
+▸ Touching FirebaseAuthInterop.framework (in target 'FirebaseAuthInterop' from project 'Pods')
+▸ Processing AppAuth-Info.plist
+▸ Touching FirebaseAppCheckInterop.framework (in target 'FirebaseAppCheckInterop' from project 'Pods')
+▸ Touching DoubleConversion.framework (in target 'DoubleConversion' from project 'Pods')
+▸ Processing RCT-Folly-Info.plist
+▸ Touching FBLPromises.framework (in target 'PromisesObjC' from project 'Pods')
+▸ Touching GoogleUtilities.framework (in target 'GoogleUtilities' from project 'Pods')
+▸ Compiling FirebaseCore-dummy.m
+▸ Compiling FIRVersion.m
+▸ Compiling FIRTimestamp.m
+▸ Compiling FIROptions.m
+▸ Compiling FIRConfiguration.m
+▸ Compiling FIRComponentType.m
+▸ Compiling FIRComponentContainer.m
+▸ Compiling FIRComponent.m
+▸ Compiling FIRAnalyticsConfiguration.m
+▸ Processing GoogleDataTransport-Info.plist
+▸ Touching GTMSessionFetcher.framework (in target 'GTMSessionFetcher' from project 'Pods')
+▸ Touching AppAuth.framework (in target 'AppAuth' from project 'Pods')
+▸ Processing FirebaseCoreInternal-Info.plist
+▸ Processing AppCheckCore-Info.plist
+▸ Processing GTMAppAuth-Info.plist
+▸ Touching AppCheckCore.framework (in target 'AppCheckCore' from project 'Pods')
+▸ Touching GoogleDataTransport.framework (in target 'GoogleDataTransport' from project 'Pods')
+▸ Compiling UniqueInstance.cpp
+▸ Compiling json_pointer.cpp
+▸ Compiling json.cpp
+▸ Compiling dynamic.cpp
+▸ Compiling Unicode.cpp
+▸ Compiling ToAscii.cpp
+▸ Compiling ThreadId.cpp
+▸ Compiling SysUio.cpp
+▸ Compiling String.cpp
+▸ Compiling StaticSingletonManager.cpp
+▸ Compiling SpookyHashV2.cpp
+▸ Compiling SplitStringSimd.cpp
+▸ Compiling SharedMutex.cpp
+▸ Compiling ScopeGuard.cpp
+▸ Compiling SanitizeThread.cpp
+▸ Compiling SafeAssert.cpp
+▸ Compiling ReentrantAllocator.cpp
+▸ Compiling ParkingLot.cpp
+▸ Compiling NetOps.cpp
+▸ Compiling MallocImpl.cpp
+▸ Compiling Futex.cpp
+▸ Compiling Format.cpp
+▸ Compiling FileUtilDetail.cpp
+▸ Compiling FileUtil.cpp
+▸ Compiling F14Table.cpp
+▸ Compiling Exception.cpp
+▸ Compiling Demangle.cpp
+▸ Compiling Conv.cpp
+▸ Compiling CacheLocality.cpp
+▸ Compiling CString.cpp
+▸ Compiling AtFork.cpp
+▸ Compiling folly_vers.c
+▸ Compiling GoogleSignIn-dummy.m
+▸ Compiling GIDToken.m
+▸ Compiling GIDSignInStrings.m
+▸ Compiling GIDSignInPreferences.m
+▸ Compiling GIDSignInCallbackSchemes.m
+▸ Compiling GIDScopes.m
+▸ Compiling GIDProfileData.m
+▸ Compiling GIDMDMPasscodeState.m
+▸ Compiling GIDConfiguration.m
+▸ Compiling GIDCallbackQueue.m
+▸ Compiling RCT-Folly-dummy.m
+▸ Touching GTMAppAuth.framework (in target 'GTMAppAuth' from project 'Pods')
+▸ Touching FirebaseCoreInternal.framework (in target 'FirebaseCoreInternal' from project 'Pods')
+▸ Processing FirebaseCore-Info.plist
+▸ Processing GoogleSignIn-Info.plist
+▸ Compiling FIRLogger.m
+▸ Compiling FIRFirebaseUserAgent.m
+▸ Compiling FIRBundleUtil.m
+▸ Compiling FIRApp.m
+▸ Compiling FIRHeartbeatLogger.m
+▸ Touching FirebaseCore.framework (in target 'FirebaseCore' from project 'Pods')
+▸ Processing FirebaseInstallations-Info.plist
+▸ Processing FirebaseCoreExtension-Info.plist
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Compiling GIDActivityIndicatorViewController.m
+▸ Compiling GIDEMMErrorHandler.m
+▸ Compiling GIDMDMPasscodeCache.m
+▸ Compiling NSBundle+GID3PAdditions.m
+▸ Compiling GIDTimedLoader.m
+▸ Compiling GIDSignInInternalOptions.m
+▸ Compiling GIDSignInButton.m
+▸ Compiling GIDAuthentication.m
+▸ Touching FirebaseCoreExtension.framework (in target 'FirebaseCoreExtension' from project 'Pods')
+▸ Processing FirebaseAuth-Info.plist
+▸ Compiling GIDSignInResult.m
+▸ Touching FirebaseInstallations.framework (in target 'FirebaseInstallations' from project 'Pods')
+▸ Processing FirebaseMessaging-Info.plist
+▸ Compiling GIDAppCheckProviderFake.m
+▸ Compiling GIDAppCheck.m
+▸ Compiling GIDEMMSupport.m
+▸ Compiling GIDGoogleUser.m
+▸ Compiling GIDSignIn.m
+▸ Compiling GIDAuthStateMigration.m
+▸ Touching FirebaseMessaging.framework (in target 'FirebaseMessaging' from project 'Pods')
+▸ Compiling react_native_log.cpp
+▸ Compiling ReactPerfettoLogger.cpp
+▸ Compiling ReactPerfettoCategories.cpp
+▸ Compiling ReactPerfetto.cpp
+▸ Compiling HermesPerfettoDataSource.cpp
+▸ Compiling FuseboxTracer.cpp
+▸ Compiling FuseboxPerfettoDataSource.cpp
+▸ Compiling logger_vers.c
+▸ Compiling BridgeNativeModulePerfLogger.cpp
+▸ Compiling JSIDynamic.cpp
+▸ Compiling reactperflogger_vers.c
+▸ Compiling jsi_vers.c
+▸ Compiling React-perflogger-dummy.m
+▸ Compiling React-logger-dummy.m
+▸ Compiling React-jsi-dummy.m
+▸ Touching folly.framework (in target 'RCT-Folly' from project 'Pods')
+▸ Processing React-rendererdebug-Info.plist
+▸ Processing React-perflogger-Info.plist
+▸ Processing React-logger-Info.plist
+▸ Processing React-jsinspectortracing-Info.plist
+▸ Processing React-jsinspectorcdp-Info.plist
+▸ Processing React-featureflags-Info.plist
+▸ Processing React-jsi-Info.plist
+▸ Processing React-Mapbuffer-Info.plist
+▸ Compiling DebugStringConvertibleItem.cpp
+▸ Compiling DebugStringConvertible.cpp
+▸ Compiling RuntimeSamplingProfileTraceEventSerializer.cpp
+▸ Compiling PerformanceTracer.cpp
+▸ Compiling EventLoopReporter.cpp
+▸ Compiling CdpJson.cpp
+▸ Compiling ReactNativeFeatureFlagsAccessor.cpp
+▸ Compiling ReactNativeFeatureFlags.cpp
+▸ Compiling MapBufferBuilder.cpp
+▸ Compiling MapBuffer.cpp
+▸ Compiling React_rendererdebug_vers.c
+▸ Compiling React-rendererdebug-dummy.m
+▸ Compiling jsinspector_moderntracing_vers.c
+▸ Compiling React-jsinspectortracing-dummy.m
+▸ Compiling jsinspector_moderncdp_vers.c
+▸ Compiling React_featureflags_vers.c
+▸ Compiling React-jsinspectorcdp-dummy.m
+▸ Compiling React-featureflags-dummy.m
+▸ Compiling React_Mapbuffer_vers.c
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Compiling React-Mapbuffer-dummy.m
+▸ Touching GoogleSignIn.framework (in target 'GoogleSignIn' from project 'Pods')
+▸ Touching logger.framework (in target 'React-logger' from project 'Pods')
+▸ Touching FirebaseAuth.framework (in target 'FirebaseAuth' from project 'Pods')
+▸ Touching React_rendererdebug.framework (in target 'React-rendererdebug' from project 'Pods')
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Touching jsi.framework (in target 'React-jsi' from project 'Pods')
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Touching reactperflogger.framework (in target 'React-perflogger' from project 'Pods')
+▸ Touching React_featureflags.framework (in target 'React-featureflags' from project 'Pods')
+▸ Touching jsinspector_moderncdp.framework (in target 'React-jsinspectorcdp' from project 'Pods')
+▸ Processing React-jsinspectornetwork-Info.plist
+▸ Compiling NetworkReporter.cpp
+▸ Compiling CdpNetwork.cpp
+▸ Compiling HttpUtils.cpp
+▸ Compiling jsinspector_modernnetwork_vers.c
+▸ Compiling React-jsinspectornetwork-dummy.m
+▸ Touching React_Mapbuffer.framework (in target 'React-Mapbuffer' from project 'Pods')
+▸ Touching jsinspector_moderntracing.framework (in target 'React-jsinspectortracing' from project 'Pods')
+▸ Processing React-performancetimeline-Info.plist
+▸ Compiling PerformanceEntryReporter.cpp
+▸ Compiling PerformanceObserverRegistry.cpp
+▸ Compiling PerformanceObserver.cpp
+▸ Compiling PerformanceEntryKeyedBuffer.cpp
+▸ Compiling PerformanceEntryCircularBuffer.cpp
+▸ Compiling React_performancetimeline_vers.c
+▸ Compiling React-performancetimeline-dummy.m
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Compiling TracingAgent.cpp
+▸ Compiling RuntimeTargetDebuggerSessionObserver.cpp
+▸ Compiling RuntimeTarget.cpp
+▸ Compiling RuntimeTargetConsole.cpp
+▸ Compiling NetworkIOAgent.cpp
+▸ Compiling RuntimeAgent.cpp
+▸ Compiling InstanceTarget.cpp
+▸ Compiling InstanceAgent.cpp
+▸ Compiling InspectorUtilities.cpp
+▸ Compiling jsinspector_modern_vers.c
+▸ Compiling InspectorPackagerConnection.cpp
+▸ Compiling InspectorInterfaces.cpp
+▸ Compiling InspectorFlags.cpp
+▸ Compiling HostTarget.cpp
+▸ Compiling HostAgent.cpp
+▸ Compiling FallbackRuntimeTargetDelegate.cpp
+▸ Compiling FallbackRuntimeAgentDelegate.cpp
+▸ Compiling ExecutionContextManager.cpp
+▸ Compiling ExecutionContext.cpp
+▸ Compiling ConsoleMessage.cpp
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Compiling ReactMarker.cpp
+▸ Compiling RAMBundleRegistry.cpp
+▸ Compiling NativeToJsBridge.cpp
+▸ Compiling ModuleRegistry.cpp
+▸ Compiling MethodCall.cpp
+▸ Compiling JSIndexedRAMBundle.cpp
+▸ Compiling JSExecutor.cpp
+▸ Compiling JSBundleType.cpp
+▸ Compiling JSBigString.cpp
+▸ Compiling Instance.cpp
+▸ Compiling CxxNativeModule.cpp
+▸ Compiling cxxreact_vers.c
+▸ Compiling JSINativeModules.cpp
+▸ Compiling JSIExecutor.cpp
+▸ Compiling React-cxxreact-dummy.m
+▸ Compiling jsireact_vers.c
+▸ Compiling Registration.cpp
+▸ Compiling React-jsiexecutor-dummy.m
+▸ Compiling HermesRuntimeTargetDelegate.cpp
+▸ Compiling HermesRuntimeSamplingProfileSerializer.cpp
+▸ Compiling HermesRuntimeAgentDelegate.cpp
+▸ Compiling HermesExecutorFactory.cpp
+▸ Compiling ConnectionDemux.cpp
+▸ Touching jsinspector_modernnetwork.framework (in target 'React-jsinspectornetwork' from project 'Pods')
+▸ Compiling reacthermes_vers.c
+▸ Processing React-jsinspector-Info.plist
+▸ Touching React_performancetimeline.framework (in target 'React-performancetimeline' from project 'Pods')
+▸ Compiling React-jsinspector-dummy.m
+▸ Touching jsinspector_modern.framework (in target 'React-jsinspector' from project 'Pods')
+▸ Processing React-cxxreact-Info.plist
+▸ Touching cxxreact.framework (in target 'React-cxxreact' from project 'Pods')
+▸ Processing React-jsitooling-Info.plist
+▸ Processing React-jsiexecutor-Info.plist
+▸ Compiling JSRuntimeFactoryCAPI.cpp
+▸ Compiling JSRuntimeFactory.cpp
+▸ Compiling JSITooling_vers.c
+▸ Touching jsireact.framework (in target 'React-jsiexecutor' from project 'Pods')
+▸ Processing React-hermes-Info.plist
+▸ Compiling React-jsitooling-dummy.m
+▸ Compiling React-hermes-dummy.m
+▸ Touching reacthermes.framework (in target 'React-hermes' from project 'Pods')
+▸ Processing React-utils-Info.plist
+▸ Compiling LowPriorityExecutor.mm
+▸ Compiling RunLoopObserver.cpp
+▸ Compiling ManagedObjectWrapper.mm
+▸ Compiling jsi-utils.cpp
+▸ Compiling React_utils_vers.c
+▸ Compiling React-utils-dummy.m
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Touching JSITooling.framework (in target 'React-jsitooling' from project 'Pods')
+▸ Touching React_utils.framework (in target 'React-utils' from project 'Pods')
+▸ Processing ReactCommon-Info.plist
+▸ Processing React-runtimescheduler-Info.plist
+▸ Processing React-renderercss-Info.plist
+▸ Processing React-graphics-Info.plist
+▸ Compiling Task.cpp
+▸ Compiling RuntimeScheduler_Modern.cpp
+▸ Compiling RuntimeScheduler_Legacy.cpp
+▸ Compiling RuntimeSchedulerCallInvoker.cpp
+▸ Compiling RuntimeSchedulerBinding.cpp
+▸ Compiling RuntimeScheduler.cpp
+▸ Compiling CSSDummy.cpp
+▸ Compiling React_runtimescheduler_vers.c
+▸ Compiling React_renderercss_vers.c
+▸ Compiling TurboModuleWithJSIBindings.cpp
+▸ Compiling TurboModuleUtils.cpp
+▸ Compiling TurboModulePerfLogger.cpp
+▸ Compiling TurboModuleBinding.cpp
+▸ Compiling TurboModule.cpp
+▸ Compiling TurboCxxModule.cpp
+▸ Compiling LongLivedObject.cpp
+▸ Compiling CxxTurboModuleUtils.cpp
+▸ Compiling React-runtimescheduler-dummy.m
+▸ Compiling React-renderercss-dummy.m
+▸ Compiling ReactCommon_vers.c
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Compiling Transform.cpp
+▸ Compiling RCTPlatformColorUtils.mm
+▸ Compiling PlatformColorParser.mm
+▸ Compiling HostPlatformColor.mm
+▸ Compiling ColorComponents.cpp
+▸ Compiling Color.cpp
+▸ Compiling React_graphics_vers.c
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Compiling React-graphics-dummy.m
+▸ Compiling RCTUtils.mm
+▸ Compiling RCTUIManagerObserverCoordinator.mm
+▸ Compiling RCTUIManager.mm
+▸ Compiling RCTSurfaceView.mm
+▸ Compiling RCTSurfaceSizeMeasureMode.mm
+▸ Compiling RCTSurfaceRootView.mm
+▸ Compiling RCTSurfaceHostingView.mm
+▸ Compiling RCTSurfaceHostingProxyRootView.mm
+▸ Compiling RCTSurface.mm
+▸ Compiling RCTPerformanceLogger.mm
+▸ Compiling RCTPausedInDebuggerOverlayController.mm
+▸ Compiling RCTPackagerConnection.mm
+▸ Compiling RCTObjcExecutor.mm
+▸ Compiling RCTNativeModule.mm
+▸ Compiling RCTModuleMethod.mm
+▸ Compiling RCTModuleData.mm
+▸ Compiling RCTMessageThread.mm
+▸ Compiling RCTManagedPointer.mm
+▸ Compiling RCTLog.mm
+▸ Compiling RCTLocalizedString.mm
+▸ Compiling RCTJavaScriptLoader.mm
+▸ Compiling RCTJSIExecutorRuntimeInstaller.mm
+▸ Compiling RCTInspectorUtils.mm
+▸ Compiling RCTInspectorNetworkHelper.mm
+▸ Compiling RCTInspectorDevServerHelper.mm
+▸ Compiling RCTInspector.mm
+▸ Compiling RCTFont.mm
+▸ Compiling RCTFollyConvert.mm
+▸ Compiling RCTDefaultCxxLogFunction.mm
+▸ Compiling RCTCxxUtils.mm
+▸ Compiling RCTCxxModule.mm
+▸ Compiling RCTCxxMethod.mm
+▸ Compiling RCTCxxInspectorWebSocketAdapter.mm
+▸ Compiling RCTCxxInspectorPackagerConnectionDelegate.mm
+▸ Compiling RCTCxxInspectorPackagerConnection.mm
+▸ Compiling RCTCxxBridge.mm
+▸ Compiling RCTConvert.mm
+▸ Compiling RCTComponentData.mm
+▸ Compiling RCTCallInvoker.mm
+▸ Compiling RCTBundleURLProvider.mm
+▸ Compiling RCTBridgeProxy.mm
+▸ Compiling RCTBridge.mm
+▸ Compiling NSDataBigString.mm
+▸ Compiling React_vers.c
+▸ Compiling ReactCommon-dummy.m
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Compiling RCTVirtualTextViewManager.mm
+▸ Compiling RCTVirtualTextView.mm
+▸ Compiling react_native_voice_vers.c
+▸ Compiling RCTVirtualTextShadowView.mm
+▸ Compiling RCTUITextView.mm
+▸ Compiling react-native-voice-dummy.m
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/AutoFocusSystem.swift:12:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/CameraConfiguration.swift:86:3: @frozen has no effect on non-public enums
+
+  @frozen
+  ^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/CameraConfiguration.swift:151:3: @frozen has no effect on non-public enums
+
+  @frozen
+  ^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/Flash.swift:14:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/HardwareLevel.swift:10:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/OutputOrientation.swift:10:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/PixelFormat.swift:12:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/QualityBalance.swift:12:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/ResizeMode.swift:15:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/ShutterType.swift:14:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/Torch.swift:15:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Recording/Track.swift:14:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/VideoStabilizationMode.swift:12:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+▸ Compiling RCTUITextField.mm
+▸ Compiling RCTTextViewManager.mm
+▸ Compiling RCTTextView.mm
+▸ Compiling RCTTextShadowView.mm
+▸ Compiling RCTTextSelection.mm
+▸ Compiling RCTTextAttributes.mm
+▸ Compiling RCTSinglelineTextInputViewManager.mm
+▸ Compiling RCTSinglelineTextInputView.mm
+▸ Compiling RCTRawTextViewManager.mm
+▸ Compiling RCTRawTextShadowView.mm
+▸ Compiling RCTMultilineTextInputViewManager.mm
+▸ Compiling RCTMultilineTextInputView.mm
+▸ Compiling RCTInputAccessoryViewManager.mm
+▸ Compiling RCTInputAccessoryViewContent.mm
+▸ Compiling RCTInputAccessoryView.mm
+▸ Compiling RCTInputAccessoryShadowView.mm
+▸ Compiling RCTDynamicTypeRamp.mm
+▸ Compiling RCTConvert+Text.mm
+▸ Compiling RCTBaseTextViewManager.mm
+▸ Compiling RCTBaseTextShadowView.mm
+▸ Compiling RCTBaseTextInputViewManager.mm
+▸ Compiling RCTBaseTextInputView.mm
+▸ Compiling RCTBaseTextInputShadowView.mm
+▸ Compiling RCTBackedTextInputDelegateAdapter.mm
+▸ Compiling React-Core-dummy.m
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/CameraSession+Configuration.swift:32:5: code after 'throw' will never be executed
+
+    guard let cameraId = configuration.cameraId else {
+    ^
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/Torch.swift:15:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Recording/Track.swift:14:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/VideoStabilizationMode.swift:12:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+▸ Compiling RCTVersion.m
+▸ Compiling RCTUtilsUIOverride.m
+▸ Compiling RCTUIManagerUtils.m
+▸ Compiling RCTSurfaceStage.m
+▸ Compiling RCTSafeAreaViewLocalData.m
+▸ Compiling RCTReloadCommand.m
+▸ Compiling RCTRefreshControl.m
+▸ Compiling RCTRedBoxSetEnabled.m
+▸ Compiling RCTRedBoxExtraDataViewController.m
+▸ Compiling RCTPerformanceLoggerLabels.m
+▸ Compiling RCTPackagerClient.m
+▸ Compiling RCTParserUtils.m
+▸ Compiling RCTMultipartStreamReader.m
+▸ Compiling RCTMultipartDataTask.m
+▸ Compiling RCTKeyCommands.m
+▸ Compiling RCTJSThread.m
+▸ Compiling RCTJSStackFrame.m
+▸ Compiling RCTI18nUtil.m
+▸ Compiling RCTFrameUpdate.m
+▸ Compiling RCTErrorInfo.m
+▸ Compiling RCTDevLoadingViewSetEnabled.m
+▸ Compiling RCTCxxConvert.m
+▸ Compiling RCTConstants.m
+▸ Compiling RCTBridgeConstants.m
+▸ Compiling RCTBorderDrawing.m
+▸ Compiling RCTAssert.m
+▸ Compiling RCTActivityIndicatorView.m
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/HardwareLevel.swift:10:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/OutputOrientation.swift:10:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/React/CameraViewManager.swift:114:38: 'authorizationStatus()' was deprecated in iOS 14.0
+
+      let status = CLLocationManager.authorizationStatus()
+                                     ^
+
+
+▸ Compiling RCTWrapperViewController.m
+▸ Compiling RCTViewUtils.m
+▸ Compiling UIView+React.m
+▸ Compiling RCTViewRegistry.m
+▸ Compiling RCTViewManager.m
+▸ Compiling RCTView.m
+▸ Compiling RCTTouchHandler.m
+▸ Compiling RCTTouchEvent.m
+▸ Compiling RCTSwitchManager.m
+▸ Compiling RCTSwitch.m
+▸ Compiling RCTSurfaceRootShadowView.m
+▸ Compiling RCTSurfacePresenterStub.m
+▸ Compiling RCTShadowView.m
+▸ Compiling RCTShadowView+Layout.m
+▸ Compiling RCTShadowView+Internal.m
+▸ Compiling RCTScrollViewManager.m
+▸ Compiling RCTScrollView.m
+▸ Compiling RCTScrollEvent.m
+▸ Compiling RCTScrollContentViewManager.m
+▸ Compiling RCTScrollContentView.m
+▸ Compiling RCTScrollContentShadowView.m
+▸ Compiling RCTSafeAreaViewManager.m
+▸ Compiling RCTSafeAreaView.m
+▸ Compiling RCTSafeAreaShadowView.m
+▸ Compiling RCTRootView.m
+▸ Compiling RCTRootShadowView.m
+▸ Compiling RCTRootContentView.m
+▸ Compiling RCTRefreshControlManager.m
+▸ Compiling RCTReconnectingWebSocket.m
+▸ Compiling RCTProfile.m
+▸ Compiling RCTModuleRegistry.m
+▸ Compiling RCTModalManager.m
+▸ Compiling RCTModalHostViewManager.m
+▸ Compiling RCTModalHostViewController.m
+▸ Compiling RCTModalHostView.m
+▸ Compiling RCTLayoutAnimationGroup.m
+▸ Compiling RCTLayoutAnimation.m
+▸ Compiling RCTLayout.m
+▸ Compiling RCTImageSource.m
+▸ Compiling RCTEventEmitter.m
+▸ Compiling RCTEventDispatcher.m
+▸ Compiling RCTDisplayLink.m
+▸ Compiling RCTDebuggingOverlayManager.m
+▸ Compiling RCTDebuggingOverlay.m
+▸ Compiling RCTConvert+Transform.m
+▸ Compiling RCTConvert+CoreLocation.m
+▸ Compiling RCTComponentEvent.m
+▸ Compiling RCTCallableJSModules.m
+▸ Compiling RCTBundleManager.m
+▸ Compiling RCTBridgeModuleDecorator.m
+▸ Compiling RCTActivityIndicatorViewManager.m
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/Flash.swift:14:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/PixelFormat.swift:12:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/QualityBalance.swift:12:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/ResizeMode.swift:15:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/ShutterType.swift:14:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/CameraConfiguration.swift:86:3: @frozen has no effect on non-public enums
+
+  @frozen
+  ^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/CameraConfiguration.swift:151:3: @frozen has no effect on non-public enums
+
+  @frozen
+  ^~~~~~~
+
+
+
+⚠️  /Users/rithikmahajan/Desktop/oct-7-appfront-main/node_modules/react-native-vision-camera/ios/Core/Types/AutoFocusSystem.swift:12:1: @frozen has no effect on non-public enums
+
+@frozen
+^~~~~~~
+
+
+▸ Compiling Voice.m
+▸ Compiling React-RCTText-dummy.m
+▸ Compiling RCTText_vers.c
+▸ Compiling NSTextStorage+FontScaling.m
+▸ Compiling RNFBRCTEventEmitter.m
+▸ Compiling RNFBPreferences.m
+▸ Compiling RNFBMeta.m
+▸ Compiling RNFBSharedUtils.m
+▸ Compiling RNFBUtilsModule.m
+▸ Compiling RNFBApp_vers.c
+▸ Compiling RNFBJSON.m
+▸ Compiling RNFBVersion.m
+▸ Compiling RNFBApp-dummy.m
+▸ Compiling RCTConvert+FIROptions.m
+▸ Compiling RCTConvert+FIRApp.m
+▸ Compiling RNAppleAuthentication_vers.c
+▸ Compiling RNAppleAuthentication-dummy.m
+▸ Compiling RNAppleAuthUtils.m
+▸ Compiling RNAppleAuthModule.m
+▸ Compiling RCTTypedModuleConstants.mm
+▸ Compiling RCTConvertHelpers.mm
+▸ Compiling RCTConvert+ASAuthorizationAppleIDRequest.m
+▸ Compiling RNFBAppModule.m
+▸ Compiling RNAppleAuthASAuthorizationDelegates.m
+▸ Compiling RNAppleAuthButtonViewManager.m
+▸ Compiling VisionCamera_vers.c
+▸ Compiling RNAppleAuthButtonView.m
+▸ Compiling RCTTypeSafety_vers.c
+▸ Touching React_runtimescheduler.framework (in target 'React-runtimescheduler' from project 'Pods')
+▸ Touching React_renderercss.framework (in target 'React-renderercss' from project 'Pods')
+▸ Compiling RNFBMessaging_vers.c
+▸ Compiling RCTTypeSafety-dummy.m
+▸ Compiling RNFBMessaging-dummy.m
+▸ Compiling RNFBAuth_vers.c
+▸ Compiling RNFBMessagingSerializer.m
+▸ Compiling RNFBMessagingModule.m
+▸ Compiling RNFBMessaging+UNUserNotificationCenter.m
+▸ Compiling RNFBMessaging+NSNotificationCenter.m
+▸ Compiling RNFBMessaging+FIRMessagingDelegate.m
+▸ Compiling RNFBMessaging+AppDelegate.m
+▸ Compiling RNFBAuth-dummy.m
+▸ Processing React-Core-Info.plist
+▸ Compiling RNFBAuthModule.m
+▸ Touching ReactCommon.framework (in target 'ReactCommon' from project 'Pods')
+▸ Touching React_graphics.framework (in target 'React-graphics' from project 'Pods')
+▸ Processing React-jserrorhandler-Info.plist
+▸ Compiling StackTraceParser.cpp
+▸ Compiling JsErrorHandler.cpp
+▸ Compiling React_jserrorhandler_vers.c
+▸ Touching React.framework (in target 'React-Core' from project 'Pods')
+▸ Processing react-native-voice-Info.plist
+▸ Running script '[CP-User] Config codegen'
+▸ Compiling React-jserrorhandler-dummy.m
+▸ Processing react-native-config-Info.plist
+▸ Processing VisionCamera-Info.plist
+▸ Processing React-RCTText-Info.plist
+▸ Processing React-NativeModulesApple-Info.plist
+▸ Processing RNFBApp-Info.plist
+▸ Processing RNAppleAuthentication-Info.plist
+▸ Processing RCTTypeSafety-Info.plist
+▸ Compiling RCTTurboModuleManager.mm
+▸ Compiling RCTTurboModule.mm
+▸ Compiling RCTInteropTurboModule.mm
+▸ Compiling React_NativeModulesApple_vers.c
+▸ Compiling React-NativeModulesApple-dummy.m
+▸ Touching react_native_voice.framework (in target 'react-native-voice' from project 'Pods')
+▸ Touching RCTText.framework (in target 'React-RCTText' from project 'Pods')
+▸ Touching RNFBApp.framework (in target 'RNFBApp' from project 'Pods')
+▸ Processing RNFBMessaging-Info.plist
+▸ Processing RNFBAuth-Info.plist
+▸ Touching RNAppleAuthentication.framework (in target 'RNAppleAuthentication' from project 'Pods')
+▸ Touching RNFBMessaging.framework (in target 'RNFBMessaging' from project 'Pods')
+▸ Touching RNFBAuth.framework (in target 'RNFBAuth' from project 'Pods')
+▸ Compiling react_native_config_vers.c
+▸ Compiling react-native-config-dummy.m
+▸ Compiling RNCConfig.m
+▸ Compiling RNCConfigModule.m
+▸ Compiling GeneratedDotEnv.m
+▸ Touching RCTTypeSafety.framework (in target 'RCTTypeSafety' from project 'Pods')
+▸ Processing React-Fabric-Info.plist
+▸ Touching react_native_config.framework (in target 'react-native-config' from project 'Pods')
+▸ Running script '[CP-User] [RN]Check rncore'
+▸ Compiling updateMountedFlag.cpp
+▸ Compiling utils.cpp
+▸ Compiling stubs.cpp
+▸ Compiling sliceChildShadowNodeViewPairs.cpp
+▸ Compiling componentNameByReactViewName.cpp
+▸ Compiling VisionCamera-dummy.m
+▸ Compiling YogaStylableProps.cpp
+▸ Compiling YogaLayoutableShadowNode.cpp
+▸ Compiling WeakFamilyRegistry.cpp
+▸ Compiling ViewShadowNode.cpp
+▸ Compiling ValueFactoryEventPayload.cpp
+▸ Compiling UnstableLegacyViewManagerAutomaticShadowNode.cpp
+▸ Compiling UnstableLegacyViewManagerAutomaticComponentDescriptor.cpp
+▸ Compiling UIManagerUpdateShadowTree.cpp
+▸ Compiling UIManagerBinding.cpp
+▸ Compiling UIManager.cpp
+▸ Compiling TransactionTelemetry.cpp
+▸ Compiling TouchEventEmitter.cpp
+▸ Compiling TouchEvent.cpp
+▸ Compiling TextAttributes.cpp
+▸ Compiling TelemetryController.cpp
+▸ Compiling SurfaceTelemetry.cpp
+▸ Compiling SurfaceManager.cpp
+▸ Compiling SurfaceHandler.cpp
+▸ Compiling StubViewTree.cpp
+▸ Compiling StubView.cpp
+▸ Compiling StateUpdate.cpp
+▸ Compiling State.cpp
+▸ Compiling ShadowViewMutation.cpp
+▸ Compiling ShadowView.cpp
+▸ Compiling ShadowTreeRevisionConsistencyManager.cpp
+▸ Compiling ShadowTreeRevision.cpp
+▸ Compiling ShadowTreeRegistry.cpp
+▸ Compiling ShadowTree.cpp
+▸ Compiling ShadowNodeTraits.cpp
+▸ Compiling ShadowNodeFragment.cpp
+▸ Compiling ShadowNodeFamily.cpp
+▸ Compiling ShadowNode.cpp
+▸ Compiling Sealable.cpp
+▸ Compiling ScrollViewState.cpp
+▸ Compiling ScrollViewShadowNode.cpp
+▸ Compiling ScrollViewProps.cpp
+▸ Compiling ScrollViewEventEmitter.cpp
+▸ Compiling ScrollEvent.cpp
+▸ Compiling Scheduler.cpp
+▸ Compiling RootShadowNode.cpp
+▸ Compiling RootProps.cpp
+▸ Compiling ReactRootViewTagGenerator.cpp
+▸ Compiling RawValue.cpp
+▸ Compiling RawPropsParser.cpp
+▸ Compiling RawPropsKeyMap.cpp
+▸ Compiling RawPropsKey.cpp
+▸ Compiling RawProps.cpp
+▸ Compiling RawEvent.cpp
+▸ Compiling RCTLegacyViewManagerInteropCoordinator.mm
+▸ Compiling Props.cpp
+▸ Compiling PointerHoverTracker.cpp
+▸ Compiling PointerEventsProcessor.cpp
+▸ Compiling PointerEvent.cpp
+▸ Compiling ParagraphAttributes.cpp
+▸ Compiling NativeComponentRegistryBinding.cpp
+▸ Compiling MountingTransaction.cpp
+▸ Compiling MountingCoordinator.cpp
+▸ Compiling LegacyViewManagerInteropViewProps.cpp
+▸ Compiling LegacyViewManagerInteropState.mm
+▸ Compiling LegacyViewManagerInteropShadowNode.cpp
+▸ Compiling LegacyViewManagerInteropComponentDescriptor.mm
+▸ Compiling LeakChecker.cpp
+▸ Compiling LazyShadowTreeRevisionConsistencyManager.cpp
+▸ Compiling LayoutableShadowNode.cpp
+▸ Compiling LayoutMetrics.cpp
+▸ Compiling LayoutConstraints.cpp
+▸ Compiling LayoutAnimationKeyFrameManager.cpp
+▸ Compiling LayoutAnimationDriver.cpp
+▸ Compiling InstanceHandle.cpp
+▸ Compiling ImageTelemetry.cpp
+▸ Compiling ImageResponseObserverCoordinator.cpp
+▸ Compiling ImageResponse.cpp
+▸ Compiling ImageRequest.cpp
+▸ Compiling EventTarget.cpp
+▸ Compiling EventQueueProcessor.cpp
+▸ Compiling EventQueue.cpp
+▸ Compiling EventPerformanceLogger.cpp
+▸ Compiling EventListener.cpp
+▸ Compiling EventEmitter.cpp
+▸ Compiling EventDispatcher.cpp
+▸ Compiling EventBeat.cpp
+▸ Compiling DynamicPropsUtilities.cpp
+▸ Compiling DynamicEventPayload.cpp
+▸ Compiling Differentiator.cpp
+▸ Compiling DOM.cpp
+▸ Compiling CullingContext.cpp
+▸ Compiling ComponentDescriptorRegistry.cpp
+▸ Compiling ComponentDescriptorProviderRegistry.cpp
+▸ Compiling ComponentDescriptor.cpp
+▸ Compiling BaseViewProps.cpp
+▸ Compiling BaseViewEventEmitter.cpp
+▸ Compiling BaseTouch.cpp
+▸ Compiling AttributedStringBox.cpp
+▸ Compiling AttributedString.cpp
+▸ Compiling AppRegistryBinding.cpp
+▸ Compiling AccessibilityProps.cpp
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Compiling React_Fabric_vers.c
+▸ Compiling React-Fabric-dummy.m
+▸ Touching React_jserrorhandler.framework (in target 'React-jserrorhandler' from project 'Pods')
+▸ Touching React_NativeModulesApple.framework (in target 'React-NativeModulesApple' from project 'Pods')
+▸ Running script '[CP-User] [RN]Check FBReactNativeSpec'
+▸ Processing React-RCTFBReactNativeSpec-Info.plist
+▸ Compiling CameraViewManager.m
+▸ Compiling CameraDevicesManager.m
+▸ Compiling FBReactNativeSpecJSI-generated.cpp
+▸ Compiling FBReactNativeSpec-generated.mm
+▸ Compiling FBReactNativeSpec_vers.c
+▸ Compiling RCTVibrationPlugins.mm
+▸ Compiling RCTVibration.mm
+▸ Compiling RCTSettingsPlugins.mm
+▸ Compiling RCTSettingsManager.mm
+▸ Compiling RCTNetworking.mm
+▸ Compiling RCTNetworkTask.mm
+▸ Compiling RCTNetworkPlugins.mm
+▸ Compiling RCTInspectorNetworkReporter.mm
+▸ Compiling RCTHTTPRequestHandler.mm
+▸ Compiling RCTFileRequestHandler.mm
+▸ Compiling RCTDataRequestHandler.mm
+▸ Compiling RCTLinkingPlugins.mm
+▸ Compiling RCTLinkingManager.mm
+▸ Compiling RCTVibration_vers.c
+▸ Compiling React-RCTVibration-dummy.m
+▸ Compiling RCTSettings_vers.c
+▸ Compiling React-RCTSettings-dummy.m
+▸ Compiling RCTNetwork_vers.c
+▸ Compiling RCTValueAnimatedNode.mm
+▸ Compiling RCTLinking_vers.c
+▸ Compiling React-RCTNetwork-dummy.m
+▸ Compiling RCTTransformAnimatedNode.mm
+▸ Compiling RCTTrackingAnimatedNode.mm
+▸ Compiling React-RCTLinking-dummy.m
+▸ Compiling RCTSubtractionAnimatedNode.mm
+▸ Compiling RCTStyleAnimatedNode.mm
+▸ Compiling RCTSpringAnimation.mm
+▸ Compiling RCTPropsAnimatedNode.mm
+▸ Compiling RCTObjectAnimatedNode.mm
+▸ Compiling RCTNativeAnimatedTurboModule.mm
+▸ Compiling RCTNativeAnimatedNodesManager.mm
+▸ Compiling RCTNativeAnimatedModule.mm
+▸ Compiling RCTMultiplicationAnimatedNode.mm
+▸ Compiling RCTModuloAnimatedNode.mm
+▸ Compiling RCTInterpolationAnimatedNode.mm
+▸ Compiling RCTFrameAnimation.mm
+▸ Compiling RCTEventAnimation.mm
+▸ Compiling RCTDivisionAnimatedNode.mm
+▸ Compiling RCTDiffClampAnimatedNode.mm
+▸ Compiling RCTDecayAnimation.mm
+▸ Compiling RCTColorAnimatedNode.mm
+▸ Compiling RCTAnimationUtils.mm
+▸ Compiling RCTAnimationPlugins.mm
+▸ Compiling RCTAnimatedNode.mm
+▸ Compiling RCTAdditionAnimatedNode.mm
+▸ Compiling React-RCTAnimation-dummy.m
+▸ Compiling RCTAnimation_vers.c
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Compiling RCTUIImageViewAnimated.mm
+▸ Compiling RCTResizeMode.mm
+▸ Compiling RCTLocalAssetImageLoader.mm
+▸ Compiling RCTImageViewManager.mm
+▸ Compiling RCTImageView.mm
+▸ Compiling RCTImageUtils.mm
+▸ Compiling RCTImageURLLoaderWithAttribution.mm
+▸ Compiling RCTImageStoreManager.mm
+▸ Compiling RCTImageShadowView.mm
+▸ Compiling RCTImagePlugins.mm
+▸ Compiling RCTImageLoader.mm
+▸ Compiling RCTImageEditingManager.mm
+▸ Compiling RCTImageCache.mm
+▸ Compiling RCTImageBlurUtils.mm
+▸ Compiling RCTGIFImageDecoder.mm
+▸ Compiling RCTDisplayWeakRefreshable.mm
+▸ Compiling RCTBundleAssetImageLoader.mm
+▸ Compiling RCTAnimatedImage.mm
+▸ Compiling RCTFileReaderModule.mm
+▸ Compiling RCTBlobPlugins.mm
+▸ Compiling RCTBlobManager.mm
+▸ Compiling RCTBlobCollector.mm
+▸ Compiling React-RCTImage-dummy.m
+▸ Compiling RCTImage_vers.c
+▸ Compiling RCTBlob_vers.c
+▸ Compiling React-RCTBlob-dummy.m
+▸ Compiling RCTWebSocketModule.mm
+▸ Compiling RCTTiming.mm
+▸ Compiling RCTStatusBarManager.mm
+▸ Compiling RCTSourceCode.mm
+▸ Compiling RCTRedBox.mm
+▸ Compiling RCTPlatform.mm
+▸ Compiling RCTPerfMonitor.mm
+▸ Compiling RCTLogBoxView.mm
+▸ Compiling RCTLogBox.mm
+▸ Compiling RCTKeyboardObserver.mm
+▸ Compiling RCTI18nManager.mm
+▸ Compiling RCTFPSGraph.mm
+▸ Compiling RCTExceptionsManager.mm
+▸ Compiling RCTEventDispatcher.mm
+▸ Compiling RCTDeviceInfo.mm
+▸ Compiling RCTDevToolsRuntimeSettingsModule.mm
+▸ Compiling RCTDevSettings.mm
+▸ Compiling RCTDevMenu.mm
+▸ Compiling RCTDevLoadingView.mm
+▸ Compiling RCTClipboard.mm
+▸ Compiling RCTAppearance.mm
+▸ Compiling RCTAppState.mm
+▸ Compiling RCTAlertManager.mm
+▸ Compiling RCTAlertController.mm
+▸ Compiling RCTActionSheetManager.mm
+▸ Compiling RCTAccessibilityManager.mm
+▸ Compiling CoreModulesPlugins.mm
+▸ Compiling React-CoreModules-dummy.m
+▸ Compiling CoreModules_vers.c
+▸ Compiling react_native_razorpay_vers.c
+▸ Compiling react-native-razorpay-dummy.m
+▸ Compiling RazorpayEventEmitter.m
+▸ Touching VisionCamera.framework (in target 'VisionCamera' from project 'Pods')
+▸ Compiling RazorpayCheckout.m
+▸ Touching React_Fabric.framework (in target 'React-Fabric' from project 'Pods')
+▸ Processing React-ImageManager-Info.plist
+▸ Processing React-RuntimeCore-Info.plist
+▸ Processing React-FabricComponents-Info.plist
+▸ Compiling RCTSyncImageManager.mm
+▸ Compiling RCTImageManager.mm
+▸ Compiling ImageManager.mm
+▸ Compiling React-RCTFBReactNativeSpec-dummy.m
+▸ Compiling React_ImageManager_vers.c
+▸ Compiling TimerManager.cpp
+▸ Compiling ReactInstance.cpp
+▸ Compiling LegacyUIManagerConstantsProviderBinding.cpp
+▸ Compiling BufferedRuntimeExecutor.cpp
+▸ Compiling BridgelessNativeMethodCallInvoker.cpp
+▸ Compiling React-ImageManager-dummy.m
+▸ Compiling React_RuntimeCore_vers.c
+▸ Compiling React-RuntimeCore-dummy.m
+▸ Touching FBReactNativeSpec.framework (in target 'React-RCTFBReactNativeSpec' from project 'Pods')
+▸ Running script '[CP-User] [RN]Check rncore'
+▸ Processing React-microtasksnativemodule-Info.plist
+▸ Processing React-idlecallbacksnativemodule-Info.plist
+▸ Processing React-featureflagsnativemodule-Info.plist
+▸ Processing React-RCTVibration-Info.plist
+▸ Processing React-RCTSettings-Info.plist
+▸ Processing React-RCTNetwork-Info.plist
+▸ Processing React-RCTLinking-Info.plist
+▸ Processing React-RCTAnimation-Info.plist
+▸ Compiling NativeMicrotasks.cpp
+▸ Compiling NativeIdleCallbacks.cpp
+▸ Compiling NativeReactNativeFeatureFlags.cpp
+▸ Compiling React_microtasksnativemodule_vers.c
+▸ Compiling React-microtasksnativemodule-dummy.m
+▸ Compiling idlecallbacksnativemodule_vers.c
+▸ Compiling React_featureflagsnativemodule_vers.c
+▸ Compiling React-idlecallbacksnativemodule-dummy.m
+▸ Compiling React-featureflagsnativemodule-dummy.m
+▸ Compiling UnimplementedViewShadowNode.cpp
+▸ Compiling UnimplementedViewProps.cpp
+▸ Compiling UnimplementedViewComponentDescriptor.cpp
+▸ Compiling TextShadowNode.cpp
+▸ Compiling TextProps.cpp
+▸ Compiling TextMeasureCache.cpp
+▸ Compiling TextLayoutManager.mm
+▸ Compiling TextInputState.cpp
+▸ Compiling TextInputShadowNode.cpp
+▸ Compiling TextInputProps.cpp
+▸ Compiling TextInputEventEmitter.cpp
+▸ Compiling States.cpp
+▸ Compiling ShadowNodes.cpp
+▸ Compiling ScrollViewState.cpp
+▸ Compiling ScrollViewShadowNode.cpp
+▸ Compiling ScrollViewProps.cpp
+▸ Compiling ScrollViewEventEmitter.cpp
+▸ Compiling ScrollEvent.cpp
+▸ Compiling SafeAreaViewState.cpp
+▸ Compiling SafeAreaViewShadowNode.cpp
+▸ Compiling RawTextShadowNode.cpp
+▸ Compiling RawTextProps.cpp
+▸ Compiling RCTTextLayoutManager.mm
+▸ Compiling RCTFontUtils.mm
+▸ Compiling RCTAttributedTextUtils.mm
+▸ Compiling Props.cpp
+▸ Compiling ParagraphShadowNode.cpp
+▸ Compiling ParagraphProps.cpp
+▸ Compiling ParagraphEventEmitter.cpp
+▸ Compiling ParagraphComponentDescriptor.cpp
+▸ Compiling ModalHostViewUtils.mm
+▸ Compiling ModalHostViewState.cpp
+▸ Compiling ModalHostViewShadowNode.cpp
+▸ Compiling InputAccessoryShadowNode.cpp
+▸ Compiling EventEmitters.cpp
+▸ Compiling ComponentDescriptors.cpp
+▸ Compiling BaseTextShadowNode.cpp
+▸ Compiling BaseTextProps.cpp
+▸ Compiling BaseTextInputProps.cpp
+▸ Compiling React_FabricComponents_vers.c
+▸ Compiling React-FabricComponents-dummy.m
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Touching RCTVibration.framework (in target 'React-RCTVibration' from project 'Pods')
+▸ Touching RCTSettings.framework (in target 'React-RCTSettings' from project 'Pods')
+▸ Touching RCTNetwork.framework (in target 'React-RCTNetwork' from project 'Pods')
+▸ Touching RCTLinking.framework (in target 'React-RCTLinking' from project 'Pods')
+▸ Touching RCTAnimation.framework (in target 'React-RCTAnimation' from project 'Pods')
+▸ Touching React_microtasksnativemodule.framework (in target 'React-microtasksnativemodule' from project 'Pods')
+▸ Processing React-RCTImage-Info.plist
+▸ Processing React-RCTBlob-Info.plist
+▸ Touching idlecallbacksnativemodule.framework (in target 'React-idlecallbacksnativemodule' from project 'Pods')
+▸ Touching React_featureflagsnativemodule.framework (in target 'React-featureflagsnativemodule' from project 'Pods')
+▸ Touching RCTBlob.framework (in target 'React-RCTBlob' from project 'Pods')
+▸ Touching RCTImage.framework (in target 'React-RCTImage' from project 'Pods')
+▸ Processing React-CoreModules-Info.plist
+▸ Processing react-native-razorpay-Info.plist
+▸ Touching React_RuntimeCore.framework (in target 'React-RuntimeCore' from project 'Pods')
+▸ Processing React-RuntimeHermes-Info.plist
+▸ Compiling HermesInstance.cpp
+▸ Compiling React_RuntimeHermes_vers.c
+▸ Touching react_native_razorpay.framework (in target 'react-native-razorpay' from project 'Pods')
+▸ Touching React_ImageManager.framework (in target 'React-ImageManager' from project 'Pods')
+▸ Processing React-FabricImage-Info.plist
+▸ Compiling ImageState.cpp
+▸ Compiling ImageShadowNode.cpp
+▸ Compiling ImageProps.cpp
+▸ Compiling ImageEventEmitter.cpp
+▸ Compiling ImageComponentDescriptor.cpp
+▸ Compiling React_FabricImage_vers.c
+▸ Compiling React-FabricImage-dummy.m
+▸ Touching CoreModules.framework (in target 'React-CoreModules' from project 'Pods')
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Touching React_FabricComponents.framework (in target 'React-FabricComponents' from project 'Pods')
+▸ Processing React-domnativemodule-Info.plist
+▸ Compiling NativeDOM.cpp
+▸ Compiling React_domnativemodule_vers.c
+▸ Compiling React-domnativemodule-dummy.m
+▸ Compiling React-RuntimeHermes-dummy.m
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Touching React_RuntimeHermes.framework (in target 'React-RuntimeHermes' from project 'Pods')
+▸ Compiling UIView+ComponentViewProtocol.mm
+▸ Compiling RCTViewComponentView.mm
+▸ Compiling RCTViewAccessibilityElement.mm
+▸ Compiling RCTUnimplementedViewComponentView.mm
+▸ Compiling RCTUnimplementedNativeComponentView.mm
+▸ Compiling RCTTextInputComponentView.mm
+▸ Compiling RCTTextInputUtils.mm
+▸ Compiling RCTSwitchComponentView.mm
+▸ Compiling RCTSurfaceTouchHandler.mm
+▸ Compiling React-RCTFabric-dummy.m
+▸ Compiling RCTSurfaceRegistry.mm
+▸ Compiling RCTSurfacePresenterBridgeAdapter.mm
+▸ Compiling RCTSurfacePresenter.mm
+▸ Compiling RCTSurfacePointerHandler.mm
+▸ Compiling RCTScrollViewComponentView.mm
+▸ Compiling RCTScheduler.mm
+▸ Compiling RCTSafeAreaViewComponentView.mm
+▸ Compiling RCTRootComponentView.mm
+▸ Compiling RCTReactTaggedView.mm
+▸ Compiling RCTRadialGradient.mm
+▸ Compiling RCTPullToRefreshViewComponentView.mm
+▸ Compiling RCTParagraphComponentView.mm
+▸ Compiling RCTParagraphComponentAccessibilityProvider.mm
+▸ Compiling RCTMountingTransactionObserverCoordinator.mm
+▸ Compiling RCTMountingManager.mm
+▸ Compiling RCTModalHostViewComponentView.mm
+▸ Compiling RCTLocalizationProvider.mm
+▸ Compiling RCTLinearGradient.mm
+▸ Compiling RCTLegacyViewManagerInteropCoordinatorAdapter.mm
+▸ Compiling RCTLegacyViewManagerInteropComponentView.mm
+▸ Compiling RCTInputAccessoryContentView.mm
+▸ Compiling RCTInputAccessoryComponentView.mm
+▸ Compiling RCTImageResponseObserverProxy.mm
+▸ Compiling RCTImageComponentView.mm
+▸ Compiling RCTGradientUtils.mm
+▸ Compiling RCTGenericDelegateSplitter.mm
+▸ Compiling RCTFabric_vers.c
+▸ Compiling RCTFabricSurface.mm
+▸ Compiling RCTFabricModalHostViewController.mm
+▸ Compiling RCTFabricComponentsPlugins.mm
+▸ Compiling RCTEnhancedScrollView.mm
+▸ Compiling RCTDebuggingOverlayComponentView.mm
+▸ Compiling RCTComponentViewRegistry.mm
+▸ Compiling RCTComponentViewFactory.mm
+▸ Compiling RCTColorSpaceUtils.mm
+▸ Compiling RCTBoxShadow.mm
+▸ Compiling RCTActivityIndicatorViewComponentView.mm
+▸ Compiling RCTAccessibilityElement.mm
+▸ Compiling PlatformRunLoopObserver.mm
+▸ Compiling AppleEventBeat.cpp
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Touching React_FabricImage.framework (in target 'React-FabricImage' from project 'Pods')
+▸ Processing React-RCTFabric-Info.plist
+▸ Touching React_domnativemodule.framework (in target 'React-domnativemodule' from project 'Pods')
+▸ Processing React-defaultsnativemodule-Info.plist
+▸ Compiling DefaultTurboModules.cpp
+▸ Compiling React_defaultsnativemodule_vers.c
+▸ Compiling React-defaultsnativemodule-dummy.m
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Touching RCTFabric.framework (in target 'React-RCTFabric' from project 'Pods')
+▸ Processing React-RuntimeApple-Info.plist
+▸ Compiling RCTPerformanceLoggerUtils.mm
+▸ Compiling RCTLegacyUIManagerConstantsProvider.mm
+▸ Compiling RCTHost.mm
+▸ Compiling RCTInstance.mm
+▸ Compiling RCTJSThreadManager.mm
+▸ Compiling RCTHermesInstance.mm
+▸ Compiling ObjCTimerRegistry.mm
+▸ Compiling React_RuntimeApple_vers.c
+▸ Touching React_defaultsnativemodule.framework (in target 'React-defaultsnativemodule' from project 'Pods')
+▸ Compiling React-RuntimeApple-dummy.m
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Touching React_RuntimeApple.framework (in target 'React-RuntimeApple' from project 'Pods')
+▸ Processing React-RCTRuntime-Info.plist
+▸ Compiling RCTHermesInstanceFactory.mm
+▸ Compiling RCTRuntime_vers.c
+▸ Compiling React-RCTRuntime-dummy.m
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Compiling RCTReactNativeFactory.mm
+▸ Compiling RCTRootViewFactory.mm
+▸ Compiling RCTDefaultReactNativeFactoryDelegate.mm
+▸ Compiling RCTAppSetupUtils.mm
+▸ Compiling RCTAppDelegate.mm
+▸ Compiling React_RCTAppDelegate_vers.c
+▸ Touching RCTRuntime.framework (in target 'React-RCTRuntime' from project 'Pods')
+▸ Processing React-RCTAppDelegate-Info.plist
+▸ Compiling React-RCTAppDelegate-dummy.m
+▸ Touching React_RCTAppDelegate.framework (in target 'React-RCTAppDelegate' from project 'Pods')
+▸ Processing ReactCodegen-Info.plist
+▸ Running script '[CP-User] Generate Specs'
+▸ Compiling States.cpp
+▸ Compiling States.cpp
+▸ Compiling States.cpp
+▸ Compiling rnsvgJSI-generated.cpp
+▸ Compiling rnsvg-generated.mm
+▸ Compiling rngesturehandler_codegenJSI-generated.cpp
+▸ Compiling rngesturehandler_codegen-generated.mm
+▸ Compiling rnasyncstorageJSI-generated.cpp
+▸ Compiling rnasyncstorage-generated.mm
+▸ Compiling States.cpp
+▸ Compiling ShadowNodes.cpp
+▸ Compiling ShadowNodes.cpp
+▸ Compiling ShadowNodes.cpp
+▸ Compiling ShadowNodes.cpp
+▸ Compiling ReactCodegen_vers.c
+▸ Compiling RNPermissionsSpecJSI-generated.cpp
+▸ Compiling RNPermissionsSpec-generated.mm
+▸ Compiling RNImagePickerSpecJSI-generated.cpp
+▸ Compiling RNImagePickerSpec-generated.mm
+▸ Compiling RNGoogleSignInCGenJSI-generated.cpp
+▸ Compiling RNGoogleSignInCGen-generated.mm
+▸ Compiling RNCConfigModuleJSI-generated.cpp
+▸ Compiling RNCConfigModule-generated.mm
+▸ Compiling RCTUnstableModulesRequiringMainQueueSetupProvider.mm
+▸ Compiling RCTThirdPartyComponentsProvider.mm
+▸ Compiling RCTModulesConformingToProtocolsProvider.mm
+▸ Compiling RCTModuleProviders.mm
+▸ Compiling Props.cpp
+▸ Compiling Props.cpp
+▸ Compiling Props.cpp
+▸ Compiling Props.cpp
+▸ Compiling EventEmitters.cpp
+▸ Compiling EventEmitters.cpp
+▸ Compiling EventEmitters.cpp
+▸ Compiling EventEmitters.cpp
+▸ Compiling ComponentDescriptors.cpp
+▸ Compiling ComponentDescriptors.cpp
+▸ Compiling ComponentDescriptors.cpp
+▸ Compiling ComponentDescriptors.cpp
+▸ Compiling ReactCodegen-dummy.m
+▸ Running script 'Create Symlinks to Header Folders'
+▸ Compiling RNCSliderMeasurementsManager.cpp
+▸ Compiling RNCSliderComponentView.mm
+▸ Compiling RNCSliderShadowNode.cpp
+▸ Compiling ImagePickerUtils.mm
+▸ Compiling ImagePickerManager.mm
+▸ Compiling RCTAppDependencyProvider.mm
+▸ Compiling RNSVGViewBox.mm
+▸ Compiling RNSVGUseManager.mm
+▸ Compiling react_native_slider_vers.c
+▸ Compiling RNSVGUse.mm
+▸ Compiling RNSVGTopAlignedLabel.ios.mm
+▸ Compiling react-native-slider-dummy.m
+▸ Compiling RNSVGTextProperties.mm
+▸ Compiling RNSVGTextPathManager.mm
+▸ Compiling RNSVGTextPath.mm
+▸ Compiling RNSVGTextManager.mm
+▸ Compiling RNSVGText.mm
+▸ Compiling RNSVGTSpanManager.mm
+▸ Compiling RNSVGTSpan.mm
+▸ Compiling RNSVGSymbolManager.mm
+▸ Compiling RNSVGSymbol.mm
+▸ Compiling RNSVGSvgViewModule.mm
+▸ Compiling RNSVGSvgViewManager.mm
+▸ Compiling RNSVGSvgView.mm
+▸ Compiling RNSVGSolidColorBrush.mm
+▸ Compiling RNSVGShadowNodes.cpp
+▸ Compiling RNSVGRenderableModule.mm
+▸ Compiling RNSVGRenderableManager.mm
+▸ Compiling RNSVGRenderable.mm
+▸ Compiling RNSVGRenderUtils.mm
+▸ Compiling RNSVGRectManager.mm
+▸ Compiling RNSVGRect.mm
+▸ Compiling RNSVGRadialGradientManager.mm
+▸ Compiling RNSVGRadialGradient.mm
+▸ Compiling RNSVGPropHelper.mm
+▸ Compiling RNSVGPatternManager.mm
+▸ Compiling RNSVGPattern.mm
+▸ Compiling RNSVGPathParser.mm
+▸ Compiling RNSVGPathMeasure.mm
+▸ Compiling RNSVGPathManager.mm
+▸ Compiling RNSVGPath.mm
+▸ Compiling RNSVGPainterBrush.mm
+▸ Compiling RNSVGPainter.mm
+▸ Compiling RNSVGNodeManager.mm
+▸ Compiling RNSVGNode.mm
+▸ Compiling RNSVGMaskManager.mm
+▸ Compiling RNSVGMask.mm
+▸ Compiling RNSVGMarkerPosition.mm
+▸ Compiling RNSVGMarkerManager.mm
+▸ Compiling RNSVGMarker.mm
+▸ Compiling RNSVGLinearGradientManager.mm
+▸ Compiling RNSVGLinearGradient.mm
+▸ Compiling RNSVGLineManager.mm
+▸ Compiling RNSVGLine.mm
+▸ Compiling RNSVGLength.mm
+▸ Compiling RNSVGLayoutableShadowNode.cpp
+▸ Compiling RNSVGImageState.cpp
+▸ Compiling RNSVGImageShadowNode.cpp
+▸ Compiling RNSVGImageManager.mm
+▸ Compiling RNSVGImage.mm
+▸ Compiling RNSVGGroupManager.mm
+▸ Compiling RNSVGGroup.mm
+▸ Compiling RNSVGGlyphContext.mm
+▸ Compiling RNSVGForeignObjectManager.mm
+▸ Compiling RNSVGForeignObject.mm
+▸ Compiling RNSVGFontData.mm
+▸ Compiling RNSVGFilterRegion.mm
+▸ Compiling RNSVGFilterPrimitiveManager.mm
+▸ Compiling RNSVGFilterPrimitive.mm
+▸ Compiling RNSVGFilterManager.mm
+▸ Compiling RNSVGFilter.mm
+▸ Compiling RNSVGFeOffsetManager.mm
+▸ Compiling RNSVGFeOffset.mm
+▸ Compiling RNSVGFeMergeManager.mm
+▸ Compiling RNSVGFeMerge.mm
+▸ Compiling RNSVGFeGaussianBlurManager.mm
+▸ Compiling RNSVGFeGaussianBlur.mm
+▸ Compiling RNSVGFeFloodManager.mm
+▸ Compiling RNSVGFeFlood.mm
+▸ Compiling RNSVGFeCompositeManager.mm
+▸ Compiling RNSVGFeComposite.mm
+▸ Compiling RNSVGFeColorMatrixManager.mm
+▸ Compiling RNSVGFeColorMatrix.mm
+▸ Compiling RNSVGFeBlendManager.mm
+▸ Compiling RNSVGFeBlend.mm
+▸ Compiling RNSVGEllipseManager.mm
+▸ Compiling RNSVGEllipse.mm
+▸ Compiling RNSVGDefsManager.mm
+▸ Compiling RNSVGDefs.mm
+▸ Compiling RNSVGCustomFilter.mm
+▸ Compiling RNSVGConvert.mm
+▸ Compiling RNSVGContextBrush.mm
+▸ Compiling RNSVGCompositeXor.mm
+▸ Compiling RNSVGClipPathManager.mm
+▸ Compiling RNSVGClipPath.mm
+▸ Compiling RNSVGCircleManager.mm
+▸ Compiling RNSVGCircle.mm
+▸ Compiling RNSVGBrush.mm
+▸ Compiling RNSVGBezierElement.mm
+▸ Compiling RNSVGArithmeticFilter.mm
+▸ Compiling RCTConvert+RNSVG.mm
+▸ Compiling RNPermissions.mm
+▸ Compiling RNPermissionHandlerSpeechRecognition.mm
+▸ Compiling RNPermissionHandlerMicrophone.mm
+▸ Compiling RNPermissionHandlerCamera.mm
+▸ Compiling RNGoogleSigninButtonManager.mm
+▸ Compiling RNGoogleSignin.mm
+▸ Compiling RNGoogleSignInButtonComponentView.mm
+▸ Compiling RNGoogleSignInButton.mm
+▸ Compiling RCTConvert+RNGoogleSignin.mm
+▸ Compiling RNNativeViewHandler.mm
+▸ Compiling RNGestureHandlerRootViewComponentView.mm
+▸ Compiling RNGestureHandlerModule.mm
+▸ Compiling RNGestureHandlerManager.mm
+▸ Compiling RNGestureHandlerButtonManager.mm
+▸ Compiling RNGestureHandlerButtonComponentView.mm
+▸ Compiling RNGestureHandlerButton.mm
+▸ Compiling RNGestureHandler.mm
+▸ Compiling RNCAsyncStorage.mm
+▸ Compiling react_native_image_picker_vers.c
+▸ Compiling ReactAppDependencyProvider_vers.c
+▸ Compiling react-native-image-picker-dummy.m
+▸ Compiling ReactAppDependencyProvider-dummy.m
+▸ Compiling RNSVG_vers.c
+▸ Compiling RNPermissions_vers.c
+▸ Compiling RNGoogleSignin_vers.c
+▸ Compiling RNPermissions-dummy.m
+▸ Compiling RNGoogleSignin-dummy.m
+▸ Compiling RNCSlider.m
+▸ Compiling RNGestureHandler_vers.c
+▸ Compiling RNCAsyncStorage_vers.c
+▸ Compiling Pods_YoraaApp_vers.c
+▸ Compiling RNCAsyncStorage-dummy.m
+▸ Touching ReactCodegen.framework (in target 'ReactCodegen' from project 'Pods')
+▸ Processing react-native-slider-Info.plist
+▸ Processing react-native-image-picker-Info.plist
+▸ Processing ReactAppDependencyProvider-Info.plist
+▸ Processing RNSVG-Info.plist
+▸ Processing RNPermissions-Info.plist
+▸ Processing RNGoogleSignin-Info.plist
+▸ Processing RNGestureHandler-Info.plist
+▸ Processing RNCAsyncStorage-Info.plist
+▸ Touching ReactAppDependencyProvider.framework (in target 'ReactAppDependencyProvider' from project 'Pods')
+▸ Touching react_native_image_picker.framework (in target 'react-native-image-picker' from project 'Pods')
+▸ Touching react_native_slider.framework (in target 'react-native-slider' from project 'Pods')
+▸ Touching RNPermissions.framework (in target 'RNPermissions' from project 'Pods')
+▸ Touching RNGoogleSignin.framework (in target 'RNGoogleSignin' from project 'Pods')
+▸ Touching RNCAsyncStorage.framework (in target 'RNCAsyncStorage' from project 'Pods')
+▸ Compiling RNGestureHandler-dummy.m
+▸ Compiling RNSVG-dummy.m
+▸ Compiling RNGHStylusData.m
+▸ Compiling RNGHVector.m
+▸ Compiling RNGestureHandlerPointerTracker.m
+▸ Compiling RNGestureHandlerEvents.m
+▸ Compiling RNFlingHandler.m
+▸ Compiling RNForceTouchHandler.m
+▸ Compiling RNTapHandler.m
+▸ Compiling RNRotationHandler.m
+▸ Compiling RNRootViewGestureRecognizer.m
+▸ Compiling RNPinchHandler.m
+▸ Compiling RNPanHandler.m
+▸ Compiling RNManualHandler.m
+▸ Compiling RNManualActivationRecognizer.m
+▸ Compiling RNLongPressHandler.m
+▸ Compiling RNHoverHandler.m
+▸ Compiling RNGestureHandlerRegistry.m
+▸ Touching RNGestureHandler.framework (in target 'RNGestureHandler' from project 'Pods')
+▸ Touching RNSVG.framework (in target 'RNSVG' from project 'Pods')
+▸ Processing Pods-YoraaApp-Info.plist
+▸ Compiling Pods-YoraaApp-dummy.m
+▸ Touching Pods_YoraaApp.framework (in target 'Pods-YoraaApp' from project 'Pods')
+▸ Running script '[CP] Check Pods Manifest.lock'
+▸ Copying GoogleService-Info.plist
+▸ Linking __preview.dylib
+▸ Compiling LaunchScreen.storyboard
+▸ Compiling YoraaApp_vers.c
+▸ Linking YoraaApp.debug.dylib
+⚠️  ld: ignoring duplicate libraries: '-lc++'
+▸ Linking YoraaApp
+▸ Processing Info.plist
+    The value "TLSv1.0" for 'NSAppTransportSecurity' => 'NSExceptionDomains' => '185.193.19.244' => 'NSExceptionMinimumTLSVersion' has been deprecated starting in iOS 15.0, use TLSv1.2 or TLSv1.3 instead. (in target 'YoraaApp' from project 'Yoraa')
+    The value "TLSv1.0" for 'NSAppTransportSecurity' => 'NSExceptionDomains' => 'localhost' => 'NSExceptionMinimumTLSVersion' has been deprecated starting in iOS 15.0, use TLSv1.2 or TLSv1.3 instead. (in target 'YoraaApp' from project 'Yoraa')
+    The value "TLSv1.0" for 'NSAppTransportSecurity' => 'NSExceptionDomains' => 'usc1.contabostorage.com' => 'NSExceptionMinimumTLSVersion' has been deprecated starting in iOS 15.0, use TLSv1.2 or TLSv1.3 instead. (in target 'YoraaApp' from project 'Yoraa')
+▸ Running script 'Bundle React Native code and images'
+▸ Running script '[CP] Embed Pods Frameworks'
+▸ Running script '[CP] Copy Pods Resources'
+▸ Running script '[CP-User] [RNFB] Core Configuration'
+      A Info.plist build output file was not found (/Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/YoraaApp.app.dSYM/Contents/Info.plist)
+▸ Touching YoraaApp.app (in target 'YoraaApp' from project 'Yoraa')
+    Run script build phase '[CP-User] [Hermes] Replace Hermes for the right configuration, if needed' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'hermes-engine' from project 'Pods')
+    Run script build phase 'Bundle React Native code and images' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'YoraaApp' from project 'Yoraa')
+    Run script build phase '[CP-User] [RNFB] Core Configuration' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'YoraaApp' from project 'Yoraa')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'fmt' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'Yoga' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'ReactCommon' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'ReactCodegen' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-utils' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-runtimescheduler' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-rendererdebug' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-renderercss' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-rendererconsistency' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-performancetimeline' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-microtasksnativemodule' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-jsitooling' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-jsinspectortracing' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-jsinspectornetwork' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-jsinspectorcdp' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-jserrorhandler' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-idlecallbacksnativemodule' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-graphics' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-featureflagsnativemodule' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-featureflags' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-domnativemodule' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-defaultsnativemodule' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-debug' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-RuntimeHermes' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-RuntimeCore' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-RuntimeApple' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-RCTRuntime' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-NativeModulesApple' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-Mapbuffer' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-ImageManager' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-FabricImage' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-FabricComponents' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'React-Fabric' from project 'Pods')
+    Run script build phase 'Create Symlinks to Header Folders' will be run during every build because it does not specify any outputs. To address this issue, either add output dependencies to the script phase, or configure it to run in every build by unchecking "Based on dependency analysis" in the script phase. (in target 'RCT-Folly' from project 'Pods')
+▸ Build Succeeded
+success Successfully built the app
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:iOS Simulator, id:dvtdevice-DVTiOSDeviceSimulatorPlaceholder-iphonesimulator:placeholder, name:Any iOS Simulator Device }
+{ platform:iOS Simulator, arch:arm64, id:DCDB1237-192F-400C-8961-183F2EE1CE52, OS:18.6, name:iPad (A16) }
+{ platform:iOS Simulator, arch:x86_64, id:DCDB1237-192F-400C-8961-183F2EE1CE52, OS:18.6, name:iPad (A16) }
+{ platform:iOS Simulator, arch:arm64, id:8E52B2F3-D349-4FE5-B47B-E67F8903A65B, OS:18.6, name:iPad Air 11-inch (M3) }
+{ platform:iOS Simulator, arch:x86_64, id:8E52B2F3-D349-4FE5-B47B-E67F8903A65B, OS:18.6, name:iPad Air 11-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:3058C131-4C53-4F31-B100-DCB779EC3D10, OS:18.6, name:iPad Air 13-inch (M3) }
+{ platform:iOS Simulator, arch:x86_64, id:3058C131-4C53-4F31-B100-DCB779EC3D10, OS:18.6, name:iPad Air 13-inch (M3) }
+{ platform:iOS Simulator, arch:arm64, id:D9A0EE9C-D066-48F8-B60E-95B54B1254D2, OS:18.6, name:iPad Pro 11-inch (M4) }
+{ platform:iOS Simulator, arch:x86_64, id:D9A0EE9C-D066-48F8-B60E-95B54B1254D2, OS:18.6, name:iPad Pro 11-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:3C2284DA-0FC4-45E3-A7C6-0D75912237CE, OS:18.6, name:iPad Pro 13-inch (M4) }
+{ platform:iOS Simulator, arch:x86_64, id:3C2284DA-0FC4-45E3-A7C6-0D75912237CE, OS:18.6, name:iPad Pro 13-inch (M4) }
+{ platform:iOS Simulator, arch:arm64, id:93E9B696-2887-4AB1-A1BD-CB367CEA19DD, OS:18.6, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:x86_64, id:93E9B696-2887-4AB1-A1BD-CB367CEA19DD, OS:18.6, name:iPad mini (A17 Pro) }
+{ platform:iOS Simulator, arch:arm64, id:508B8BE6-40B3-4D49-99FF-563A5F76C1CC, OS:18.6, name:iPhone 16 }
+{ platform:iOS Simulator, arch:x86_64, id:508B8BE6-40B3-4D49-99FF-563A5F76C1CC, OS:18.6, name:iPhone 16 }
+{ platform:iOS Simulator, arch:arm64, id:30D5BE7E-399C-45C1-90F9-F92AB4EBF904, OS:18.6, name:iPhone 16 Plus }
+{ platform:iOS Simulator, arch:x86_64, id:30D5BE7E-399C-45C1-90F9-F92AB4EBF904, OS:18.6, name:iPhone 16 Plus }
+{ platform:iOS Simulator, arch:arm64, id:EF1E4738-7F98-4AF3-92CB-15029D1C6049, OS:18.6, name:iPhone 16 Pro }
+{ platform:iOS Simulator, arch:x86_64, id:EF1E4738-7F98-4AF3-92CB-15029D1C6049, OS:18.6, name:iPhone 16 Pro }
+{ platform:iOS Simulator, arch:arm64, id:1247B021-F723-416D-90BF-F2B82219ECD9, OS:18.6, name:iPhone 16 Pro Max }
+{ platform:iOS Simulator, arch:x86_64, id:1247B021-F723-416D-90BF-F2B82219ECD9, OS:18.6, name:iPhone 16 Pro Max }
+{ platform:iOS Simulator, arch:arm64, id:3115BAFC-6965-4CCF-98BB-533509843295, OS:18.6, name:iPhone 16e }
+{ platform:iOS Simulator, arch:x86_64, id:3115BAFC-6965-4CCF-98BB-533509843295, OS:18.6, name:iPhone 16e }
+{ platform:macOS, arch:arm64, variant:Designed for [iPad,iPhone], id:00008132-001614C93605801C, name:My Mac }
+{ platform:iOS, id:dvtdevice-DVTiPhonePlaceholder-iphoneos:placeholder, name:Any iOS Device }
+{ platform:iOS, arch:arm64, id:00008130-001C118A0179001C, name:Rithik’s iPhone }
+info Building (using "xcodebuild -workspace Yoraa.xcworkspace -configuration Debug -scheme Yoraa -destination id=00008130-001C118A0179001C")
+info Installing "/Users/rithikmahajan/Library/Developer/Xcode/DerivedData/Yoraa-bltqvkmcjaygjdalqqwydqszhotp/Build/Products/Debug-iphonesimulator/YoraaApp.app
+info Launching "com.yoraaapparelsprivatelimited.yoraa"
+success Successfully launched the app

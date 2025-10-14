@@ -6,27 +6,29 @@
 import environmentConfig from './environment';
 import { Platform } from 'react-native';
 
-// 🚀 SIMPLIFIED NETWORK CONFIGURATION
-// Direct localhost connection - no IP address needed!
+// 🚀 PRODUCTION NETWORK CONFIGURATION
+// Updated for new Docker deployment on Contabo
+// FORCED TO USE PRODUCTION BACKEND
 const getNetworkConfig = () => {
-  if (__DEV__) {
-    // Development mode - direct localhost connection
-    if (Platform.OS === 'android') {
-      // Android emulator uses 10.0.2.2 to map to host localhost
-      return {
-        BASE_URL: `http://10.0.2.2:8001/api`,
-      };
-    } else {
-      // iOS Simulator - direct localhost should work
-      return {
-        BASE_URL: `http://localhost:8001/api`,
-      };
-    }
-  }
+  // Always use production backend (commented out dev mode)
+  // if (__DEV__) {
+  //   // Development mode - localhost on port 8001 for local testing
+  //   if (Platform.OS === 'android') {
+  //     // Android emulator uses 10.0.2.2 to map to host localhost
+  //     return {
+  //       BASE_URL: `http://10.0.2.2:8001/api`,
+  //     };
+  //   } else {
+  //     // iOS Simulator - direct localhost on port 8001
+  //     return {
+  //       BASE_URL: `http://localhost:8001/api`,
+  //     };
+  //   }
+  // }
   
-  // Production mode - use production URL
+  // Production mode - PRODUCTION URL (Contabo backend on port 8000 - CORRECTED)
   return {
-    BASE_URL: 'https://yoraa.in.net/api',
+    BASE_URL: 'http://185.193.19.244:8000/api',
   };
 };
 
@@ -44,10 +46,10 @@ export const API_CONFIG = {
   }
 };
 
-// ✅ Confirmed working production URL options
+// ✅ Production URL Configuration (Updated October 12, 2025)
 export const PRODUCTION_URL_OPTIONS = {
-  WORKING: 'http://185.193.19.244:8000/api',   // ✅ CONFIRMED WORKING (returns JSON)
-  OLD_HTML: 'http://185.193.19.244:8080/api',  // ❌ Returns HTML (React frontend)
+  PRODUCTION: 'http://185.193.19.244:8000/api',  // ✅ NEW PRODUCTION (Actual working port)
+  LEGACY: 'http://185.193.19.244:8080/api',      // 📦 OLD (Docker port - not active)
 };
 
 // Debug info using environment config

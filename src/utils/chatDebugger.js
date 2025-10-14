@@ -8,11 +8,9 @@
 import auth from '@react-native-firebase/auth';
 
 // Use the same URL configuration as your main API service
-const DEBUG_BASE_URL = __DEV__ 
-  ? 'http://localhost:8001'        // Development
-  : 'http://185.193.19.244:8001';  // Production
-
-class ReactNativeChatDebugger {
+const BASE_URL = __DEV__
+  ? 'http://localhost:8001'        // Development (port 8001)
+  : 'http://185.193.19.244:8080';  // Production (port 8080)class ReactNativeChatDebugger {
   constructor() {
     this.results = {
       firebaseAuth: false,

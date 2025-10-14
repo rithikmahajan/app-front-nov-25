@@ -3,6 +3,7 @@ import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
 import Firebase
+import FirebaseAppCheck
 import UserNotifications
 import AuthenticationServices
 
@@ -17,8 +18,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
-    // Initialize Firebase before React Native
+    // Configure App Check BEFORE initializing Firebase
+    // For development: Use AppCheckDebugProviderFactory
+    // For production: Use DeviceCheckProviderFactory
+    #if DEBUG
+    let providerFactory = AppCheckDebugProviderFactory()
+    #else
+    let providerFactory = DeviceCheckProviderFactory()
+    #endif
+    AppCheck.setAppCheckProviderFactory(providerFactory)
+    
+    // Initialize Firebase
     FirebaseApp.configure()
+    
+    // Disable reCAPTCHA for phone auth (use APNS only)
+    #if DEBUG
+    Auth.auth().settings?.isAppVerificationDisabledForTesting = true
+    #endif
     
     // Configure push notifications for Firebase Auth
     UNUserNotificationCenter.current().delegate = self

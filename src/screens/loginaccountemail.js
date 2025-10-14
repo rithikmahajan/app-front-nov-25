@@ -17,6 +17,7 @@ import appleAuthService from '../services/appleAuthService';
 import googleAuthService from '../services/googleAuthService';
 import sessionManager from '../services/sessionManager';
 import emailOTPService from '../services/emailOTPService';
+import yoraaAPI from '../services/yoraaAPI';
 
 const LoginAccountEmail = ({ navigation, route }) => {
   const [isEmailSelected, setIsEmailSelected] = useState(true);
@@ -148,6 +149,23 @@ const LoginAccountEmail = ({ navigation, route }) => {
         
         console.log('✅ Apple Sign In successful, isNewUser:', isNewUser);
         
+        // CRITICAL: Verify backend authentication status before proceeding
+        await new Promise(resolve => setTimeout(resolve, 500)); // Small delay for backend to process
+        
+        const backendAuth = yoraaAPI.isAuthenticated();
+        console.log('🔐 Backend authentication check:', backendAuth ? 'AUTHENTICATED' : 'NOT AUTHENTICATED');
+        
+        if (!backendAuth) {
+          console.warn('⚠️ Backend not authenticated after Apple login, attempting to reinitialize...');
+          await yoraaAPI.initialize();
+          
+          const recheckAuth = yoraaAPI.isAuthenticated();
+          if (!recheckAuth) {
+            throw new Error('Backend authentication failed. Please try logging in again.');
+          }
+          console.log('✅ Backend authentication recovered after reinitialization');
+        }
+        
         // Create session for Apple login
         await sessionManager.createSession({
           uid: user.uid,
@@ -157,6 +175,10 @@ const LoginAccountEmail = ({ navigation, route }) => {
         }, 'apple');
         
         console.log('✅ Session created for Apple login');
+        
+        // Final verification
+        const finalAuthCheck = yoraaAPI.isAuthenticated();
+        console.log('🎯 Final auth status before navigation:', finalAuthCheck ? 'AUTHENTICATED ✅' : 'NOT AUTHENTICATED ❌');
         
         // Navigate based on user type and context
         const fromCheckout = route?.params?.fromCheckout;

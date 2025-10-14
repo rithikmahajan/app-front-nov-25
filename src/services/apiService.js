@@ -1,5 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import auth from '@react-native-firebase/auth';
 
 // Import centralized API configuration and environment
 import { API_CONFIG } from '../config/apiConfig';
@@ -46,32 +47,62 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Token refresh functionality
+// Token refresh functionality using Firebase
 const refreshAuthToken = async () => {
   try {
-    const refreshToken = await AsyncStorage.getItem('refreshToken');
-    if (!refreshToken) {
-      console.log('🔐 No refresh token available');
+    console.log('🔄 Attempting to refresh backend token using Firebase...');
+    
+    // Get current Firebase user
+    const currentUser = auth().currentUser;
+    
+    if (!currentUser) {
+      console.log('🔐 No Firebase user available for token refresh');
       return null;
     }
 
-    const response = await axios.post(`${BASE_URL}/auth/refresh`, {
-      refreshToken: refreshToken
+    // Get fresh Firebase ID token
+    console.log('🔥 Getting fresh Firebase ID token...');
+    const freshIdToken = await currentUser.getIdToken(true); // force refresh
+    
+    if (!freshIdToken) {
+      console.log('❌ Failed to get fresh Firebase ID token');
+      return null;
+    }
+
+    // Re-authenticate with backend using fresh Firebase token
+    // Note: BASE_URL already includes /api, so we just append /auth/login/firebase
+    console.log('🔄 Re-authenticating with backend using fresh Firebase token...');
+    const response = await axios.post(`${BASE_URL}/auth/login/firebase`, {
+      idToken: freshIdToken
     });
 
-    if (response.data && response.data.token) {
-      await AsyncStorage.setItem('userToken', response.data.token);
-      if (response.data.refreshToken) {
-        await AsyncStorage.setItem('refreshToken', response.data.refreshToken);
+    if (response.data && response.data.success && response.data.data && response.data.data.token) {
+      const newToken = response.data.data.token;
+      const userData = response.data.data.user;
+      
+      // Store new token
+      await AsyncStorage.setItem('userToken', newToken);
+      
+      // Update user data if provided
+      if (userData) {
+        await AsyncStorage.setItem('userData', JSON.stringify(userData));
       }
-      console.log('✅ Token refreshed successfully');
-      return response.data.token;
+      
+      console.log('✅ Backend token refreshed successfully via Firebase');
+      return newToken;
     }
+    
+    console.log('❌ Backend did not return a valid token');
     return null;
   } catch (error) {
-    console.error('❌ Token refresh failed:', error);
-    // Clear invalid tokens
-    await AsyncStorage.multiRemove(['userToken', 'refreshToken']);
+    console.error('❌ Token refresh failed:', error.message);
+    
+    // If Firebase user is not authenticated, clear tokens
+    if (error.code === 'auth/user-token-expired' || error.code === 'auth/user-not-found') {
+      console.log('🧹 Firebase authentication expired, clearing tokens...');
+      await AsyncStorage.multiRemove(['userToken', 'userData']);
+    }
+    
     return null;
   }
 };

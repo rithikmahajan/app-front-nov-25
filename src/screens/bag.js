@@ -12,6 +12,7 @@ import {
   PanResponder,
   Image,
 } from 'react-native';
+import Config from 'react-native-config';
 import BottomNavigationBar from '../components/bottomnavigationbar';
 import BagQuantitySelectorModalOverlay from './bagquantityselectormodaloverlay';
 import BagSizeSelectorModalOverlay from './bagsizeselectormodaloverlay';
@@ -29,7 +30,6 @@ import {
   debugCart, 
   getItemPrice 
 } from '../utils/skuUtils';
-import LocationCurrencySelector from '../components/LocationCurrencySelector';
 import {
   VisaIcon,
   MasterCardIcon,
@@ -178,14 +178,14 @@ const SwipeableBagItem = React.memo(({ item, index, onOpenQuantityModal, onOpenS
               if (priceInfo.type === 'sale' && priceInfo.originalPrice > 0) {
                 return (
                   <>
-                    <Text style={styles.salePrice}>${priceInfo.price.toFixed(2)}</Text>
-                    <Text style={styles.originalPrice}>${priceInfo.originalPrice.toFixed(2)}</Text>
+                    <Text style={styles.originalPrice}>₹{priceInfo.originalPrice.toFixed(2)}</Text>
+                    <Text style={styles.salePrice}>₹{priceInfo.price.toFixed(2)}</Text>
                   </>
                 );
               } else if (priceInfo.type === 'regular' || priceInfo.type === 'sale') {
-                return <Text style={styles.price}>${priceInfo.price.toFixed(2)}</Text>;
+                return <Text style={styles.price}>₹{priceInfo.price.toFixed(2)}</Text>;
               } else {
-                return <Text style={styles.price}>$0.00</Text>;
+                return <Text style={styles.price}>₹0.00</Text>;
               }
             })()}
           </View>
@@ -206,7 +206,7 @@ const PromoCodeItem = React.memo(({ promoCode, onApplyPromo, isSelected }) => {
     if (promoCode.discountType === 'percentage') {
       return `${promoCode.discountValue}% OFF`;
     } else if (promoCode.discountType === 'fixed') {
-      return `$${promoCode.discountValue} OFF`;
+      return `₹${promoCode.discountValue} OFF`;
     }
     return 'DISCOUNT';
   };
@@ -236,7 +236,7 @@ const PromoCodeItem = React.memo(({ promoCode, onApplyPromo, isSelected }) => {
             <Text style={styles.voucherTitle}>{getDiscountDisplay()}</Text>
             <Text style={styles.voucherCode}>{promoCode.code}</Text>
             <Text style={styles.voucherDate}>
-              {promoCode.description || `Min. order $${promoCode.minOrderValue || 0}`}
+              {promoCode.description || `Min. order ₹${promoCode.minOrderValue || 0}`}
             </Text>
             {promoCode.validUntil && (
               <Text style={styles.voucherExpiry}>
@@ -321,8 +321,8 @@ const PromoCodeSection = React.memo(({ promoCodes, onApplyPromo, onRetryFetch })
 
 const BagScreen = ({ navigation, route }) => {
   // Use BagContext instead of local state
-  const { bagItems, removeFromBag, updateQuantity, updateSize, getTotalPrice, clearBag } = useBag();
-  const { selectedAddress, setSelectedAddress } = useAddress();
+  const { bagItems, removeFromBag, updateQuantity, updateSize, getTotalPrice, clearBag, loadBagFromAPI, validateAndCleanCart } = useBag();
+  const { selectedAddress, selectAddress } = useAddress();
   
   // Currency context for location-based pricing
   const { 
@@ -503,13 +503,8 @@ const BagScreen = ({ navigation, route }) => {
     // Base subtotal from cart items (already converted by getItemPrice in SwipeableBagItem)
     const itemsSubtotal = getTotalPrice();
     
-    // Dynamic delivery charges based on default delivery options
-    let totalDeliveryCharge = 0;
-    if (deliveryOptions.length > 0) {
-      // Use the first (default) delivery option from currency context
-      const defaultOption = deliveryOptions[0];
-      totalDeliveryCharge = defaultOption.free ? 0 : defaultOption.cost || 0;
-    }
+    // Dynamic delivery charges - SET TO FREE
+    let totalDeliveryCharge = 0; // Always free delivery
     
     // Calculate promo discount dynamically
     let promoDiscount = 0;
@@ -542,8 +537,6 @@ const BagScreen = ({ navigation, route }) => {
     const finalTotal = Math.max(0, itemsSubtotal + totalDeliveryCharge - promoDiscount - pointsDiscount);
     
     // Currency-aware formatting
-    const selectedOption = deliveryOptions.length > 0 ? deliveryOptions[0] : null;
-    
     return {
       itemsSubtotal,
       totalDeliveryCharge,
@@ -552,10 +545,8 @@ const BagScreen = ({ navigation, route }) => {
       finalTotal,
       
       // For display purposes with currency formatting
-      deliveryLabel: selectedOption ? selectedOption.name : 'Delivery',
-      deliveryValue: selectedOption 
-        ? (selectedOption.free ? 'FREE' : formatCurrencyPrice(selectedOption.cost))
-        : formatCurrencyPrice(0),
+      deliveryLabel: 'Delivery',
+      deliveryValue: 'FREE', // Always show free delivery
       promoLabel: promoCodes.selectedCode ? `Promo (${promoCodes.selectedCode.code})` : 'Promo',
       promoValue: promoDiscount > 0 ? `-${formatCurrencyPrice(promoDiscount)}` : formatCurrencyPrice(0),
       pointsLabel: 'Points Discount',
@@ -576,7 +567,6 @@ const BagScreen = ({ navigation, route }) => {
   }, [
     bagItems, 
     getTotalPrice, 
-    deliveryOptions,
     promoCodes.selectedCode, 
     modalStates.pointsApplied, 
     userPoints.available,
@@ -584,16 +574,6 @@ const BagScreen = ({ navigation, route }) => {
     isDomestic,
     formatCurrencyPrice
   ]);
-
-  const deliveryInfo = useMemo(() => {
-    const addressId = selectedAddress?.id || selectedAddress?._id;
-    return {
-      dateRange: 'Wed, 11 May to Fri, 13 May',
-      location: selectedAddress && addressId 
-        ? `${selectedAddress.street || selectedAddress.addressLine1 || selectedAddress.firstName || ''}, ${selectedAddress.city || ''}`.trim().replace(/,$/, '') || 'Selected Address'
-        : 'Edit Location',
-    };
-  }, [selectedAddress]);
 
   // For backward compatibility, keep bagCalculations but use dynamicPricing values
   const bagCalculations = useMemo(() => ({
@@ -609,21 +589,21 @@ const BagScreen = ({ navigation, route }) => {
 
   // Dynamic price breakdown for UI display
   const priceBreakdown = useMemo(() => ({
-    delivery: dynamicPricing.deliveryValue,
+    delivery: 'FREE', // Always show free delivery
     internationalDelivery: isDomestic 
       ? 'Domestic - FREE'
-      : `International - $${dynamicPricing.totalDeliveryCharge}`,
+      : 'International - FREE', // Changed to free
     promo: dynamicPricing.promoValue,
     pointsDiscount: dynamicPricing.pointsValue,
     total: dynamicPricing.totalValue,
     
     // Additional breakdown for detailed display
-    itemsSubtotal: `US$${dynamicPricing.itemsSubtotal.toFixed(2)}`,
-    deliveryCharge: `US$${dynamicPricing.totalDeliveryCharge.toFixed(2)}`,
+    itemsSubtotal: formatCurrencyPrice(dynamicPricing.itemsSubtotal),
+    deliveryCharge: 'FREE',
     totalSavings: dynamicPricing.promoDiscount + dynamicPricing.pointsDiscount > 0 
-      ? `US$${(dynamicPricing.promoDiscount + dynamicPricing.pointsDiscount).toFixed(2)}`
-      : 'US$0.00'
-  }), [dynamicPricing, isDomestic]);
+      ? formatCurrencyPrice(dynamicPricing.promoDiscount + dynamicPricing.pointsDiscount)
+      : formatCurrencyPrice(0)
+  }), [dynamicPricing, isDomestic, formatCurrencyPrice]);
 
   // Debug effect to log pricing changes
   useEffect(() => {
@@ -655,8 +635,8 @@ const BagScreen = ({ navigation, route }) => {
       console.log('🏠 Address selected from delivery options:', newAddress);
       
       // Update the selected address in context
-      if (setSelectedAddress) {
-        setSelectedAddress(newAddress);
+      if (selectAddress) {
+        selectAddress(newAddress);
       }
       
       // Clear the navigation params to prevent reprocessing
@@ -667,7 +647,7 @@ const BagScreen = ({ navigation, route }) => {
         handleCheckout();
       }, 500);
     }
-  }, [route?.params, updateQuantity, navigation, handleCheckout, setSelectedAddress]);
+  }, [route?.params, updateQuantity, navigation, handleCheckout, selectAddress]);
 
   // Effect to fetch user points on component mount
   useEffect(() => {
@@ -678,6 +658,37 @@ const BagScreen = ({ navigation, route }) => {
   useEffect(() => {
     fetchPromoCodes();
   }, [fetchPromoCodes]);
+
+  // Effect to handle cart validation and refresh when requested
+  useEffect(() => {
+    const handleCartRefresh = async () => {
+      if (route?.params?.refresh || route?.params?.forceReload) {
+        console.log('🔄 Cart refresh requested');
+        
+        try {
+          const result = await validateAndCleanCart();
+          
+          if (!result.valid && result.removedItems.length > 0) {
+            Alert.alert(
+              'Cart Updated',
+              result.message,
+              [{ text: 'OK' }]
+            );
+          } else {
+            // Force reload from backend
+            await loadBagFromAPI();
+          }
+        } catch (error) {
+          console.error('Error refreshing cart:', error);
+        }
+        
+        // Clear the params to prevent repeated refreshes
+        navigation.setParams({ refresh: false, forceReload: false });
+      }
+    };
+    
+    handleCartRefresh();
+  }, [route?.params?.refresh, route?.params?.forceReload, validateAndCleanCart, loadBagFromAPI, navigation]);
 
   // Enhanced navigation handlers
   const handleGoBack = useCallback(() => {
@@ -843,16 +854,23 @@ const BagScreen = ({ navigation, route }) => {
     }
   }, [bagItems, selectedAddress, initializeRazorpayPayment, validateCheckoutData]);
 
-  // Function to initialize Razorpay payment (UPDATED - LIVE VERSION)
+  // Function to initialize Razorpay payment (UPDATED - Environment-aware)
   const initializeRazorpayPayment = useCallback(async (razorpayOrder, address) => {
     try {
       console.log('💳 Initializing Razorpay payment with order:', razorpayOrder);
+
+      // Priority: Environment variable > Auto-detect based on __DEV__
+      const razorpayKey = Config.RAZORPAY_KEY_ID || (__DEV__ ? 'rzp_test_9WNhUijdgxSon5' : 'rzp_live_VRU7ggfYLI7DWV');
+      
+      console.log('🔑 Razorpay mode:', __DEV__ ? 'TEST' : 'LIVE');
+      console.log('🔑 From environment:', !!Config.RAZORPAY_KEY_ID);
+      console.log('🔑 Using Razorpay key:', razorpayKey);
 
       const options = {
         description: 'Order Payment',
         image: 'https://your-app-logo.com/logo.png', // Replace with actual logo URL
         currency: razorpayOrder.currency,
-        key: 'rzp_live_VRU7ggfYLI7DWV', // Live key from backend
+        key: razorpayKey,
         amount: razorpayOrder.amount,
         order_id: razorpayOrder.id,
         name: 'Yoraa',
@@ -1181,7 +1199,7 @@ const BagScreen = ({ navigation, route }) => {
     );
   }, []);
 
-  // ENHANCED: Authentication-aware checkout with guest support
+  // ENHANCED: Authentication-aware checkout with direct Razorpay payment
   const handleCheckout = useCallback(async () => {
     console.log('🔍 handleCheckout (ENHANCED) - dynamicPricing:', dynamicPricing);
     console.log('🔍 handleCheckout - bagCalculations (compatibility):', bagCalculations);
@@ -1189,6 +1207,35 @@ const BagScreen = ({ navigation, route }) => {
     // STEP 1: Validate cart has items
     if (!dynamicPricing.isValid) {
       Alert.alert('Empty Bag', 'Please add items to your bag before checking out.');
+      return;
+    }
+
+    // STEP 1.5: Validate cart items exist in backend (CRITICAL FIX)
+    console.log('🔍 Validating cart items before checkout...');
+    try {
+      const isCartValid = await validateAndCleanCart();
+      
+      if (!isCartValid) {
+        Alert.alert(
+          'Cart Updated',
+          'Some items in your cart were no longer available and have been removed. Please review your cart before proceeding.',
+          [
+            {
+              text: 'Review Cart',
+              style: 'default'
+            }
+          ]
+        );
+        return;
+      }
+      console.log('✅ Cart validation passed');
+    } catch (validationError) {
+      console.error('❌ Error validating cart:', validationError);
+      Alert.alert(
+        'Validation Error',
+        'Unable to validate your cart. Please try again or contact support.',
+        [{ text: 'OK' }]
+      );
       return;
     }
 
@@ -1210,23 +1257,41 @@ const BagScreen = ({ navigation, route }) => {
       return;
     }
 
-    // STEP 3: User is authenticated, proceed to delivery options to complete profile and address
-    console.log('✅ User is authenticated, proceeding to delivery options flow');
+    // STEP 3: Check if user has selected an address
+    if (!selectedAddress) {
+      // User needs to select/add an address
+      console.log('📍 No address selected, navigating to delivery address selection');
+      Alert.alert(
+        'Delivery Address Required',
+        'Please select or add a delivery address to continue with payment.',
+        [
+          {
+            text: 'Select Address',
+            onPress: () => {
+              navigation.navigate('deliveryaddress', {
+                returnScreen: 'Bag',
+                fromCheckout: true
+              });
+            }
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
+      return;
+    }
+
+    // STEP 4: User is authenticated and has address, initiate Razorpay payment directly
+    console.log('✅ User is authenticated with address, initiating Razorpay payment');
+    console.log('📦 Cart items:', bagItems.length);
+    console.log('📍 Delivery address:', selectedAddress);
+    console.log('💰 Total amount:', dynamicPricing.total);
     
-    // Always navigate to delivery options first for authenticated users
-    // This ensures they can complete/update their profile (including email) and address information
-    console.log('📍 Navigating authenticated user to deliveryoptionsstepone to complete checkout flow');
-    navigation.navigate('deliveryoptionsstepone', {
-      returnScreen: 'bag',
-      fromCheckout: true,
-      isAuthenticated: true,
-      bagData: {
-        items: bagItems,
-        pricing: dynamicPricing,
-        calculations: bagCalculations
-      }
-    });
-  }, [dynamicPricing, bagCalculations, navigation, bagItems]);
+    // Create Razorpay order and initiate payment
+    await createRazorpayOrder();
+  }, [dynamicPricing, bagCalculations, navigation, bagItems, validateAndCleanCart, selectedAddress, createRazorpayOrder]);
 
   // Optimized handler functions with better state management
   const handleQuantityChange = useCallback((itemId, newQuantity) => {
@@ -1368,13 +1433,7 @@ const BagScreen = ({ navigation, route }) => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Bag</Text>
         <View style={styles.headerRight}>
-          <LocationCurrencySelector 
-            style={styles.locationSelector}
-            onLocationChange={(location) => {
-              console.log('Location changed in bag:', location.country);
-              // The currency context will handle the global state update
-            }}
-          />
+          {/* Currency selector removed */}
         </View>
       </View>
 
@@ -1412,9 +1471,9 @@ const BagScreen = ({ navigation, route }) => {
               style={styles.deliveryLocationContainer}
               onPress={() => {
                 if (yoraaAPI.isAuthenticated()) {
-                  // If authenticated, go directly to delivery options
-                  navigation.navigate('deliveryoptionsstepone', {
-                    returnScreen: 'bag',
+                  // If authenticated, go directly to delivery address screen
+                  navigation.navigate('deliveryaddress', {
+                    returnScreen: 'Bag',
                     bagData: {
                       items: bagItems,
                       pricing: dynamicPricing,
@@ -1439,11 +1498,15 @@ const BagScreen = ({ navigation, route }) => {
             >
               <View style={styles.deliveryLocationContent}>
                 <Text style={styles.deliveryLocationTitle}>
-                  Delivering to: {deliveryInfo.location === 'Edit Location' ? currentLocation.country : currentLocation.country}
+                  Delivering to: {selectedAddress 
+                    ? `${selectedAddress.city || ''}, ${selectedAddress.country || 'India'}`
+                    : currentLocation.country}
                 </Text>
-                <Text style={styles.deliveryLocationSubtitle}>
-                  Prices shown in {currentLocation.currency}
-                </Text>
+                {selectedAddress && (
+                  <Text style={styles.deliveryLocationSubtitle}>
+                    {selectedAddress.firstName} {selectedAddress.lastName}, {selectedAddress.address}
+                  </Text>
+                )}
               </View>
               <Text style={styles.deliveryLocationArrow}>›</Text>
             </TouchableOpacity>

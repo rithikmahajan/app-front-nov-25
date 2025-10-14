@@ -5,7 +5,7 @@
  * @format
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StatusBar,
   StyleSheet,
@@ -14,6 +14,7 @@ import {
   Text,
   SafeAreaView,
   Platform,
+  AppState,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { EnhancedLayout } from './src/components/layout';
@@ -34,6 +35,8 @@ import { getAuth } from '@react-native-firebase/auth';
 import authManager from './src/services/authManager';
 import sessionManager from './src/services/sessionManager';
 import yoraaAPI from './src/services/yoraaAPI';
+import recaptchaService from './src/services/recaptchaService';
+import authStorageService from './src/services/authStorageService';
 
 // Main App Component with Routing
 function App() {
@@ -43,9 +46,11 @@ function App() {
   const [isNativeModulesReady, setIsNativeModulesReady] = useState(false);
   
   // Authentication state
-  const [user, setUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
   const [authInitialized, setAuthInitialized] = useState(false);
+  
+  // Ref to track if component is mounted (prevent setState on unmounted component)
+  const isMountedRef = useRef(true);
 
   // Initialize native modules safely
   useEffect(() => {
@@ -77,8 +82,62 @@ function App() {
       try {
         console.log('🔄 Initializing authentication services...');
         
+        // Initialize reCAPTCHA Enterprise for iOS phone auth
+        // Using the reCAPTCHA site key from Firebase Console
+        await recaptchaService.initialize('6Lc5t-UrAAAAANbZi1nLmgC8E426zp-gF5CKLIkt');
+        
         // Initialize YoraaAPI first
         await yoraaAPI.initialize();
+        
+        // Check if user has stored auth data
+        const isAuthenticated = await authStorageService.isAuthenticated();
+        console.log('🔐 Stored authentication found:', isAuthenticated);
+        
+        if (isAuthenticated) {
+          const userData = await authStorageService.getUserData();
+          const token = await authStorageService.getAuthToken();
+          
+          // CRITICAL: Validate that auth data is complete
+          if (userData && token && (userData._id || userData.uid)) {
+            console.log('✅ Restoring user session:', { userId: userData._id || userData.uid });
+            
+            // Sync token with yoraaAPI
+            if (yoraaAPI.userToken !== token) {
+              yoraaAPI.userToken = token;
+              console.log('✅ Backend token synced from storage');
+            }
+            
+            // CRITICAL FOR TESTFLIGHT: Verify Firebase user exists and sync backend
+            const firebaseUser = getAuth().currentUser;
+            if (firebaseUser) {
+              console.log('🔍 Firebase user found on init, verifying backend auth...');
+              const backendAuth = yoraaAPI.isAuthenticated();
+              
+              if (!backendAuth) {
+                console.log('⚠️ Backend not authenticated on app start, syncing...');
+                try {
+                  await authManager.syncBackendAuth();
+                  console.log('✅ Backend auth synced on app start');
+                } catch (syncError) {
+                  console.error('❌ Failed to sync backend auth on app start:', syncError);
+                  // Clear invalid session
+                  await authStorageService.clearAuthData();
+                  console.log('🧹 Cleared invalid auth data due to sync failure');
+                }
+              } else {
+                console.log('✅ Backend already authenticated on app start');
+              }
+            } else {
+              // No Firebase user but we have tokens - this is invalid state
+              console.warn('⚠️ Stored tokens found but no Firebase user - clearing invalid session');
+              await authStorageService.clearAuthData();
+            }
+          } else {
+            // Incomplete auth data - clear it
+            console.warn('⚠️ Incomplete auth data found - clearing invalid session');
+            await authStorageService.clearAuthData();
+          }
+        }
         
         // Auth Manager will initialize session manager internally
         // This will handle Firebase auth state changes and session persistence
@@ -100,8 +159,6 @@ function App() {
     const authStateChanged = async (firebaseUser) => {
       console.log('🔥 App.js - Firebase Auth state changed:', firebaseUser ? 'User logged in' : 'User logged out');
       
-      setUser(firebaseUser);
-      
       // Update last activity if user is authenticated
       if (firebaseUser && authInitialized) {
         try {
@@ -121,20 +178,59 @@ function App() {
 
   // App state change listener - refresh auth when app becomes active
   useEffect(() => {
+    const { AppState } = require('react-native');
+    
     const handleAppStateChange = async (nextAppState) => {
       if (nextAppState === 'active' && authInitialized) {
         try {
           console.log('📱 App became active, refreshing authentication...');
-          await authManager.refreshAuth();
+          
+          // CRITICAL: Check if sign-in is currently in progress
+          // If it is, wait for it to complete instead of reinitializing
+          if (yoraaAPI.isSigningIn) {
+            console.log('⏳ Sign-in currently in progress, waiting for completion...');
+            
+            // Wait for the sign-in to complete
+            if (yoraaAPI.signInPromise) {
+              await yoraaAPI.signInPromise;
+              console.log('✅ Sign-in completed, token should be available');
+            }
+            
+            // Verify authentication status
+            const isAuth = yoraaAPI.isAuthenticated();
+            console.log('🔐 Auth status after sign-in completion:', isAuth ? 'AUTHENTICATED ✅' : 'NOT AUTHENTICATED ❌');
+            
+            return; // Skip reinitialization since sign-in just completed
+          }
+          
+          // Reinitialize yoraaAPI to ensure token is loaded from storage
+          await yoraaAPI.reinitialize();
+          
+          const isAuth = yoraaAPI.isAuthenticated();
+          console.log('🔐 Auth status after reinitialization:', isAuth ? 'AUTHENTICATED ✅' : 'NOT AUTHENTICATED ❌');
+          
+          // If authenticated, sync with backend
+          if (isAuth) {
+            await authManager.refreshAuth();
+          } else {
+            // Not authenticated with backend, try Firebase auth
+            const currentUser = getAuth().currentUser;
+            if (currentUser) {
+              console.log('🔄 Firebase user found, syncing with backend...');
+              await authManager.syncBackendAuth();
+            }
+          }
         } catch (error) {
           console.warn('⚠️ Failed to refresh auth on app active:', error);
         }
       }
     };
 
-    // Note: AppState listener would be added here in a real implementation
-    // For now, we'll rely on the existing auth state management
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
     
+    return () => {
+      subscription?.remove();
+    };
   }, [authInitialized]);
 
   const handleSplashFinish = () => {
@@ -157,7 +253,8 @@ function App() {
     );
   }
 
-  if (isLoading || !isNativeModulesReady || initializing) {
+  // Show splash screen until everything is ready
+  if (isLoading || !isNativeModulesReady || initializing || !authInitialized) {
     return <SplashScreen onFinish={handleSplashFinish} />;
   }
 

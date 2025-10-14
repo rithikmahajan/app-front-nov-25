@@ -11,10 +11,23 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import yoraaAPI from '../services/yoraaAPI';
+import sessionManager from '../services/sessionManager';
 
 const { width } = Dimensions.get('window');
 
 const LogoutModal = ({ visible, onClose, onSignOut, navigation }) => {
+  // Log navigation availability for debugging
+  React.useEffect(() => {
+    if (visible) {
+      console.log('🔍 LogoutModal navigation check:', {
+        hasNavigation: !!navigation,
+        hasReset: navigation && typeof navigation.reset === 'function',
+        hasNavigate: navigation && typeof navigation.navigate === 'function',
+        navigationKeys: navigation ? Object.keys(navigation) : [],
+      });
+    }
+  }, [visible, navigation]);
+
   const handleStay = () => {
     onClose();
   };
@@ -26,14 +39,31 @@ const LogoutModal = ({ visible, onClose, onSignOut, navigation }) => {
       
       console.log('🔐 Starting comprehensive logout process...');
       
-      // 1. Sign out from Firebase
-      const firebaseUser = auth().currentUser;
-      if (firebaseUser) {
-        await auth().signOut();
-        console.log('✅ Firebase logout successful');
+      // 1. CRITICAL: Unregister FCM token FIRST (before clearing auth tokens)
+      console.log('🔔 STEP 1: Unregistering FCM token...');
+      try {
+        const fcmService = require('../services/fcmService').default;
+        const authToken = await AsyncStorage.getItem('userToken');
+        
+        if (authToken) {
+          const unregisterResult = await fcmService.unregisterTokenFromBackend(authToken);
+          
+          if (unregisterResult.success) {
+            console.log('✅ FCM token unregistered from backend');
+          } else {
+            console.warn('⚠️ FCM unregister failed (non-critical):', unregisterResult.error);
+          }
+        } else {
+          console.log('ℹ️ No auth token found, skipping FCM unregistration');
+        }
+      } catch (fcmError) {
+        console.warn('⚠️ FCM unregistration error (non-critical):', fcmError.message);
+        // Continue with logout even if FCM fails
       }
       
-      // 2. Sign out from backend and clear all tokens
+      // 2. CRITICAL: Clear backend tokens (after FCM unregistration)
+      // This prevents race conditions where Firebase auth state changes
+      // trigger reinitialization before tokens are cleared
       try {
         await yoraaAPI.logoutComplete();
         console.log('✅ Backend logout successful');
@@ -41,7 +71,41 @@ const LogoutModal = ({ visible, onClose, onSignOut, navigation }) => {
         console.warn('⚠️ Backend logout failed (continuing):', error);
       }
       
-      // 3. Clear all authentication-related data from AsyncStorage
+      // 3. Clear session manager (after backend to use existing session data)
+      try {
+        await sessionManager.logout();
+        console.log('✅ Session manager cleared');
+      } catch (sessionError) {
+        console.warn('⚠️ Session manager logout failed (continuing):', sessionError);
+      }
+      
+      // 4. Sign out from Firebase (AFTER clearing backend tokens)
+      const firebaseUser = auth().currentUser;
+      if (firebaseUser) {
+        console.log('🔥 Signing out Firebase user:', firebaseUser.email || firebaseUser.uid);
+        await auth().signOut();
+        console.log('✅ Firebase logout successful');
+      } else {
+        console.log('ℹ️ No Firebase user to sign out');
+      }
+      
+      // 5. Sign out from Google if signed in
+      console.log('🔵 Checking Google sign-in status...');
+      try {
+        const { GoogleSignin } = require('@react-native-google-signin/google-signin');
+        const isSignedIn = await GoogleSignin.isSignedIn();
+        
+        if (isSignedIn) {
+          await GoogleSignin.signOut();
+          console.log('✅ Google sign-out successful');
+        } else {
+          console.log('ℹ️ Not signed in with Google');
+        }
+      } catch (googleError) {
+        console.warn('⚠️ Google sign-out failed (continuing):', googleError.message);
+      }
+      
+      // 6. Clear all authentication-related data from AsyncStorage
       const keysToRemove = [
         'userToken',
         'adminToken', 
@@ -51,13 +115,19 @@ const LogoutModal = ({ visible, onClose, onSignOut, navigation }) => {
         'guestSessionId',
         'userEmail',
         'userPhone',
-        'isAuthenticated'
+        'isAuthenticated',
+        'session_data',
+        'session_created_at',
+        'session_last_activity',
+        'fcmToken', // Clear FCM token from local storage
+        'token',
+        'user'
       ];
       
       await AsyncStorage.multiRemove(keysToRemove);
       console.log('✅ All authentication data cleared');
       
-      // 4. Clear any cached user preferences that should reset on logout
+      // 7. Clear any cached user preferences that should reset on logout
       const userPreferenceKeys = [
         'userAddresses',
         'userPaymentMethods',
@@ -67,13 +137,27 @@ const LogoutModal = ({ visible, onClose, onSignOut, navigation }) => {
       await AsyncStorage.multiRemove(userPreferenceKeys);
       console.log('✅ User preferences cleared');
       
-      // 5. Navigate to appropriate screen (Rewards as requested)
-      if (navigation) {
-        navigation.navigate('Rewards');
-        console.log('📱 Navigated to Rewards screen');
+      // 8. Navigate to appropriate screen (Rewards as requested)
+      if (navigation && typeof navigation.reset === 'function') {
+        try {
+          // Use reset to ensure clean navigation stack
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Rewards' }],
+          });
+          console.log('📱 Navigated to Rewards screen (reset stack)');
+        } catch (navError) {
+          console.warn('⚠️ Navigation reset failed, trying navigate:', navError);
+          // Fallback to regular navigation
+          if (typeof navigation.navigate === 'function') {
+            navigation.navigate('Rewards');
+          }
+        }
+      } else {
+        console.log('ℹ️ Navigation not available, skipping navigation');
       }
       
-      // 6. Call the onSignOut callback if provided
+      // 9. Call the onSignOut callback if provided
       if (onSignOut) {
         onSignOut();
       }
@@ -105,8 +189,19 @@ const LogoutModal = ({ visible, onClose, onSignOut, navigation }) => {
       );
       
       // Still navigate and call callback
-      if (navigation) {
-        navigation.navigate('Rewards');
+      if (navigation && typeof navigation.reset === 'function') {
+        try {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Rewards' }],
+          });
+        } catch (navError) {
+          console.warn('⚠️ Navigation reset failed in error handler:', navError);
+          // Try fallback navigation
+          if (typeof navigation.navigate === 'function') {
+            navigation.navigate('Rewards');
+          }
+        }
       }
       if (onSignOut) {
         onSignOut();

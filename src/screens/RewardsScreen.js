@@ -90,7 +90,7 @@ const RewardsScreen = ({ navigation, route }) => {
           navigation.navigate('deliveryoptionsstepone', {
             fromCheckout: true,
             bagData: route?.params?.bagData,
-            returnScreen: 'bag'
+            returnScreen: 'Bag'
           });
         }, 500);
       }
@@ -211,7 +211,7 @@ const RewardsScreen = ({ navigation, route }) => {
 
       {/* Static content below */}
       <View style={styles.staticContent}>
-        {/* Sign in and Create Account buttons - Only show for non-authenticated users */}
+        {/* Sign in button - Only show for non-authenticated users */}
         {!isUserAuthenticated && (
           <View style={styles.authButtons}>
             <TouchableOpacity 
@@ -219,12 +219,6 @@ const RewardsScreen = ({ navigation, route }) => {
               onPress={() => navigation && navigation.navigate('LoginAccountMobileNumber', { fromCheckout: route?.params?.fromCheckout })}
             >
               <Text style={styles.signInButtonText}>Sign In</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.createAccountButton}
-              onPress={() => navigation && navigation.navigate('CreateAccountMobileNumber', { fromCheckout: route?.params?.fromCheckout })}
-            >
-              <Text style={styles.createAccountButtonText}>Create Account</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -597,45 +591,26 @@ const styles = StyleSheet.create({
   // Auth Buttons
   authButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 20, // Increased horizontal margin for better spacing
-    marginTop: 15, // Further reduced from 30 to position buttons closer to yellow section
+    justifyContent: 'center',
+    marginHorizontal: 20,
+    marginTop: 15,
     marginBottom: 30,
     paddingHorizontal: 0,
-    alignItems: 'center', // Ensure buttons are centered
+    alignItems: 'center',
   },
   signInButton: {
     backgroundColor: '#000000',
     paddingVertical: 16,
-    paddingHorizontal: 20, // Reduced from 51 to make button smaller
+    paddingHorizontal: 51,
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
     height: 51,
-    width: 140, // Reduced from 162 to make room for Create Account button
+    minWidth: 180,
   },
   signInButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '500',
-    fontFamily: 'Montserrat-Medium',
-  },
-  createAccountButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#000000',
-    paddingVertical: 16,
-    paddingHorizontal: 15, // Reduced padding for better text fit
-    borderRadius: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 51,
-    width: 180, // Increased width to accommodate "Create Account" text properly
-    marginLeft: 20, // Reduced margin to fit both buttons
-  },
-  createAccountButtonText: {
-    color: '#000000',
-    fontSize: 15, // Slightly reduced font size for better fit
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
   },

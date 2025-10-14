@@ -262,36 +262,61 @@ class AuthManager {
 
   /**
    * Force backend authentication for current Firebase user
+   * Now with retry logic and better error handling
    */
-  async syncBackendAuth() {
+  async syncBackendAuth(retryCount = 0, maxRetries = 3) {
     const user = auth().currentUser;
-    if (user && !yoraaAPI.isAuthenticated()) {
-      try {
-        console.log('🔄 Synchronizing backend authentication...');
-        const idToken = await user.getIdToken(true); // Force refresh
-        await yoraaAPI.firebaseLogin(idToken);
-        console.log('✅ Backend auth synchronized');
-        
-        // Update session if needed
-        const sessionState = sessionManager.getSessionState();
-        if (!sessionState.isAuthenticated) {
-          const loginMethod = this.determineLoginMethod(user);
-          await sessionManager.createSession({
-            uid: user.uid,
-            email: user.email,
-            phoneNumber: user.phoneNumber,
-            displayName: user.displayName,
-            photoURL: user.photoURL
-          }, loginMethod);
-        }
-        
-        return true;
-      } catch (error) {
-        console.error('❌ Failed to sync backend auth:', error);
-        return false;
-      }
+    
+    if (!user) {
+      console.warn('⚠️ No Firebase user to sync');
+      return false;
     }
-    return yoraaAPI.isAuthenticated();
+    
+    if (yoraaAPI.isAuthenticated()) {
+      console.log('✅ Backend already authenticated');
+      return true;
+    }
+    
+    try {
+      console.log(`🔄 Syncing backend auth (attempt ${retryCount + 1}/${maxRetries})...`);
+      
+      // Get fresh ID token
+      const idToken = await user.getIdToken(true);
+      
+      // Authenticate with backend
+      await yoraaAPI.firebaseLogin(idToken);
+      
+      console.log('✅ Backend auth synchronized successfully');
+      
+      // Verify session exists
+      const sessionState = sessionManager.getSessionState();
+      if (!sessionState.isAuthenticated) {
+        const loginMethod = this.determineLoginMethod(user);
+        await sessionManager.createSession({
+          uid: user.uid,
+          email: user.email,
+          phoneNumber: user.phoneNumber,
+          displayName: user.displayName,
+          photoURL: user.photoURL
+        }, loginMethod);
+      }
+      
+      return true;
+      
+    } catch (error) {
+      console.error(`❌ Backend sync failed (attempt ${retryCount + 1}):`, error.message);
+      
+      // Retry with exponential backoff
+      if (retryCount < maxRetries - 1) {
+        const delay = Math.pow(2, retryCount) * 500; // 500ms, 1s, 2s
+        console.log(`⏳ Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.syncBackendAuth(retryCount + 1, maxRetries);
+      }
+      
+      console.error('❌ All backend sync attempts failed');
+      return false;
+    }
   }
 
   /**

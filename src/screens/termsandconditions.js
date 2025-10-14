@@ -63,7 +63,7 @@ const TermsAndConditions = ({ navigation, route }) => {
           // From checkout: Skip preferences and go directly to delivery options
           console.log('User from checkout - navigating directly to deliveryoptionsstepone');
           navigation.navigate('deliveryoptionsstepone', {
-            returnScreen: 'bag',
+            returnScreen: 'Bag',
             bagData: route?.params?.bagData,
             fromCheckout: true
           });

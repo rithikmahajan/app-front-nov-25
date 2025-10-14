@@ -7,14 +7,13 @@
  */
 
 import RazorpayCheckout from 'react-native-razorpay';
+import Config from 'react-native-config';
 import orderService from './orderService';
 
 // Razorpay Configuration
 const RAZORPAY_CONFIG = {
-  // Use live key as specified in existing codebase
-  key: 'rzp_live_VRU7ggfYLI7DWV', 
-  // For testing, replace with test key:
-  // key: 'rzp_test_9WNhUijdgxSon5',
+  // Priority: Environment variable > Auto-detect based on __DEV__
+  key: Config.RAZORPAY_KEY_ID || (__DEV__ ? 'rzp_test_9WNhUijdgxSon5' : 'rzp_live_VRU7ggfYLI7DWV'),
   
   // Company branding
   name: 'Yoraa Apparels',
@@ -25,6 +24,13 @@ const RAZORPAY_CONFIG = {
     color: '#FF6B35' // Yoraa brand color
   }
 };
+
+// Log which key is being used
+console.log('🔑 Razorpay Config:', {
+  mode: __DEV__ ? 'TEST' : 'LIVE',
+  fromEnv: !!Config.RAZORPAY_KEY_ID,
+  key: RAZORPAY_CONFIG.key
+});
 
 /**
  * Initialize Razorpay Payment

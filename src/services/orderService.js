@@ -226,8 +226,69 @@ export const validateAddress = (address) => {
 };
 
 /**
+ * Validate Product IDs exist in the backend
+ * Checks if all cart item product IDs are valid before creating order
+ */
+export const validateProductIds = async (cartItems) => {
+  console.log('🔍 Validating product IDs with backend...');
+  
+  try {
+    const productIds = cartItems.map(item => item.id || item.productId || item._id).filter(Boolean);
+    
+    if (productIds.length === 0) {
+      console.error('❌ No valid product IDs found in cart');
+      return { valid: false, invalidIds: [], message: 'No valid products in cart' };
+    }
+    
+    console.log('📋 Product IDs to validate:', productIds);
+    
+    // Skip validation in development if products are mock/test data
+    if (__DEV__) {
+      console.log('⚠️ Running in development mode - skipping strict product validation');
+      console.log('💡 Backend will validate product IDs during order creation');
+      return { valid: true, invalidIds: [], message: 'Validation deferred to backend' };
+    }
+    
+    // Try to fetch each product to verify it exists
+    const invalidIds = [];
+    for (const productId of productIds) {
+      try {
+        // Attempt to get product details from backend
+        const response = await yoraaAPI.makeRequest(`/api/products/${productId}`, 'GET', null, false);
+        if (!response || response.error) {
+          console.warn(`⚠️ Product ID ${productId} not found or invalid`);
+          invalidIds.push(productId);
+        } else {
+          console.log(`✅ Product ID ${productId} validated successfully`);
+        }
+      } catch (error) {
+        console.warn(`⚠️ Product ID ${productId} validation failed:`, error.message);
+        invalidIds.push(productId);
+      }
+    }
+    
+    if (invalidIds.length > 0) {
+      console.error('❌ Invalid product IDs found:', invalidIds);
+      return { 
+        valid: false, 
+        invalidIds, 
+        message: `Some products in your cart are no longer available. Please remove them and try again.` 
+      };
+    }
+    
+    console.log('✅ All product IDs are valid');
+    return { valid: true, invalidIds: [], message: 'All products validated' };
+    
+  } catch (error) {
+    console.error('❌ Error validating product IDs:', error);
+    // If validation fails, we'll let the backend handle it
+    return { valid: true, invalidIds: [], message: 'Validation skipped due to error' };
+  }
+};
+
+/**
  * Format Cart Items for Backend API
- * Ensures cart items match the exact structure expected by backend
+ * Ensures cart items match exact structure expected by backend
  */
 export const formatCartItemsForAPI = (cartItems) => {
   console.log('🔄 Formatting cart items for API:', cartItems);
@@ -264,7 +325,11 @@ export const formatCartItemsForAPI = (cartItems) => {
       console.warn(`⚠️ Warning: Item ${formattedItem.name} has zero price. This may cause payment issues.`);
     }
     
+    // Log product ID for debugging
+    console.log(`🔍 Product ID for ${formattedItem.name}: ${formattedItem.id}`);
+    
     console.log(`✅ Formatted item:`, {
+      id: formattedItem.id,
       name: formattedItem.name,
       price: formattedItem.price,
       quantity: formattedItem.quantity,
@@ -340,6 +405,15 @@ export const createOrder = async (cart, address, additionalOptions = {}) => {
     if (!validateAddress(address)) {
       throw new Error('Address validation failed');
     }
+    
+    // 1.5️⃣ Validate product IDs exist in backend
+    console.log('🔍 Validating product IDs before order creation...');
+    const validationResult = await validateProductIds(cart);
+    if (!validationResult.valid) {
+      console.error('❌ Product validation failed:', validationResult.invalidIds);
+      throw new Error(validationResult.message);
+    }
+    console.log('✅ Product IDs validated successfully');
     
     // 2️⃣ Format data for API
     const formattedCart = formatCartItemsForAPI(cart);
@@ -476,6 +550,8 @@ export const createOrder = async (cart, address, additionalOptions = {}) => {
         errorMessage = 'There was an issue with your cart items. Please check and try again.';
       } else if (error.message.includes('Address validation failed')) {
         errorMessage = 'Please fill all required address fields.';
+      } else if (error.message.includes('Invalid item IDs') || error.message.includes('no longer available')) {
+        errorMessage = 'Some products in your cart are no longer available. Please refresh your cart and try again.';
       } else if (error.message.includes('400')) {
         errorMessage = 'Invalid order data. Please check your cart and address.';
       } else if (error.message.includes('401')) {
@@ -656,6 +732,7 @@ export default {
   calculateFrontendAmount,
   validateCart,
   validateAddress,
+  validateProductIds,
   formatCartItemsForAPI,
   formatAddressForAPI,
   createOrder,

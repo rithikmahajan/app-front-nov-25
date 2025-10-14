@@ -775,7 +775,7 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
           {item.name || item.title || 'Product Name'}
         </Text>
         <Text style={styles.gridProductPrice}>
-          {item.price || item.currentPrice || 'US$0'}
+          {item.price || item.currentPrice || '₹0'}
         </Text>
       </View>
     </TouchableOpacity>

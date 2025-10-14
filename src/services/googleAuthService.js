@@ -75,34 +75,51 @@ class GoogleAuthService {
     }
 
     try {
-      console.log('Starting Google Sign In process...');
+      console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+      console.log('║         🔵 GOOGLE AUTH SERVICE - SIGN IN FLOW                 ║');
+      console.log('╚═══════════════════════════════════════════════════════════════╝');
+      console.log(`⏰ Start Time: ${new Date().toISOString()}`);
+      console.log(`📱 Platform: ${Platform.OS}`);
       
       // Check if your device supports Google Play (Android only)
       if (Platform.OS === 'android') {
+        console.log('\n🔍 STEP 1: Checking Google Play Services (Android)...');
         await GoogleSignin.hasPlayServices({ 
           showPlayServicesUpdateDialog: true,
           autoResolve: true 
         });
-        console.log('Google Play Services available');
+        console.log('✅ Google Play Services available');
+      } else {
+        console.log('\n⏭️ STEP 1: Skipped (iOS platform)');
       }
       
       // Sign out first to ensure clean state
+      console.log('\n🔄 STEP 2: Signing out from previous session...');
       await GoogleSignin.signOut();
-      console.log('Signed out from previous session');
+      console.log('✅ Signed out from previous session');
       
       // Get the users ID token
-      console.log('🔐 Attempting Google Sign In...');
+      console.log('\n� STEP 3: Initiating Google Sign In...');
       const signInResult = await GoogleSignin.signIn();
+      
+      console.log('📦 Sign In Result Structure:', {
+        hasData: !!signInResult?.data,
+        hasIdToken: !!(signInResult?.data?.idToken || signInResult?.idToken),
+        hasUser: !!(signInResult?.data?.user || signInResult?.user),
+        resultKeys: signInResult ? Object.keys(signInResult) : []
+      });
       
       // Check if user cancelled (signInResult might be null or have a specific structure)
       if (!signInResult) {
-        console.log('User canceled Google Sign In (null result)');
+        console.log('ℹ️ User canceled Google Sign In (null result)');
+        console.log('╚═══════════════════════════════════════════════════════════════╝\n');
         return null;
       }
       
       console.log('✅ Google Sign In result received');
       
       // Extract idToken using the new API structure (v13+) with fallback to old structure
+      console.log('\n🔄 STEP 4: Extracting ID token...');
       let idToken = signInResult.data?.idToken;
       if (!idToken) {
         // Fallback for older versions of google-signin
@@ -110,56 +127,162 @@ class GoogleAuthService {
       }
       
       if (!idToken) {
-        console.log('No ID token in response - treating as cancellation');
+        console.log('⚠️ No ID token in response - treating as cancellation');
+        console.log('╚═══════════════════════════════════════════════════════════════╝\n');
         // No token might mean user cancelled - don't show error
         return null;
       }
       
-      console.log('✅ ID token extracted successfully');
+      console.log(`✅ ID token extracted: ${idToken.substring(0, 30)}... (${idToken.length} chars)`);
+      
+      // Extract user info for logging
+      const googleUser = signInResult.data?.user || signInResult.user;
+      if (googleUser) {
+        console.log('👤 Google User Info:');
+        console.log(`   - ID: ${googleUser.id}`);
+        console.log(`   - Email: ${googleUser.email}`);
+        console.log(`   - Name: ${googleUser.name}`);
+        console.log(`   - Photo: ${googleUser.photo || 'N/A'}`);
+      }
       
       // Create a Google credential with the token
+      console.log('\n🔄 STEP 5: Creating Firebase credential...');
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-      console.log('✅ Google credential created successfully');
+      console.log('✅ Firebase credential created');
       
       // Sign in with the credential
+      console.log('\n🔄 STEP 6: Signing in to Firebase...');
       const userCredential = await auth().signInWithCredential(googleCredential);
       
-      console.log('Firebase Google Sign In successful:', {
-        uid: userCredential.user.uid,
-        email: userCredential.user.email,
-        displayName: userCredential.user.displayName,
-        isNewUser: userCredential.additionalUserInfo?.isNewUser
-      });
+      console.log('✅ Firebase Sign In successful');
+      console.log('👤 Firebase User Details:');
+      console.log(`   - UID: ${userCredential.user.uid}`);
+      console.log(`   - Email: ${userCredential.user.email}`);
+      console.log(`   - Display Name: ${userCredential.user.displayName}`);
+      console.log(`   - Phone: ${userCredential.user.phoneNumber || 'N/A'}`);
+      console.log(`   - Photo URL: ${userCredential.user.photoURL || 'N/A'}`);
+      console.log(`   - Email Verified: ${userCredential.user.emailVerified}`);
+      console.log(`   - Created At: ${userCredential.user.metadata?.creationTime}`);
+      console.log(`   - Last Sign In: ${userCredential.user.metadata?.lastSignInTime}`);
+      console.log(`   - Is New User: ${userCredential.additionalUserInfo?.isNewUser}`);
+      console.log(`   - Provider ID: ${userCredential.user.providerData?.[0]?.providerId || 'N/A'}`);
 
       // Authenticate with Yoraa backend using Firebase ID token
+      console.log('\n🔄 STEP 7: Authenticating with Yoraa backend...');
       try {
-        const firebaseIdToken = await userCredential.user.getIdToken();
-        console.log('Getting Firebase ID token for backend authentication...');
+        console.log('   - Getting Firebase ID token...');
+        const firebaseIdToken = await userCredential.user.getIdToken(true);
+        console.log(`   - Firebase ID Token: ${firebaseIdToken.substring(0, 30)}... (${firebaseIdToken.length} chars)`);
         
-        await yoraaAPI.firebaseLogin(firebaseIdToken);
-        console.log('✅ Successfully authenticated with Yoraa backend');
-        console.log('ℹ️ Note: If account exists with same email, backend automatically links providers');
+        console.log('   - Calling backend firebaseLogin API...');
+        const backendResponse = await yoraaAPI.firebaseLogin(firebaseIdToken);
+        console.log('✅ Backend authentication successful');
+        console.log('📦 Backend Response:', JSON.stringify(backendResponse, null, 2));
+        console.log('ℹ️ Note: Backend automatically links providers with same email');
+        
+        // CRITICAL: Verify token was stored correctly
+        console.log('\n🔍 STEP 8: Verifying token storage...');
+        const storedToken = await yoraaAPI.getUserToken();
+        console.log(`   - Token Storage: ${storedToken ? '✅ EXISTS' : '❌ MISSING'}`);
+        
+        if (!storedToken) {
+          console.error('⚠️ Backend token not set properly, reinitializing...');
+          await yoraaAPI.initialize();
+          
+          // Re-check after initialization
+          const retryToken = await yoraaAPI.getUserToken();
+          console.log(`   - Token After Retry: ${retryToken ? '✅ EXISTS' : '❌ STILL MISSING'}`);
+        }
+        
+        // Double-check authentication status
+        const isAuth = yoraaAPI.isAuthenticated();
+        console.log(`🔐 Final Authentication Status: ${isAuth ? '✅ AUTHENTICATED' : '❌ NOT AUTHENTICATED'}`);
+        
+        if (!isAuth) {
+          console.error('❌ CRITICAL: Backend authentication succeeded but token not persisted');
+          throw new Error('Backend authentication succeeded but token not persisted');
+        }
+        
+        console.log('✅ STEP 8: Token verification complete');
+        
+        // ✅ NEW: STEP 9 - Initialize and Register FCM Token
+        console.log('\n🔔 STEP 9: Initializing FCM service...');
+        try {
+          // Import FCM service
+          const fcmService = require('./fcmService').default;
+          const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+          
+          // Initialize FCM and get token
+          const fcmResult = await fcmService.initialize();
+          
+          if (fcmResult.success && fcmResult.token) {
+            console.log('✅ FCM token obtained:', fcmResult.token.substring(0, 20) + '...');
+            
+            // Register token with backend using the auth token we just verified
+            const authToken = await AsyncStorage.getItem('userToken');
+            
+            if (authToken) {
+              const registerResult = await fcmService.registerTokenWithBackend(authToken);
+              
+              if (registerResult.success) {
+                console.log('✅ FCM token registered with backend');
+              } else {
+                console.warn('⚠️ FCM registration failed (non-critical):', registerResult.error);
+              }
+            } else {
+              console.warn('⚠️ Auth token not found for FCM registration');
+            }
+          } else {
+            console.warn('⚠️ FCM initialization failed:', fcmResult.error);
+          }
+        } catch (fcmError) {
+          console.warn('⚠️ FCM setup error (non-critical):', fcmError.message);
+          // Don't throw - FCM is non-critical to authentication
+        }
+        console.log('✅ STEP 9: FCM setup completed');
+        
       } catch (backendError) {
-        console.warn('Backend authentication failed:', backendError);
-        // Don't throw here - Firebase auth succeeded, backend auth is optional
+        console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+        console.log('║              ⚠️  BACKEND AUTHENTICATION FAILED                ║');
+        console.log('╚═══════════════════════════════════════════════════════════════╝');
+        console.error('❌ Backend Error Type:', backendError.constructor.name);
+        console.error('❌ Backend Error Code:', backendError.code);
+        console.error('❌ Backend Error Message:', backendError.message);
+        console.error('❌ Full Backend Error:', JSON.stringify(backendError, null, 2));
+        console.error('❌ Stack Trace:', backendError.stack);
+        
+        // Don't throw here - Firebase auth succeeded, backend auth is optional but log prominently
+        console.warn('⚠️⚠️⚠️ CRITICAL: User logged in to Firebase but NOT authenticated with backend!');
+        console.warn('This WILL cause "not authenticated" status to display in the app');
+        console.warn('User will appear logged in but won\'t have access to backend resources');
       }
+      
+      console.log('\n✅ Google Sign In flow completed successfully');
+      console.log(`⏰ End Time: ${new Date().toISOString()}`);
+      console.log('╚═══════════════════════════════════════════════════════════════╝\n');
       
       return userCredential;
     } catch (error) {
       // Handle specific error cases
       // User canceled the sign-in
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        console.log('User canceled Google Sign In');
+        console.log('ℹ️ User canceled Google Sign In (not an error)');
+        console.log('╚═══════════════════════════════════════════════════════════════╝\n');
         // Silently handle cancellation - don't throw error
         return null;
       }
       
       // Log actual errors
-      console.error('Google Sign In error details:', {
-        code: error.code,
-        message: error.message,
-        platform: Platform.OS
-      });
+      console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+      console.log('║              ❌ GOOGLE SIGN IN ERROR                          ║');
+      console.log('╚═══════════════════════════════════════════════════════════════╝');
+      console.error('❌ Error Type:', error.constructor.name);
+      console.error('❌ Error Code:', error.code);
+      console.error('❌ Error Message:', error.message);
+      console.error('❌ Platform:', Platform.OS);
+      console.error('❌ Full Error:', JSON.stringify(error, null, 2));
+      console.error('❌ Stack Trace:', error.stack);
+      console.log('╚═══════════════════════════════════════════════════════════════╝\n');
       
       if (error.code === statusCodes.IN_PROGRESS) {
         throw new Error('Google Sign In is already in progress');

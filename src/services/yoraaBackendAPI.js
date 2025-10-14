@@ -1,33 +1,58 @@
 // Complete API Service for Yoraa Backend Integration
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import authStorageService from './authStorageService';
 
 class YoraaBackendAPI {
   constructor() {
-    // Environment-based API URLs - ✅ Updated to working port 8001 (Backend running on this port)
+    // Environment-based API URLs - ✅ PRODUCTION DEPLOYMENT (port 8000 is actual working port)
     this.baseURL = __DEV__ 
-      ? 'http://localhost:8001/api'        // Development (iOS Simulator) - Backend server port
-      : 'http://185.193.19.244:8001/api';  // Production (TestFlight/Physical Device)
+      ? 'http://localhost:8001/api'        // Development (iOS Simulator) - Local backend server on port 8001
+      : 'http://185.193.19.244:8000/api';  // Production (TestFlight/Physical Device) - Contabo VPS on port 8000
     this.token = null;
   }
 
   async initialize() {
     try {
-      this.token = await AsyncStorage.getItem('userToken');
+      // Try new auth storage first
+      let token = await authStorageService.getAuthToken();
+      
+      // Fallback to legacy storage
+      if (!token) {
+        token = await AsyncStorage.getItem('userToken');
+        if (token) {
+          // Migrate to new storage
+          await authStorageService.syncWithLegacyToken();
+        }
+      }
+      
+      this.token = token;
       console.log('🔧 API Service initialized', this.token ? 'with token' : 'without token');
     } catch (error) {
       console.error('❌ Error loading token:', error);
     }
   }
 
-  setToken(token) {
+  async setToken(token, userData = null) {
     this.token = token;
-    AsyncStorage.setItem('userToken', token);
+    
+    // Store in both old and new storage for backward compatibility
+    await AsyncStorage.setItem('userToken', token);
+    
+    // Store in new auth storage service
+    if (userData) {
+      await authStorageService.storeAuthData(token, userData);
+    }
+    
     console.log('🔐 Token set successfully');
   }
 
-  clearToken() {
+  async clearToken() {
     this.token = null;
-    AsyncStorage.removeItem('userToken');
+    
+    // Clear from both storages
+    await AsyncStorage.removeItem('userToken');
+    await authStorageService.clearAuthData();
+    
     console.log('🔓 Token cleared');
   }
 
@@ -91,9 +116,9 @@ class YoraaBackendAPI {
       body: JSON.stringify({ idToken }),
     });
 
-    // Store token if login successful
+    // Store token AND user data if login successful
     if (response.success && response.data?.token) {
-      this.setToken(response.data.token);
+      await this.setToken(response.data.token, response.data.user);
     }
 
     return response;

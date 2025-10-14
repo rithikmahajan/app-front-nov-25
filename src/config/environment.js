@@ -8,9 +8,11 @@ class EnvironmentConfig {
     this.isDevelopment = this.env === 'development' || __DEV__;
     this.isProduction = this.env === 'production' && !__DEV__;
     
-    // API Configuration
+    // API Configuration - Support both local and production backends
     this.api = {
-      baseUrl: Config.API_BASE_URL || 'http://localhost:3001/api',
+      // Development uses localhost on port 8001 (or 10.0.2.2 for Android)
+      baseUrl: Config.API_BASE_URL || 'http://localhost:8001/api',
+      // Production uses actual server IP - Port 8000 is the ACTUAL working port
       backendUrl: Config.BACKEND_URL || 'http://185.193.19.244:8000/api',
     };
     
@@ -58,22 +60,27 @@ class EnvironmentConfig {
 
   /**
    * Get the appropriate API URL based on environment and platform
-   * Simplified for direct localhost connection
+   * 🔧 TEMPORARILY USING PRODUCTION SERVER FOR DEBUGGING
    */
   getApiUrl() {
-    if (this.isDevelopment) {
-      // Development mode - simplified localhost connection
-      if (this.platform.isAndroid) {
-        // Android emulator uses 10.0.2.2 to access host machine
-        return this.api.baseUrl.replace('localhost', '10.0.2.2');
-      } else {
-        // iOS Simulator - direct localhost should work
-        return this.api.baseUrl;
-      }
-    }
+    // Always return production URL (port 8000 is the ACTUAL working port)
+    const productionUrl = 'http://185.193.19.244:8000/api';
+    return productionUrl;
     
-    // Production - always use production backend
-    return this.api.backendUrl;
+    // Original logic (commented out for debugging):
+    // if (this.isDevelopment) {
+    //   // Development mode - simplified localhost connection
+    //   if (this.platform.isAndroid) {
+    //     // Android emulator uses 10.0.2.2 to access host machine
+    //     return this.api.baseUrl.replace('localhost', '10.0.2.2');
+    //   } else {
+    //     // iOS Simulator - direct localhost should work
+    //     return this.api.baseUrl;
+    //   }
+    // }
+    // 
+    // // Production - always use production backend
+    // return this.api.backendUrl;
   }
 
   /**

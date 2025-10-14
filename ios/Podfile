@@ -37,8 +37,17 @@ target 'YoraaApp' do
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/.."
+    :app_path => "#{Pod::Config.instance.installation_root}/..",
+    # Disable New Architecture (Fabric) - causes crashes with complex initialization
+    :fabric_enabled => false,
+    :hermes_enabled => true
   )
+
+  # Firebase App Check for phone authentication
+  pod 'FirebaseAppCheck'
+  
+  # Google reCAPTCHA Enterprise for phone authentication
+  pod 'RecaptchaEnterprise'
 
   # Add react-native-camera without subspecs to avoid MLKit conflicts
   # The scanner functionality will work with basic camera features

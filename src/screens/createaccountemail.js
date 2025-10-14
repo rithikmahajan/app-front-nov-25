@@ -14,6 +14,8 @@ import { AppleIcon, GoogleIcon, BackIcon } from '../assets/icons';
 import auth from '@react-native-firebase/auth';
 import appleAuthService from '../services/appleAuthService';
 import googleAuthService from '../services/googleAuthService';
+import sessionManager from '../services/sessionManager';
+import yoraaAPI from '../services/yoraaAPI';
 
 // Eye Icon Component
 const EyeIcon = ({ width = 22, height = 16, color = "#979797" }) => (
@@ -107,7 +109,6 @@ const CreateAccountEmail = ({ navigation, route }) => {
       });
       
       console.log('User profile updated with name:', name);
-      Alert.alert('Success', 'Account created successfully!');
       
       // Navigate to success modal or main app
       if (navigation && navigation.navigate) {
@@ -169,7 +170,7 @@ const CreateAccountEmail = ({ navigation, route }) => {
       setIsLoading(true);
       
       try {
-        console.log('Starting Apple Sign In...');
+        console.log('🍎 Starting Apple Sign In...');
         const userCredential = await appleAuthService.signInWithApple();
         
         // Handle cancellation (returns null)
@@ -179,8 +180,40 @@ const CreateAccountEmail = ({ navigation, route }) => {
         }
         
         const isNewUser = userCredential.additionalUserInfo?.isNewUser;
+        const user = userCredential.user;
         
-        console.log('Apple Sign In successful, isNewUser:', isNewUser);
+        console.log('✅ Apple Sign In successful, isNewUser:', isNewUser);
+        
+        // CRITICAL: Verify backend authentication status before proceeding
+        await new Promise(resolve => setTimeout(resolve, 500)); // Small delay for backend to process
+        
+        const backendAuth = yoraaAPI.isAuthenticated();
+        console.log('🔐 Backend authentication check:', backendAuth ? 'AUTHENTICATED' : 'NOT AUTHENTICATED');
+        
+        if (!backendAuth) {
+          console.warn('⚠️ Backend not authenticated after Apple login, attempting to reinitialize...');
+          await yoraaAPI.initialize();
+          
+          const recheckAuth = yoraaAPI.isAuthenticated();
+          if (!recheckAuth) {
+            throw new Error('Backend authentication failed. Please try logging in again.');
+          }
+          console.log('✅ Backend authentication recovered after reinitialization');
+        }
+        
+        // Create session for Apple login
+        await sessionManager.createSession({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL
+        }, 'apple');
+        
+        console.log('✅ Session created for Apple login');
+        
+        // Final verification
+        const finalAuthCheck = yoraaAPI.isAuthenticated();
+        console.log('🎯 Final auth status before navigation:', finalAuthCheck ? 'AUTHENTICATED ✅' : 'NOT AUTHENTICATED ❌');
         
         // Navigate based on user type and context
         const fromCheckout = route?.params?.fromCheckout;

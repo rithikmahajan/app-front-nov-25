@@ -22,12 +22,15 @@ import apiService from '../services/apiService';
 import orderService from '../services/orderService';
 import paymentService from '../services/paymentService';
 
+// Import enhanced order error handler
+import orderErrorHandler from '../utils/orderErrorHandler';
+
 const DeliveryOptionsStepTwoScreen = ({ navigation, route }) => {
   // Get selected delivery option from navigation params
   const { selectedDeliveryOption, postcode } = route.params || {};
   
-  // Get bag items from context
-  const { bagItems, getTotalPrice, clearBag } = useBag();
+  // Get bag items and removal function from context
+  const { bagItems, getTotalPrice, clearBag, removeFromBag } = useBag();
   
   // Debug logging
   console.log('📥 DeliveryOptionsStepTwo received params:', route.params);
@@ -342,24 +345,69 @@ const DeliveryOptionsStepTwoScreen = ({ navigation, route }) => {
     } catch (error) {
       console.error('❌ Error in order creation process:', error);
       
-      // Enhanced error handling
-      let errorMessage = 'Failed to create order. Please try again.';
+      // Parse error response (handles both axios errors and direct error objects)
+      const parsedError = orderErrorHandler.parseErrorResponse(error);
       
-      if (error.message) {
-        if (error.message.includes('Cart validation failed')) {
-          errorMessage = 'There was an issue with your cart items. Please check and try again.';
-        } else if (error.message.includes('Address validation failed')) {
-          errorMessage = 'Please fill all required address fields.';
-        } else if (error.message.includes('Amount difference')) {
-          errorMessage = 'Order was cancelled due to price changes.';
-        } else if (error.message.includes('Authentication Required')) {
-          errorMessage = 'Please login to complete your purchase.';
+      // Try to handle with enhanced error handler first
+      const isInvalidItemsError = orderErrorHandler.handleOrderCreationError(
+        parsedError,
+        navigation,
+        (invalidItems) => {
+          // Callback to remove invalid items from cart
+          console.log('🗑️ Removing invalid items from cart:', invalidItems);
+          invalidItems.forEach(item => {
+            const itemId = item.itemId || item.id;
+            const itemSize = item.size;
+            if (itemId && itemSize) {
+              removeFromBag(itemId, itemSize);
+            }
+          });
+        }
+      );
+      
+      // If not an invalid items error, handle other error types
+      if (!isInvalidItemsError) {
+        let errorMessage = 'Failed to create order. Please try again.';
+        let shouldNavigateToCart = false;
+        
+        if (parsedError.message || parsedError.error) {
+          const errorText = parsedError.message || parsedError.error;
+          
+          if (errorText.includes('Cart validation failed')) {
+            errorMessage = 'There was an issue with your cart items. Please check and try again.';
+            shouldNavigateToCart = true;
+          } else if (errorText.includes('Address validation failed')) {
+            errorMessage = 'Please fill all required address fields.';
+          } else if (errorText.includes('Amount difference')) {
+            errorMessage = 'Order was cancelled due to price changes.';
+          } else if (errorText.includes('Authentication Required')) {
+            errorMessage = 'Please login to complete your purchase.';
+          } else {
+            errorMessage = errorText;
+          }
+        }
+        
+        // Show alert with option to go back to cart if needed
+        if (shouldNavigateToCart) {
+          Alert.alert(
+            'Cart Issue',
+            errorMessage,
+            [
+              {
+                text: 'Review Cart',
+                onPress: () => navigation.navigate('bag'),
+                style: 'default'
+              },
+              {
+                text: 'Cancel',
+                style: 'cancel'
+              }
+            ]
+          );
         } else {
-          errorMessage = error.message;
+          Alert.alert('Order Error', errorMessage);
         }
       }
-      
-      Alert.alert('Order Error', errorMessage);
     } finally {
       setPaymentLoading(false);
     }

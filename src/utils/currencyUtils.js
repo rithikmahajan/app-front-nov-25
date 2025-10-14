@@ -71,10 +71,16 @@ export const SUPPORTED_LOCATIONS = {
 // Default fallback location (India)
 const DEFAULT_LOCATION = SUPPORTED_LOCATIONS.IN;
 
+// FORCE INR ONLY - Always use India location
+const FORCE_INR_ONLY = true;
+
 /**
  * Map country name to country code
  */
 const getCountryCodeFromName = (countryName) => {
+  // Always return India when INR only mode is enabled
+  if (FORCE_INR_ONLY) return 'IN';
+  
   if (!countryName) return 'IN'; // Default to India
   
   const normalizedName = countryName.toString().toLowerCase().trim();
@@ -99,8 +105,15 @@ const getCountryCodeFromName = (countryName) => {
 /**
  * Get user's current location preference
  * Priority: Backend preference (authenticated users only) > Stored preference > Default (India)
+ * FORCE INR ONLY MODE: Always returns India
  */
 export const getUserLocation = async () => {
+  // Always return India when INR only mode is enabled
+  if (FORCE_INR_ONLY) {
+    console.log('📍 FORCE INR MODE: Using India location');
+    return DEFAULT_LOCATION;
+  }
+  
   try {
     // First, check backend for user preference (only if user is authenticated)
     if (yoraaAPI.isAuthenticated()) {
@@ -189,11 +202,13 @@ export const setUserLocation = async (location) => {
 
 /**
  * Format price based on location/currency
+ * FORCE INR ONLY MODE: Always uses INR formatting
  */
 export const formatPrice = (price, location = null, options = {}) => {
   if (!price || isNaN(price)) return '₹0';
   
-  const loc = location || DEFAULT_LOCATION;
+  // Always use India location when INR only mode is enabled
+  const loc = FORCE_INR_ONLY ? DEFAULT_LOCATION : (location || DEFAULT_LOCATION);
   const {
     showDecimals = true,
     showSymbol = true
@@ -221,9 +236,15 @@ export const formatPrice = (price, location = null, options = {}) => {
 /**
  * Convert INR price to user's currency
  * Uses cached exchange rates for performance
+ * FORCE INR ONLY MODE: No conversion, always returns INR price
  */
 export const convertPrice = async (inrPrice, targetLocation = null) => {
   if (!inrPrice || isNaN(inrPrice)) return 0;
+  
+  // When INR only mode is enabled, never convert
+  if (FORCE_INR_ONLY) {
+    return parseFloat(inrPrice);
+  }
   
   const location = targetLocation || await getUserLocation();
   
@@ -318,9 +339,22 @@ const fetchExchangeRateFromAPI = async (fromCurrency, toCurrency) => {
 
 /**
  * Convert product object prices based on user location
+ * FORCE INR ONLY MODE: Never converts, always uses INR
  */
 export const convertProductPrices = async (product, targetLocation = null) => {
   if (!product) return product;
+  
+  // Always use INR when INR only mode is enabled
+  if (FORCE_INR_ONLY) {
+    return {
+      ...product,
+      displayPrice: product.price || product.regularPrice,
+      displayCurrency: 'INR',
+      displaySymbol: '₹',
+      originalPrice: product.price || product.regularPrice,
+      originalCurrency: 'INR'
+    };
+  }
   
   const location = targetLocation || await getUserLocation();
   

@@ -10,24 +10,24 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		370EA5AD5267C9161170CCB6 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
-		7A4D91750412334B0A26B9AD /* Pods_YoraaApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 066F2F01BEE3E2CBAAFEFA19 /* Pods_YoraaApp.framework */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		98A27F619E77950817215CED /* Pods_YoraaApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 803F3277ED002C7526C37574 /* Pods_YoraaApp.framework */; };
 		A1B2C3D4E5F6789012345678 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6789012345679 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		066F2F01BEE3E2CBAAFEFA19 /* Pods_YoraaApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_YoraaApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07F961A680F5B00A75B9A /* YoraaApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YoraaApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = YoraaApp/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = YoraaApp/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = YoraaApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = YoraaApp/AppDelegate.swift; sourceTree = "<group>"; };
-		819BC9E5A312CFEEFD9F9C57 /* Pods-YoraaApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YoraaApp.debug.xcconfig"; path = "Target Support Files/Pods-YoraaApp/Pods-YoraaApp.debug.xcconfig"; sourceTree = "<group>"; };
+		803F3277ED002C7526C37574 /* Pods_YoraaApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_YoraaApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = YoraaApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		A1551C6B377BEB74647A49AD /* Pods-YoraaApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YoraaApp.release.xcconfig"; path = "Target Support Files/Pods-YoraaApp/Pods-YoraaApp.release.xcconfig"; sourceTree = "<group>"; };
 		A1B2C3D4E5F6789012345679 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "YoraaApp/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		A8FFED3927C77DF623A6115B /* Pods-YoraaApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YoraaApp.debug.xcconfig"; path = "Target Support Files/Pods-YoraaApp/Pods-YoraaApp.debug.xcconfig"; sourceTree = "<group>"; };
 		BB1536C82E6A4BC9004CD715 /* YoraaAppRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = YoraaAppRelease.entitlements; path = YoraaApp/YoraaAppRelease.entitlements; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F7914202638B34AC1C42093A /* Pods-YoraaApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YoraaApp.release.xcconfig"; path = "Target Support Files/Pods-YoraaApp/Pods-YoraaApp.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -35,7 +35,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7A4D91750412334B0A26B9AD /* Pods_YoraaApp.framework in Frameworks */,
+				98A27F619E77950817215CED /* Pods_YoraaApp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -60,7 +60,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				066F2F01BEE3E2CBAAFEFA19 /* Pods_YoraaApp.framework */,
+				803F3277ED002C7526C37574 /* Pods_YoraaApp.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -97,8 +97,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				819BC9E5A312CFEEFD9F9C57 /* Pods-YoraaApp.debug.xcconfig */,
-				A1551C6B377BEB74647A49AD /* Pods-YoraaApp.release.xcconfig */,
+				A8FFED3927C77DF623A6115B /* Pods-YoraaApp.debug.xcconfig */,
+				F7914202638B34AC1C42093A /* Pods-YoraaApp.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -110,14 +110,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "YoraaApp" */;
 			buildPhases = (
-				CB2788D4EE8F7F3D3B351C1F /* [CP] Check Pods Manifest.lock */,
+				B9FF8AC1C95CAEFB4EF62165 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				CFFCCA076A6FBA3373147CDB /* [CP] Embed Pods Frameworks */,
-				AEDFE5C505AE996D2550D571 /* [CP] Copy Pods Resources */,
-				E3737EB6E317FEA1DDC7DE5A /* [CP-User] [RNFB] Core Configuration */,
+				2C3B9564026918FA0B421472 /* [CP] Embed Pods Frameworks */,
+				437C2A7107BA2A6CE36ABB9E /* [CP] Copy Pods Resources */,
+				FCE22174D2AD9BDA23CF31D0 /* [CP-User] [RNFB] Core Configuration */,
 			);
 			buildRules = (
 			);
@@ -190,7 +190,24 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		AEDFE5C505AE996D2550D571 /* [CP] Copy Pods Resources */ = {
+		2C3B9564026918FA0B421472 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-YoraaApp/Pods-YoraaApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-YoraaApp/Pods-YoraaApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-YoraaApp/Pods-YoraaApp-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		437C2A7107BA2A6CE36ABB9E /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -207,7 +224,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-YoraaApp/Pods-YoraaApp-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		CB2788D4EE8F7F3D3B351C1F /* [CP] Check Pods Manifest.lock */ = {
+		B9FF8AC1C95CAEFB4EF62165 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -229,24 +246,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		CFFCCA076A6FBA3373147CDB /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-YoraaApp/Pods-YoraaApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-YoraaApp/Pods-YoraaApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-YoraaApp/Pods-YoraaApp-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		E3737EB6E317FEA1DDC7DE5A /* [CP-User] [RNFB] Core Configuration */ = {
+		FCE22174D2AD9BDA23CF31D0 /* [CP-User] [RNFB] Core Configuration */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -275,7 +275,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 819BC9E5A312CFEEFD9F9C57 /* Pods-YoraaApp.debug.xcconfig */;
+			baseConfigurationReference = A8FFED3927C77DF623A6115B /* Pods-YoraaApp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -309,7 +309,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A1551C6B377BEB74647A49AD /* Pods-YoraaApp.release.xcconfig */;
+			baseConfigurationReference = F7914202638B34AC1C42093A /* Pods-YoraaApp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

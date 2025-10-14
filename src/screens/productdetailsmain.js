@@ -98,7 +98,7 @@ const ProductDetailsMain = ({ navigation, route }) => {
       setRatingsLoading(true);
       console.log('🔄 Fetching detailed ratings for product:', productId);
       
-      const response = await yoraaAPI.getProductDetailedRatings(productId);
+      const response = await yoraaAPI.getProductRatingStats(productId);
       console.log('✅ Detailed Ratings API Response:', response);
       
       if (response.success && response.data) {

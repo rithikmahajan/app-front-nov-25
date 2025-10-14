@@ -280,6 +280,53 @@ class FCMService {
   }
 
   /**
+   * Unregister FCM token from backend (call on logout)
+   */
+  async unregisterTokenFromBackend(authToken) {
+    try {
+      if (!this.fcmToken) {
+        console.log('ℹ️ No FCM token to unregister');
+        return { success: true };
+      }
+
+      if (!authToken) {
+        console.error('❌ No auth token provided for unregistering');
+        return { success: false, error: 'No authentication token' };
+      }
+
+      console.log('📤 Unregistering FCM token from backend...');
+
+      const response = await apiClient.post(
+        '/users/remove-fcm-token',
+        {
+          fcmToken: this.fcmToken,
+          platform: Platform.OS
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }
+        }
+      );
+
+      if (response.data.success) {
+        console.log('✅ FCM token unregistered from backend');
+        return { success: true };
+      } else {
+        console.warn('⚠️ Backend unregister failed:', response.data.message);
+        return { success: false, error: response.data.message };
+      }
+    } catch (error) {
+      console.error('❌ Error unregistering FCM token:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message
+      };
+    }
+  }
+
+  /**
    * Check if FCM token is already registered with backend
    */
   async isTokenRegistered() {

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,407 +8,583 @@ import {
   Dimensions,
   Animated,
   PanResponder,
-  TextInput,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
-import { Colors } from '../constants/colors';
+import { useAddress } from '../contexts/AddressContext';
 
-const DeliveryAddressModal = ({ visible, onClose, selectedOption }) => {
-  // Memoized screen height to prevent recalculation
-  const screenHeight = useMemo(() => Dimensions.get('window').height, []);
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-  const translateY = useRef(new Animated.Value(screenHeight)).current;
+// Circle Checkbox Component
+const CircleCheckbox = ({ checked, onPress }) => {
+  return (
+    <TouchableOpacity onPress={onPress} style={styles.checkboxContainer}>
+      <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
+        {checked && (
+          <View style={styles.checkmark}>
+            <Text style={styles.checkmarkText}>✓</Text>
+          </View>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+const DeliveryAddressModal = ({ visible, onClose, navigation, asScreen = false, route }) => {
+  const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const { addresses, loading, selectedAddress, selectAddress } = useAddress();
+  const [localSelectedId, setLocalSelectedId] = useState(selectedAddress?._id || null);
+
+  // Debug navigation object
+  useEffect(() => {
+    console.log('🔍 DeliveryAddressModal mounted');
+    console.log('🔍 navigation object:', navigation);
+    console.log('🔍 navigation.navigate type:', typeof navigation?.navigate);
+    console.log('🔍 asScreen:', asScreen);
+    console.log('🔍 route params:', route?.params);
+  }, [navigation, asScreen, route]);
 
   useEffect(() => {
     if (visible) {
-      // Animate modal up with 250ms ease
-      Animated.timing(translateY, {
+      Animated.spring(translateY, {
         toValue: 0,
-        duration: 250,
+        tension: 65,
+        friction: 11,
         useNativeDriver: true,
       }).start();
     } else {
-      // Animate modal down
       Animated.timing(translateY, {
-        toValue: screenHeight,
+        toValue: SCREEN_HEIGHT,
         duration: 250,
         useNativeDriver: true,
       }).start();
     }
-  }, [visible, translateY, screenHeight]);
+  }, [visible, translateY]);
 
-  // Memoized close handler
-  const handleClose = useCallback(() => {
-    Animated.timing(translateY, {
-      toValue: screenHeight,
-      duration: 250,
-      useNativeDriver: true,
-    }).start(() => {
-      onClose();
-    });
-  }, [translateY, screenHeight, onClose]);
-
-  // Pan responder for swipe to dismiss
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        return gestureState.dy > 10;
-      },
-      onPanResponderMove: (evt, gestureState) => {
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderMove: (_, gestureState) => {
         if (gestureState.dy > 0) {
           translateY.setValue(gestureState.dy);
         }
       },
-      onPanResponderRelease: (evt, gestureState) => {
+      onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dy > 100 || gestureState.vy > 0.5) {
           handleClose();
         } else {
-          Animated.timing(translateY, {
+          Animated.spring(translateY, {
             toValue: 0,
-            duration: 250,
+            tension: 65,
+            friction: 11,
             useNativeDriver: true,
           }).start();
         }
       },
-    }),
+    })
   ).current;
 
-  // Optimized state using useState hook
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    address: '',
-    apartment: '',
-    city: '',
-    state: '',
-    pin: '',
-    country: 'India',
-    phone: '+91'
-  });
+  const handleClose = useCallback(() => {
+    Animated.timing(translateY, {
+      toValue: SCREEN_HEIGHT,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      if (onClose) onClose();
+      if (navigation) navigation.goBack();
+    });
+  }, [translateY, onClose, navigation]);
 
-  // Memoized input change handler
-  const handleInputChange = useCallback((field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    const handleAddAddress = useCallback(() => {
+    console.log('🔵 handleAddAddress called');
+    console.log('🔵 navigation exists:', !!navigation);
+    console.log('🔵 navigation.navigate exists:', !!navigation?.navigate);
+    console.log('🔵 navigation keys:', navigation ? Object.keys(navigation) : 'null');
+    
+    try {
+      if (!navigation) {
+        console.error('❌ Navigation object is undefined');
+        return;
+      }
+      
+      if (typeof navigation.navigate !== 'function') {
+        console.error('❌ navigation.navigate is not a function, type:', typeof navigation.navigate);
+        return;
+      }
+      
+      console.log('🔵 Calling navigation.navigate with DeliveryOptionsStepThreeAddAddress');
+      navigation.navigate('DeliveryOptionsStepThreeAddAddress', {
+        returnScreen: asScreen ? 'deliveryaddress' : 'Bag'
+      });
+      console.log('✅ navigation.navigate called successfully');
+    } catch (error) {
+      console.error('❌ Error in handleAddAddress:', error);
+      console.error('❌ Error stack:', error.stack);
+    }
+  }, [navigation, asScreen]);
+
+  const handleSelectAddress = useCallback((address) => {
+    setLocalSelectedId(address._id);
   }, []);
 
-  // Memoized save address handler
-  const handleSaveAddress = useCallback(() => {
-    // Address validation and save logic
-    // Address saving logging removed for production
+  const handleEditAddress = useCallback((address) => {
+    console.log('🟡 handleEditAddress called');
+    console.log('🟡 address:', address);
+    console.log('🟡 navigation exists:', !!navigation);
+    console.log('🟡 navigation.navigate exists:', !!navigation?.navigate);
+    console.log('🟡 navigation keys:', navigation ? Object.keys(navigation) : 'null');
     
-    // TODO: Submit address to backend
-    onClose(); // Close modal after saving
-  }, [onClose]);
+    try {
+      if (!navigation) {
+        console.error('❌ Navigation object is undefined');
+        return;
+      }
+      
+      if (typeof navigation.navigate !== 'function') {
+        console.error('❌ navigation.navigate is not a function, type:', typeof navigation.navigate);
+        return;
+      }
+      
+      console.log('🟡 Calling navigation.navigate with editingAddress param');
+      navigation.navigate('DeliveryOptionsStepThreeAddAddress', {
+        addressData: address,
+        isEdit: true,
+        returnScreen: asScreen ? 'deliveryaddress' : 'Bag',
+        fromDeliveryAddress: true
+      });
+      console.log('✅ navigation.navigate called successfully with params');
+    } catch (error) {
+      console.error('❌ Error in handleEditAddress:', error);
+      console.error('❌ Error stack:', error.stack);
+    }
+  }, [navigation, asScreen]);
 
-  // Memoized modal container style
-  const modalContainerStyle = useMemo(() => [
-    styles.modalContainer,
-    { maxHeight: screenHeight * 0.9 }
-  ], [screenHeight]);
+  const handleContinue = useCallback(() => {
+    console.log('🟢 handleContinue called');
+    console.log('🟢 localSelectedId:', localSelectedId);
+    console.log('🟢 addresses:', addresses);
+    console.log('🟢 navigation exists:', !!navigation);
+    console.log('🟢 route params:', route?.params);
+    
+    const selected = addresses.find(addr => addr._id === localSelectedId);
+    console.log('🟢 selected address:', selected);
+    
+    if (selected) {
+      selectAddress(selected);
+      console.log('✅ Address set, navigating back...');
+      
+      // Navigate back to the return screen or to Bag
+      if (navigation) {
+        try {
+          const returnScreen = route?.params?.returnScreen;
+          if (returnScreen) {
+            // If there's a return screen specified, navigate to it
+            console.log('✅ Navigating to returnScreen:', returnScreen);
+            navigation.navigate(returnScreen);
+          } else {
+            // Otherwise navigate to Bag
+            console.log('✅ Navigating to Bag');
+            navigation.navigate('Bag');
+          }
+          console.log('✅ Navigation successful');
+        } catch (error) {
+          console.error('❌ Error navigating:', error);
+        }
+      } else {
+        console.log('⚠️ No navigation object, closing modal');
+        handleClose();
+      }
+    } else {
+      console.log('⚠️ No address selected');
+    }
+  }, [localSelectedId, addresses, selectAddress, handleClose, navigation, route]);
 
-  if (!visible) {
-    return null;
+  const modalContent = (
+    <Animated.View
+      style={[
+        styles.modalContainer,
+        asScreen && styles.modalContainerFullScreen,
+        { transform: [{ translateY }] }
+      ]}
+      {...(asScreen ? {} : panResponder.panHandlers)}
+    >
+      {/* Handle bar for drag gesture */}
+      {!asScreen && (
+        <View style={styles.handleBar} />
+      )}
+
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Delivery</Text>
+        <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+          <Text style={styles.closeButtonText}>−</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Add Address Button */}
+      <TouchableOpacity 
+        style={styles.addAddressButton}
+        onPress={handleAddAddress}
+      >
+        <Text style={styles.addAddressPlus}>+</Text>
+        <Text style={styles.addAddressText}>Add Address</Text>
+      </TouchableOpacity>
+
+      {/* Delivery Details Section */}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Delivery Details</Text>
+      </View>
+
+      {/* Address List */}
+      <ScrollView 
+        style={styles.addressList}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.addressListContent}
+      >
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#000000" />
+          </View>
+        ) : addresses.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No addresses found</Text>
+            <Text style={styles.emptySubtext}>Add an address to continue</Text>
+          </View>
+        ) : (
+          addresses.map((address, index) => (
+            <View
+              key={address._id || index}
+              style={[
+                styles.addressItem,
+                index === addresses.length - 1 && styles.addressItemLast
+              ]}
+            >
+              <CircleCheckbox
+                checked={localSelectedId === address._id}
+                onPress={() => handleSelectAddress(address)}
+              />
+              <View style={styles.addressInfo}>
+                {address.type && (
+                  <View style={styles.addressTypeBadge}>
+                    <Text style={styles.addressTypeText}>
+                      {address.type.charAt(0).toUpperCase() + address.type.slice(1).toLowerCase()}
+                    </Text>
+                  </View>
+                )}
+                <Text style={styles.addressName}>
+                  {address.firstName} {address.lastName}, {address.phoneNumber}
+                </Text>
+                <Text style={styles.addressDetails}>
+                  {address.address}, {address.city}, {address.country}
+                </Text>
+              </View>
+              <TouchableOpacity 
+                onPress={() => handleEditAddress(address)}
+                style={styles.editButton}
+              >
+                <Text style={styles.editButtonText}>Edit</Text>
+              </TouchableOpacity>
+            </View>
+          ))
+        )}
+      </ScrollView>
+
+      {/* Continue Button */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity 
+          style={[
+            styles.continueButton,
+            (!localSelectedId || addresses.length === 0) && styles.continueButtonDisabled
+          ]}
+          onPress={handleContinue}
+          disabled={!localSelectedId || addresses.length === 0}
+        >
+          <Text style={styles.continueButtonText}>Continue</Text>
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
+  );
+
+  if (asScreen) {
+    return (
+      <View style={styles.screenContainer}>
+        {modalContent}
+      </View>
+    );
   }
 
   return (
     <Modal
-      transparent
       visible={visible}
+      transparent
       animationType="none"
       onRequestClose={handleClose}
     >
-      <View style={styles.overlay}>
-        <TouchableOpacity
-          style={styles.backdrop}
-          activeOpacity={1}
-          onPress={handleClose}
-        />
-
-        <Animated.View
-          style={[
-            modalContainerStyle,
-            {
-              transform: [{ translateY }],
-            },
-          ]}
-          {...panResponder.panHandlers}
-        >
-          {/* Handle bar */}
-          <View style={styles.handleBar} />
-
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Add Delivery Address</Text>
-            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>✕</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Form Content */}
-          <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
-            {/* Selected Delivery Option Info */}
-            {selectedOption && (
-              <View style={styles.selectedOptionContainer}>
-                <View style={styles.lockIconContainer}>
-                  <Text style={styles.lockIcon}>🔒</Text>
-                </View>
-                <View style={styles.optionDetails}>
-                  <Text style={styles.selectedOptionTitle}>
-                    {selectedOption === 'free' ? 'Free Delivery' : 'International Delivery'}
-                  </Text>
-                  <Text style={styles.selectedOptionSubtitle}>
-                    {selectedOption === 'free'
-                      ? 'Arrives Wed, 11 May to Fri, 13 May'
-                      : 'Arrives Wed, 18 May to Fri, 13 May'
-                    }
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {/* Form Fields */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>First Name</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.firstName}
-                onChangeText={(value) => handleInputChange('firstName', value)}
-                placeholder="Enter first name"
-                placeholderTextColor={Colors.gray600}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Last Name</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.lastName}
-                onChangeText={(value) => handleInputChange('lastName', value)}
-                placeholder="Enter last name"
-                placeholderTextColor={Colors.gray600}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Address</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.address}
-                onChangeText={(value) => handleInputChange('address', value)}
-                placeholder="Enter address"
-                placeholderTextColor={Colors.gray600}
-                multiline
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Apartment, suite, etc. (optional)</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.apartment}
-                onChangeText={(value) => handleInputChange('apartment', value)}
-                placeholder="Enter apartment number"
-                placeholderTextColor={Colors.gray600}
-              />
-            </View>
-
-            <View style={styles.rowContainer}>
-              <View style={[styles.inputGroup, styles.halfWidth]}>
-                <Text style={styles.inputLabel}>City</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.city}
-                  onChangeText={(value) => handleInputChange('city', value)}
-                  placeholder="Enter city"
-                  placeholderTextColor={Colors.gray600}
-                />
-              </View>
-
-              <View style={[styles.inputGroup, styles.halfWidth]}>
-                <Text style={styles.inputLabel}>State</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.state}
-                  onChangeText={(value) => handleInputChange('state', value)}
-                  placeholder="Enter state"
-                  placeholderTextColor={Colors.gray600}
-                />
-              </View>
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>PIN Code</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.pin}
-                onChangeText={(value) => handleInputChange('pin', value)}
-                placeholder="Enter PIN code"
-                placeholderTextColor={Colors.gray600}
-                keyboardType="numeric"
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Country</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.country}
-                onChangeText={(value) => handleInputChange('country', value)}
-                placeholder="Enter country"
-                placeholderTextColor={Colors.gray600}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Phone Number</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.phone}
-                onChangeText={(value) => handleInputChange('phone', value)}
-                placeholder="Enter phone number"
-                placeholderTextColor={Colors.gray600}
-                keyboardType="phone-pad"
-              />
-            </View>
-          </ScrollView>
-
-          {/* Save Button */}
-          <TouchableOpacity style={styles.saveButton} onPress={handleSaveAddress}>
-            <Text style={styles.saveButtonText}>Save Address</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      </View>
+      <TouchableOpacity 
+        style={styles.overlay}
+        activeOpacity={1}
+        onPress={handleClose}
+      >
+        <TouchableOpacity activeOpacity={1}>
+          {modalContent}
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 };
 
+// Screen wrapper component
+const DeliveryAddressScreen = ({ navigation, route }) => {
+  return (
+    <DeliveryAddressModal
+      visible={true}
+      navigation={navigation}
+      route={route}
+      asScreen={true}
+      onClose={() => {
+        if (route?.params?.returnScreen) {
+          navigation.navigate(route.params.returnScreen);
+        } else {
+          navigation.goBack();
+        }
+      }}
+    />
+  );
+};
+
 const styles = StyleSheet.create({
+  screenContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
-  backdrop: {
-    flex: 1,
-  },
   modalContainer: {
-    backgroundColor: Colors.white,
+    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingBottom: 34,
+    maxHeight: SCREEN_HEIGHT * 0.85,
+    paddingBottom: 34, // Safe area for home indicator
+  },
+  modalContainerFullScreen: {
+    flex: 1,
+    maxHeight: '100%',
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
   },
   handleBar: {
-    width: 40,
+    width: 36,
     height: 4,
-    backgroundColor: Colors.gray600,
-    borderRadius: 30,
+    backgroundColor: '#E4E4E4',
+    borderRadius: 2,
     alignSelf: 'center',
-    marginTop: 14,
-    marginBottom: 10,
+    marginTop: 8,
+    marginBottom: 8,
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.gray200,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    height: 64,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.black,
+    fontFamily: 'Montserrat',
+    fontWeight: '500',
+    fontSize: 16,
+    color: '#000000',
+    letterSpacing: -0.4,
   },
   closeButton: {
     width: 32,
     height: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.gray100,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   closeButtonText: {
-    fontSize: 16,
-    color: Colors.gray600,
-    fontWeight: 'bold',
+    fontSize: 24,
+    color: '#000000',
+    fontWeight: '300',
   },
-  selectedOptionContainer: {
+  addAddressButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.gray100,
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 24,
-    marginTop: 16,
-    marginBottom: 24,
-  },
-  lockIconContainer: {
-    marginRight: 16,
-  },
-  lockIcon: {
-    fontSize: 24,
-  },
-  optionDetails: {
-    flex: 1,
-  },
-  selectedOptionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.black,
-    marginBottom: 4,
-  },
-  selectedOptionSubtitle: {
-    fontSize: 14,
-    color: Colors.gray600,
-  },
-  formContainer: {
-    flex: 1,
-    paddingHorizontal: 24,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: Colors.black,
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: Colors.black,
-    backgroundColor: Colors.white,
-  },
-  rowContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  halfWidth: {
-    width: '48%',
-  },
-  saveButton: {
-    backgroundColor: Colors.black,
-    borderRadius: 50,
-    marginHorizontal: 24,
-    marginTop: 16,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
     paddingVertical: 16,
+    marginHorizontal: 20,
+    marginBottom: 16,
+  },
+  addAddressPlus: {
+    fontSize: 16,
+    color: '#000000',
+    fontWeight: '500',
+    marginRight: 8,
+  },
+  addAddressText: {
+    fontFamily: 'Montserrat',
+    fontWeight: '500',
+    fontSize: 16,
+    color: '#000000',
+    letterSpacing: -0.4,
+  },
+  sectionHeader: {
+    borderTopWidth: 1,
+    borderTopColor: '#E4E4E4',
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+  },
+  sectionTitle: {
+    fontFamily: 'Montserrat',
+    fontWeight: '500',
+    fontSize: 16,
+    color: '#000000',
+    letterSpacing: -0.4,
+  },
+  addressList: {
+    flex: 1,
+  },
+  addressListContent: {
+    paddingBottom: 16,
+  },
+  loadingContainer: {
+    padding: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  saveButtonText: {
-    fontSize: 16,
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    fontFamily: 'Montserrat',
     fontWeight: '500',
-    color: Colors.white,
+    fontSize: 16,
+    color: '#000000',
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontFamily: 'Montserrat',
+    fontWeight: '400',
+    fontSize: 14,
+    color: '#767676',
+  },
+  addressItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    borderTopWidth: 1,
+    borderTopColor: '#E4E4E4',
+    gap: 22,
+  },
+  addressItemLast: {
+    borderBottomWidth: 0,
+  },
+  checkboxContainer: {
+    width: 20,
+    height: 20,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 30,
+    borderWidth: 1.5,
+    borderColor: '#CDCDCD',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: '#000000',
+    borderColor: '#000000',
+  },
+  checkmark: {
+    width: 14,
+    height: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkmarkText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  addressInfo: {
+    flex: 1,
+    gap: 8,
+  },
+  addressTypeBadge: {
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+  },
+  addressTypeText: {
+    fontFamily: 'Montserrat',
+    fontWeight: '500',
+    fontSize: 12,
+    color: '#000000',
+    letterSpacing: -0.3,
+  },
+  addressName: {
+    fontFamily: 'Montserrat',
+    fontWeight: '400',
+    fontSize: 16,
+    color: '#000000',
+    letterSpacing: -0.4,
+  },
+  addressDetails: {
+    fontFamily: 'Montserrat',
+    fontWeight: '400',
+    fontSize: 16,
+    color: '#767676',
+    letterSpacing: -0.4,
+  },
+  editButton: {
+    paddingLeft: 8,
+  },
+  editButtonText: {
+    fontFamily: 'Montserrat',
+    fontWeight: '400',
+    fontSize: 12,
+    color: '#000000',
+    letterSpacing: -0.3,
+    textAlign: 'right',
+  },
+  buttonContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    gap: 14,
+  },
+  continueButton: {
+    backgroundColor: '#000000',
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: '#000000',
+    paddingVertical: 16,
+    paddingHorizontal: 51,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  continueButtonDisabled: {
+    backgroundColor: '#E4E4E4',
+    borderColor: '#E4E4E4',
+  },
+  continueButtonText: {
+    fontFamily: 'Montserrat',
+    fontWeight: '500',
+    fontSize: 16,
+    color: '#FFFFFF',
+    letterSpacing: -0.4,
   },
 });
 
-export default React.memo(DeliveryAddressModal);
+export default DeliveryAddressScreen;
+export { DeliveryAddressModal };

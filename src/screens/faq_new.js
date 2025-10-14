@@ -10,11 +10,11 @@
  * 
  * Features:
  * - Loads FAQ data from backend API on component mount
- * - Falls back to default FAQ data if API call fails
  * - Pull-to-refresh functionality
  * - Loading states and error handling
  * - Expandable/collapsible FAQ items
  * - Retry functionality for failed API calls
+ * - No cached/fallback data - always shows live data from backend
  * 
  * Expected API Response Format:
  * {
@@ -65,44 +65,10 @@ const ExpandIcon = ({ isExpanded }) => (
   </View>
 );
 
-// Default FAQ data (fallback if API fails)
-const DEFAULT_FAQ_DATA = [
-  {
-    id: 1,
-    question: "WHAT DO I NEED TO KNOW BEFORE SIGNING UP TO THE YORAA MEMBERSHIP?",
-    answer: "All your purchases in store and online are rewarded with points. To collect points in store, always remember to scan your membership ID via the H&M app. You can also earn points by completing your profile, earning you 20 points, by recycling your garments earning you 20 points, by bringing your own bag when you shop in-store earning you 5 points, and by inviting your friends to become members. You'll earn 50 points for every new member that completes their first purchase. Your points will be displayed on your membership account which can take up to 24 hours to update."
-  },
-  {
-    id: 2,
-    question: "FOR HOW LONG ARE MY POINTS VALID?",
-    answer: "Your points are valid for 12 months from the date they were earned. After this period, they will expire and cannot be used for purchases. We recommend using your points regularly to ensure they don't expire."
-  },
-  {
-    id: 3,
-    question: "WHEN DO I REACH PLUS LEVEL?",
-    answer: "You reach Plus level when you spend $200 or more in a calendar year. Once you achieve Plus status, you'll enjoy additional benefits such as free shipping, early access to sales, and exclusive member events."
-  },
-  {
-    id: 4,
-    question: "HOW DO BONUS VOUCHERS WORK?",
-    answer: "Bonus vouchers are special rewards that you can earn through various activities like completing your profile, referring friends, or reaching spending milestones. These vouchers can be applied to your purchases for additional discounts."
-  },
-  {
-    id: 5,
-    question: "WHY HAVEN'T I RECEIVED MY BONUS VOUCHER YET?",
-    answer: "Bonus vouchers typically take 24-48 hours to appear in your account after meeting the requirements. If you still haven't received it after this time, please contact our customer service team for assistance."
-  },
-  {
-    id: 6,
-    question: "HOW LONG WILL I KEEP THE PLUS STATUS?",
-    answer: "Your Plus status is maintained for one full calendar year from the date you first achieved it. To maintain Plus status for the following year, you'll need to spend $200 or more again during that calendar year."
-  }
-];
-
 const FAQScreen = ({ navigation }) => {
   // State management
-  const [expandedItems, setExpandedItems] = useState({ 1: true }); // First item expanded by default
-  const [faqData, setFaqData] = useState(DEFAULT_FAQ_DATA);
+  const [expandedItems, setExpandedItems] = useState({});
+  const [faqData, setFaqData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -128,20 +94,21 @@ const FAQScreen = ({ navigation }) => {
           console.log('[FAQ] Successfully loaded FAQs from direct array:', response.length);
           setFaqData(response);
         } else {
-          console.warn('[FAQ] Unexpected FAQ response format, using default data:', response);
-          setFaqData(DEFAULT_FAQ_DATA);
+          console.warn('[FAQ] Unexpected FAQ response format:', response);
+          setFaqData([]);
+          setError('No FAQ data available');
         }
       } catch (apiError) {
         console.error('[FAQ] Error fetching FAQs:', apiError);
         setError(YoraaAPI.handleError(apiError));
         
-        // Use default data as fallback
-        setFaqData(DEFAULT_FAQ_DATA);
+        // Don't use fallback data
+        setFaqData([]);
         
-        // Show error alert but don't block the UI
+        // Show error alert
         Alert.alert(
           'FAQ Loading Error',
-          'Unable to load FAQs from server. Showing default content.',
+          'Unable to load FAQs from server. Please check your connection and try again.',
           [{ text: 'OK', style: 'default' }]
         );
       } finally {
@@ -173,12 +140,13 @@ const FAQScreen = ({ navigation }) => {
         setFaqData(response);
       } else {
         console.warn('Unexpected FAQ response format:', response);
-        setFaqData(DEFAULT_FAQ_DATA);
+        setFaqData([]);
+        setError('No FAQ data available');
       }
     } catch (apiError) {
       console.error('Error refreshing FAQs:', apiError);
       setError(YoraaAPI.handleError(apiError));
-      setFaqData(DEFAULT_FAQ_DATA);
+      setFaqData([]);
     } finally {
       setLoading(false);
     }
@@ -268,10 +236,21 @@ const FAQScreen = ({ navigation }) => {
         {error && !loading && (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>
-              Failed to load FAQs from server. Showing cached content.
+              Failed to load FAQs from server. Please check your connection and try again.
             </Text>
             <TouchableOpacity style={styles.retryButton} onPress={refreshFAQs}>
               <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        
+        {!loading && !error && faqData.length === 0 && (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>
+              No FAQs available at the moment.
+            </Text>
+            <TouchableOpacity style={styles.retryButton} onPress={refreshFAQs}>
+              <Text style={styles.retryButtonText}>Refresh</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -400,6 +379,20 @@ const styles = StyleSheet.create({
     color: '#856404',
     fontFamily: 'Montserrat-Medium',
     marginBottom: 8,
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#848688',
+    textAlign: 'center',
+    marginBottom: 16,
+    fontFamily: 'Montserrat-Medium',
   },
   retryButton: {
     backgroundColor: '#FFC107',
