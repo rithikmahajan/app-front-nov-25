@@ -630,6 +630,7 @@ const styles = StyleSheet.create({
   },
   selectedOptionText: {
     fontWeight: '600',
+    textDecorationLine: 'underline',
   },
   sortRow: {
     paddingVertical: 8,
@@ -642,6 +643,7 @@ const styles = StyleSheet.create({
   },
   selectedSortText: {
     fontWeight: '600',
+    textDecorationLine: 'underline',
   },
   viewResultsButton: {
     margin: 20,

@@ -1505,6 +1505,16 @@ class YoraaAPIService {
     try {
       console.log('🎟️ Fetching available promo codes');
       
+      // Check authentication first
+      if (!this.isAuthenticated()) {
+        console.log('⚠️ User not authenticated, cannot fetch promo codes');
+        return {
+          success: true,
+          data: [],
+          message: 'Authentication required for promo codes'
+        };
+      }
+      
       // NOTE: This endpoint might need to be created by backend team
       // For now, we'll try a user-specific endpoint, and fallback to public validation
       let response;
@@ -2609,6 +2619,61 @@ class YoraaAPIService {
       }
     } catch (error) {
       console.error('❌ Error submitting chat rating:', error);
+      throw error;
+    }
+  }
+
+  // Rewards & Banner Methods
+  async getRewardsBanner() {
+    try {
+      console.log('🎯 Fetching rewards banner data from /api/manage-banners-rewards');
+      const response = await this.makeRequest('/api/manage-banners-rewards', 'GET', null, false);
+      
+      if (response.success || response.data) {
+        console.log('✅ Rewards banner fetched successfully');
+        return response;
+      } else {
+        throw new Error(response.message || 'Failed to fetch rewards banner');
+      }
+    } catch (error) {
+      console.error('❌ Rewards Banner API Error:', error.message);
+      console.error('📋 Backend team: Please implement GET /api/manage-banners-rewards endpoint');
+      throw error;
+    }
+  }
+
+  async getUserLoyaltyStatus() {
+    try {
+      console.log('🎯 Fetching user loyalty status from /api/loyalty/user/status');
+      const response = await this.makeRequest('/api/loyalty/user/status', 'GET', null, true);
+      
+      if (response.success) {
+        console.log('✅ User loyalty status fetched successfully');
+        return response.data;
+      } else {
+        throw new Error(response.message || 'Failed to fetch loyalty status');
+      }
+    } catch (error) {
+      console.error('❌ User Loyalty Status API Error:', error.message);
+      console.error('📋 Backend team: Please implement GET /api/loyalty/user/status endpoint');
+      throw error;
+    }
+  }
+
+  async getLoyaltyTiers() {
+    try {
+      console.log('🎯 Fetching loyalty tiers from /api/loyalty/tiers');
+      const response = await this.makeRequest('/api/loyalty/tiers', 'GET', null, false);
+      
+      if (response.success) {
+        console.log('✅ Loyalty tiers fetched successfully');
+        return response.data;
+      } else {
+        throw new Error(response.message || 'Failed to fetch loyalty tiers');
+      }
+    } catch (error) {
+      console.error('❌ Loyalty Tiers API Error:', error.message);
+      console.error('📋 Backend team: Please implement GET /api/loyalty/tiers endpoint');
       throw error;
     }
   }

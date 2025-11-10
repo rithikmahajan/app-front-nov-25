@@ -9,6 +9,7 @@ import {
   Dimensions,
   PanResponder,
 } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { Colors, FontFamilies } from '../constants';
 import { useBag } from '../contexts/BagContext';
 
@@ -58,7 +59,7 @@ const FavouritesAddedToBagConfirmationModal = ({ navigation, route }) => {
         console.error('Navigation.navigate is not available');
       }
     }, 100);
-  }, [navigation, handleClose]);
+  }, [navigation, handleClose, getBagItemsCount]);
 
   const handleClose = useCallback(() => {
     // Go back to the previous screen (likely the favorites screen)
@@ -152,15 +153,23 @@ const FavouritesAddedToBagConfirmationModal = ({ navigation, route }) => {
           
           {/* Success Icon */}
           <View style={styles.successIconContainer}>
-            <View style={styles.successIconBackground}>
-              <View style={styles.successIcon}>
-                {/* Checkmark SVG equivalent */}
-                <View style={styles.checkmark}>
-                  <View style={styles.checkmarkStem} />
-                  <View style={styles.checkmarkKick} />
-                </View>
-              </View>
-            </View>
+            <Svg width="81" height="81" viewBox="0 0 81 81" fill="none">
+              <Path 
+                opacity="0.1" 
+                d="M40.5 81C62.8675 81 81 62.8675 81 40.5C81 18.1325 62.8675 0 40.5 0C18.1325 0 0 18.1325 0 40.5C0 62.8675 18.1325 81 40.5 81Z" 
+                fill="#508A7B"
+              />
+              <Path 
+                d="M40.083 13C25.133 13 13 25.133 13 40.083C13 55.033 25.133 67.166 40.083 67.166C55.033 67.166 67.166 55.033 67.166 40.083C67.166 25.133 55.033 13 40.083 13Z" 
+                fill="#508A7B"
+              />
+              <Path 
+                fillRule="evenodd" 
+                clipRule="evenodd" 
+                d="M53.7878 30.4597C54.4008 31.0727 54.4008 32.0668 53.7878 32.6788L36.5258 49.9417C35.9128 50.5548 34.9198 50.5548 34.3068 49.9417L26.4597 42.0948C25.8468 41.4818 25.8468 40.4887 26.4597 39.8757C27.0727 39.2627 28.0668 39.2627 28.6788 39.8757L35.4157 46.6127L51.5688 30.4597C52.1818 29.8468 53.1758 29.8468 53.7878 30.4597Z" 
+                fill="white"
+              />
+            </Svg>
           </View>
           
           {/* Added to Bag Text */}
@@ -182,7 +191,7 @@ const FavouritesAddedToBagConfirmationModal = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
     justifyContent: 'flex-end',
   },
   overlayBackground: {
@@ -218,47 +227,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
-  },
-  successIconBackground: {
-    width: 81,
-    height: 81,
-    borderRadius: 40.5,
-    backgroundColor: 'rgba(80, 138, 123, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  successIcon: {
-    width: 54.166,
-    height: 54.166,
-    borderRadius: 27.083,
-    backgroundColor: '#508A7B',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkmark: {
-    width: 20,
-    height: 15,
-    position: 'relative',
-  },
-  checkmarkStem: {
-    position: 'absolute',
-    left: 11,
-    top: 6,
-    width: 8,
-    height: 2,
-    backgroundColor: Colors.white,
-    borderRadius: 1,
-    transform: [{ rotate: '45deg' }],
-  },
-  checkmarkKick: {
-    position: 'absolute',
-    left: 6,
-    top: 9,
-    width: 5,
-    height: 2,
-    backgroundColor: Colors.white,
-    borderRadius: 1,
-    transform: [{ rotate: '-45deg' }],
   },
   addedToBagText: {
     fontSize: 24,

@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   FlatList,
   ActivityIndicator,
   Image,
@@ -12,10 +11,10 @@ import {
 } from 'react-native';
 import { Colors, FontFamilies } from '../constants';
 import HeartFilledIcon from '../assets/icons/HeartFilledIcon';
-import GlobalBackButton from '../components/GlobalBackButton';
 import TrashIcon from '../assets/icons/TrashIcon';
 import { useOptimizedList } from '../hooks/usePerformanceOptimization';
 import { yoraaAPI } from '../services/yoraaAPI';
+import { useFavorites } from '../contexts/FavoritesContext';
 
 // Enhanced delete icon component matching Figma design
 const DeleteIcon = ({ size = 34, onPress, isLoading = false, animatedValue }) => (
@@ -58,6 +57,7 @@ const DeleteIcon = ({ size = 34, onPress, isLoading = false, animatedValue }) =>
 );
 
 const FavouritesContent = ({ navigation }) => {
+  const { loadFavoritesFromAPI } = useFavorites();
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -117,14 +117,6 @@ const FavouritesContent = ({ navigation }) => {
     loadWishlistItems();
   }, [loadWishlistItems]);
 
-  // Navigate back to empty favorites screen if no favorites left
-  useEffect(() => {
-    if (!loading && wishlistItems.length === 0) {
-      console.log('🔍 FavouritesContent: No items found, navigating back');
-      navigation.goBack();
-    }
-  }, [loading, wishlistItems.length, navigation]);
-
   // Use wishlist items directly instead of trying to match with local products
   const favouritedProducts = useMemo(() => {
     console.log('🔍 FavouritesContent: Processing favourited products:', wishlistItems.length);
@@ -136,24 +128,6 @@ const FavouritesContent = ({ navigation }) => {
     favouritedProducts,
     useCallback((item) => item._id || item.id || item.itemId, [])
   );
-
-  const handleBackPress = useCallback(() => {
-    console.log('🔄 FavouritesContent: Back button pressed');
-    
-    try {
-      if (navigation && navigation.goBack) {
-        console.log('✅ Using navigation.goBack() to return to Home');
-        navigation.goBack();
-      } else if (navigation && navigation.navigate) {
-        console.log('✅ Fallback: Using navigation.navigate("Home")');
-        navigation.navigate('Home');
-      } else {
-        console.error('❌ Navigation object is undefined');
-      }
-    } catch (error) {
-      console.error('❌ Error during navigation:', error);
-    }
-  }, [navigation]);
 
   const handleEditPress = useCallback(() => {
     const newMode = !isEditMode;
@@ -197,6 +171,9 @@ const FavouritesContent = ({ navigation }) => {
       await yoraaAPI.removeFromWishlist(itemId);
       console.log('✅ Item removed successfully from backend');
       
+      // Update favorites context to sync the count
+      await loadFavoritesFromAPI();
+      
     } catch (error) {
       console.error('❌ Backend removal failed:', error);
       
@@ -207,6 +184,9 @@ const FavouritesContent = ({ navigation }) => {
       } else {
         console.error('🚨 Unexpected error during removal:', error.message);
       }
+      
+      // Still update context even on error to keep UI in sync
+      await loadFavoritesFromAPI();
     } finally {
       setRemovingItems(prev => {
         const newSet = new Set(prev);
@@ -214,7 +194,7 @@ const FavouritesContent = ({ navigation }) => {
         return newSet;
       });
     }
-  }, []);
+  }, [loadFavoritesFromAPI]);
 
   // Handle clear all items - smooth action without confirmation
   const handleClearAll = useCallback(async () => {
@@ -247,11 +227,16 @@ const FavouritesContent = ({ navigation }) => {
         console.log(`⚠️ ${failedRemovals.length} items failed to remove from backend, but UI is already cleared`);
       }
       
+      // Update favorites context to sync the count
+      await loadFavoritesFromAPI();
+      
     } catch (error) {
       console.error('❌ Error during bulk removal:', error);
       // Don't restore items to UI - keep the smooth experience
+      // Still update context to keep UI in sync
+      await loadFavoritesFromAPI();
     }
-  }, [wishlistItems]);
+  }, [wishlistItems, loadFavoritesFromAPI]);
 
   // Memoized render function to prevent unnecessary re-renders
   const renderProductItem = useCallback(({ item, index }) => {
@@ -316,15 +301,10 @@ const FavouritesContent = ({ navigation }) => {
   }, [handleProductPress, isEditMode, removingItems, handleRemoveItem, deleteIconAnimation]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={handleBackPress}
-        >
-          <GlobalBackButton onPress={handleBackPress} />
-        </TouchableOpacity>
+        <View style={styles.headerLeft} />
         <Text style={styles.headerTitle}>Favourites</Text>
         {isEditMode ? (
           <View style={styles.editModeButtons}>
@@ -389,7 +369,7 @@ const FavouritesContent = ({ navigation }) => {
           </View>
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -407,10 +387,8 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     backgroundColor: Colors.white,
   },
-  backButton: {
+  headerLeft: {
     width: 68,
-    height: 24,
-    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 16,
@@ -437,6 +415,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 16,
+    paddingBottom: 80, // Add padding for bottom navigation bar
   },
   gridContainer: {
     paddingBottom: 20,

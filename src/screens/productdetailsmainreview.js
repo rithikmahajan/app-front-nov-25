@@ -40,7 +40,12 @@ const ProductDetailsMainReview = ({ navigation, route }) => {
 
   const handleBackPress = () => {
     if (navigation) {
-      navigation.navigate('ProductDetailsMain');
+      // Navigate back to ProductDetailsMain with the product data
+      if (product) {
+        navigation.navigate('ProductDetailsMain', { product });
+      } else {
+        navigation.goBack();
+      }
     }
   };
 

@@ -112,6 +112,11 @@ const validatePhone = (phone) => {
   return phoneRegex.test(phone);
 };
 
+const validateEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
 const validateRequired = (value) => {
   return value && value.trim().length > 0;
 };
@@ -145,6 +150,7 @@ const AddAddressModal = ({ visible = true, onClose, editingAddress, navigation, 
     state: 'Select State',
     pin: '',
     country: 'India',
+    email: '',
     phone: '',
     phonePrefix: '+91',
     type: 'Home', // Default to Home
@@ -296,6 +302,7 @@ const AddAddressModal = ({ visible = true, onClose, editingAddress, navigation, 
         state: finalEditingAddress.state || 'Select State',
         pin: finalEditingAddress.pinCode || finalEditingAddress.pin || '',
         country: finalEditingAddress.country || 'India',
+        email: finalEditingAddress.email || '',
         phone: phoneNumber,
         phonePrefix: phonePrefix,
         type: finalEditingAddress.type || finalEditingAddress.addressType || 'Home',
@@ -311,6 +318,7 @@ const AddAddressModal = ({ visible = true, onClose, editingAddress, navigation, 
         state: 'Select State',
         pin: '',
         country: 'India',
+        email: '',
         phone: '',
         phonePrefix: '+91',
         type: 'Home',
@@ -374,6 +382,13 @@ const AddAddressModal = ({ visible = true, onClose, editingAddress, navigation, 
     } else if (!validatePhone(formData.phone)) {
       newErrors.phone = showMessages ? 'Phone number must be 10 digits' : true;
     }
+    
+    // Email validation (optional field)
+    if (formData.email && formData.email.trim().length > 0) {
+      if (!validateEmail(formData.email)) {
+        newErrors.email = showMessages ? 'Please enter a valid email address' : true;
+      }
+    }
 
     setErrors(newErrors);
     setValidationState(showMessages ? 'full' : 'inline');
@@ -409,6 +424,7 @@ const AddAddressModal = ({ visible = true, onClose, editingAddress, navigation, 
         country: formData.country,
         type: formData.type.toLowerCase(), // Use selected address type
         ...(formData.apartment && { apartment: formData.apartment }), // Only include if not empty
+        ...(formData.email && { email: formData.email }), // Only include if not empty
       };
 
       // Debug logs for phone number saving
@@ -550,6 +566,19 @@ const AddAddressModal = ({ visible = true, onClose, editingAddress, navigation, 
         } else if (!validatePhone(value)) {
           fieldErrors[field] = true;
         } else {
+          isValid = true;
+        }
+        break;
+      case 'email':
+        // Email is optional, only validate if not empty
+        if (value && value.trim().length > 0) {
+          if (!validateEmail(value)) {
+            fieldErrors[field] = true;
+          } else {
+            isValid = true;
+          }
+        } else {
+          // Empty email is valid (optional field)
           isValid = true;
         }
         break;
@@ -760,6 +789,26 @@ const AddAddressModal = ({ visible = true, onClose, editingAddress, navigation, 
                   onChangeText={(value) => handleInputChange('country', value)}
                   placeholderTextColor={Colors.gray600}
                 />
+              </View>
+
+              <View style={[
+                styles.inputContainer, 
+                errors.email && styles.inputError,
+                validFields.email && !errors.email && styles.inputValid
+              ]}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email Address"
+                  value={formData.email}
+                  onChangeText={(value) => handleInputChange('email', value)}
+                  onBlur={() => handleInputBlur('email')}
+                  placeholderTextColor={Colors.gray600}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+                {errors.email && validationState === 'full' && (
+                  <Text style={styles.errorText}>{errors.email}</Text>
+                )}
               </View>
 
               <View style={[

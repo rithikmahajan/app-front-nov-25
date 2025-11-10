@@ -4,11 +4,20 @@ import authStorageService from './authStorageService';
 
 class YoraaBackendAPI {
   constructor() {
-    // Environment-based API URLs - ✅ PRODUCTION DEPLOYMENT (port 8000 is actual working port)
-    this.baseURL = __DEV__ 
-      ? 'http://localhost:8001/api'        // Development (iOS Simulator) - Local backend server on port 8001
-      : 'http://185.193.19.244:8000/api';  // Production (TestFlight/Physical Device) - Contabo VPS on port 8000
+    // 🎯 USE ENVIRONMENT CONFIG - Automatically uses .env files
+    // Import at the top: import environmentConfig from '../config/environment';
+    const environmentConfig = require('../config/environment').default;
+    
+    // Get URL from environment config (respects .env.development and .env.production)
+    this.baseURL = environmentConfig.getApiUrl();
     this.token = null;
+    
+    // Log for debugging
+    if (__DEV__) {
+      console.log('🌐 YoraaBackendAPI initialized');
+      console.log('🔧 Base URL:', this.baseURL);
+      console.log('🔧 Environment:', __DEV__ ? 'Development' : 'Production');
+    }
   }
 
   async initialize() {

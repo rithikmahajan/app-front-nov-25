@@ -9,16 +9,10 @@ import {
   Image,
 } from 'react-native';
 import { apiService } from '../services/apiService';
-import { useBag } from '../contexts/BagContext';
-import { useFavorites } from '../contexts/FavoritesContext';
 import GlobalSearchIcon from '../assets/icons/GlobalSearchIcon';
-import NewIcon from '../assets/icons/NewIcon';
-import NewShoppingBagIcon from '../assets/icons/NewShoppingBagIcon';
 import RightArrowIcon from '../assets/icons/RightArrowIcon';
 
-const HomeScreen = React.memo(({ navigation }) => {
-  const { getBagItemsCount } = useBag();
-  const { getFavoritesCount } = useFavorites();
+const HomeScreen = React.memo(({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState('');
   const [categories, setCategories] = useState([]);
   const [currentSubcategories, setCurrentSubcategories] = useState([]);
@@ -143,6 +137,21 @@ const HomeScreen = React.memo(({ navigation }) => {
     fetchData();
   }, [fetchData]);
 
+  // Handle returning to Home with specific tab selection
+  useEffect(() => {
+    // Check if we need to restore a specific tab when returning from product details
+    if (route?.params?.returnToCategory) {
+      const categoryToRestore = route.params.returnToCategory;
+      console.log('🔙 Returning to Home, restoring tab:', categoryToRestore);
+      setActiveTab(categoryToRestore);
+      
+      // Clear the parameter to prevent interference with future navigations
+      if (navigation?.setParams) {
+        navigation.setParams({ returnToCategory: undefined });
+      }
+    }
+  }, [route?.params?.returnToCategory, navigation]);
+
   // Memoize tabs array - include API categories for main navigation
   const tabs = useMemo(() => {
     const mainTabs = [];
@@ -163,17 +172,9 @@ const HomeScreen = React.memo(({ navigation }) => {
   }, [categories]);
 
   // Get display items based on active tab - always include Sale + subcategories for selected category
-  // Main computed property for display items (Sale button + current subcategories)
+  // Main computed property for display items (current subcategories)
   const displayItems = useMemo(() => {
     const items = [];
-    
-    // Always add the Sale button first
-    items.push({
-      id: 'sale',
-      name: 'Sale',
-      isSale: true,
-      imageUrl: null
-    });
 
     console.log('🔍 Computing displayItems with:');
     console.log('- categories.length:', categories.length);
@@ -221,48 +222,16 @@ const HomeScreen = React.memo(({ navigation }) => {
     navigation?.navigate('SearchScreen', { previousScreen: 'Home' });
   }, [navigation]);
 
-  const handleNavigateToFavourites = useCallback(() => {
-    const favoritesCount = getFavoritesCount();
-    console.log('🔍 HomeScreen: Heart icon tapped, favorites count:', favoritesCount);
-    
-    if (favoritesCount > 0) {
-      // Navigate directly to favourites content if items exist
-      console.log('🔍 HomeScreen: Navigating to FavouritesContent');
-      navigation?.navigate('FavouritesContent', { previousScreen: 'Home' });
-    } else {
-      // Navigate to empty favourites screen if no items
-      console.log('🔍 HomeScreen: Navigating to favourites (empty state)');
-      navigation?.navigate('favourites', { previousScreen: 'Home' });
-    }
-  }, [navigation, getFavoritesCount]);
-
-    const handleNavigateToBag = useCallback(() => {
-    console.log('Attempting to navigate to Bag screen');
-    const bagItemsCount = getBagItemsCount();
-    
-    if (bagItemsCount > 0) {
-      // Navigate to bag screen with items
-      navigation?.navigate('Bag', { previousScreen: 'Home' });
-    } else {
-      // Navigate to empty bag screen
-      navigation?.navigate('bagemptyscreen', { previousScreen: 'Home' });
-    }
-  }, [navigation, getBagItemsCount]);
-
   const handleNavigateToProduct = useCallback((subcategoryId, subcategoryName) => {
-    // Check if this is the sale item
-    if (subcategoryId === 'sale') {
-      console.log('Navigating to Sale screen');
-      navigation?.navigate('SaleScreen');
-      return;
-    }
-    
     console.log('Navigating to ProductViewOne with subcategory:', subcategoryId, subcategoryName);
+    console.log('Current active tab:', activeTab);
+    
     navigation?.navigate('ProductViewOne', { 
       subcategoryId, 
-      subcategoryName: subcategoryName || 'Products'
+      subcategoryName: subcategoryName || 'Products',
+      categoryName: activeTab // Pass the current category tab
     });
-  }, [navigation]);
+  }, [navigation, activeTab]);
 
   const handleTabPress = useCallback((tab) => {
     setActiveTab(tab);
@@ -278,7 +247,7 @@ const HomeScreen = React.memo(({ navigation }) => {
       ]}
       onPress={() => handleNavigateToProduct(item.id, item.name)}
       accessibilityRole="button"
-      accessibilityLabel={`${item.name} category${item.isSale ? ' - On Sale' : ''}`}
+      accessibilityLabel={`${item.name} category`}
       accessibilityHint="Navigate to product listing"
     >
       <View style={styles.categoryImageContainer}>
@@ -293,7 +262,7 @@ const HomeScreen = React.memo(({ navigation }) => {
         )}
       </View>
       <View style={styles.categoryInfo}>
-        <Text style={[styles.categoryName, item.isSale && styles.saleText]}>
+        <Text style={styles.categoryName}>
           {item.name}
         </Text>
       </View>
@@ -315,31 +284,6 @@ const HomeScreen = React.memo(({ navigation }) => {
             accessibilityHint="Navigate to search screen"
           >
             <GlobalSearchIcon size={24} color="#000000" />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.iconButton}
-            onPress={handleNavigateToFavourites}
-            accessibilityRole="button"
-            accessibilityLabel="Favourites"
-            accessibilityHint="Navigate to favourites"
-          >
-            <NewIcon size={24} color="#000000" />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.iconButton}
-            onPress={handleNavigateToBag}
-            accessibilityRole="button"
-            accessibilityLabel="Shopping bag"
-            accessibilityHint="Navigate to shopping bag"
-          >
-            <View style={styles.bagIconContainer}>
-              <NewShoppingBagIcon size={24} color="#000000" />
-              {getBagItemsCount() > 0 && (
-                <View style={styles.bagBadge}>
-                  <Text style={styles.bagBadgeText}>{getBagItemsCount()}</Text>
-                </View>
-              )}
-            </View>
           </TouchableOpacity>
         </View>
       </View>
@@ -614,27 +558,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
-  },
-  bagIconContainer: {
-    position: 'relative',
-  },
-  bagBadge: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    backgroundColor: '#FF3B30',
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 6,
-  },
-  bagBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: 'Montserrat-SemiBold',
   },
 });
 

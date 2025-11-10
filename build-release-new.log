@@ -1,0 +1,10 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -workspace Yoraa.xcworkspace -scheme YoraaApp -configuration Release -sdk iphoneos -destination id=00008130-000C79462E43001C -allowProvisioningUpdates CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=UX6XB9FMNN
+
+Build settings from command line:
+    CODE_SIGN_STYLE = Automatic
+    DEVELOPMENT_TEAM = UX6XB9FMNN
+    SDKROOT = iphoneos18.5
+
+2025-11-08 17:21:38.482 xcodebuild[19882:561934] Writing error result bundle to /var/folders/dw/rb7b412d5pb792dk6wtqsg9w0000gn/T/ResultBundle_2025-08-11_17-21-0038.xcresult
+xcodebuild: error: 'Yoraa.xcworkspace' does not exist.

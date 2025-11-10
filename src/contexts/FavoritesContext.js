@@ -325,7 +325,7 @@ export const FavoritesProvider = ({ children }) => {
   }, [favorites]);
 
   const value = {
-    favorites,
+    favorites, // Expose favorites state for reactive updates
     addToFavorites,
     removeFromFavorites,
     toggleFavorite,

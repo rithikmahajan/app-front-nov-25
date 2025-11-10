@@ -12,25 +12,6 @@ export const BagProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
-  // Sync local cart items to server when user signs in
-  const syncLocalCartToServer = useCallback(async () => {
-    if (!yoraaAPI.isAuthenticated() || bagItems.length === 0) {
-      return;
-    }
-
-    console.log('🔄 Syncing local cart to server...', bagItems.length, 'items');
-    
-    try {
-      for (const item of bagItems) {
-        await yoraaAPI.addToCart(item.id, item.size, item.quantity);
-      }
-      console.log('✅ Local cart synced to server successfully');
-    } catch (error) {
-      console.error('❌ Error syncing local cart to server:', error);
-      // Don't clear local cart on sync error - user can continue shopping
-    }
-  }, [bagItems]);
-
   // Initialize API and load cart from backend
   useEffect(() => {
     const initializeBag = async () => {
@@ -52,10 +33,27 @@ export const BagProvider = ({ children }) => {
     const removeAuthListener = authManager.addAuthStateListener(async (user) => {
       if (user && yoraaAPI.isAuthenticated()) {
         // User signed in - sync local cart to server, then load server cart
-        if (bagItems.length > 0) {
-          await syncLocalCartToServer();
-        }
-        await loadBagFromAPI();
+        // Get current bag items at the time of auth change
+        setBagItems(currentItems => {
+          if (currentItems.length > 0) {
+            // Sync local cart to server asynchronously
+            (async () => {
+              try {
+                console.log('🔄 Syncing local cart to server...', currentItems.length, 'items');
+                for (const item of currentItems) {
+                  await yoraaAPI.addToCart(item.id, item.size, item.quantity);
+                }
+                console.log('✅ Local cart synced to server successfully');
+              } catch (error) {
+                console.error('❌ Error syncing local cart to server:', error);
+              }
+            })();
+          }
+          return currentItems; // Don't modify state here
+        });
+        
+        // Load cart from API after a brief delay to allow sync to complete
+        setTimeout(() => loadBagFromAPI(), 500);
       } else if (!user) {
         // User signed out, clear cart
         setBagItems([]);
@@ -63,7 +61,7 @@ export const BagProvider = ({ children }) => {
     });
 
     return removeAuthListener;
-  }, [bagItems.length, syncLocalCartToServer]);
+  }, []); // Only run once on mount
 
   // Load bag items from API
   const loadBagFromAPI = async () => {
@@ -80,12 +78,15 @@ export const BagProvider = ({ children }) => {
         const cartItems = response.items.map(item => ({
           id: item.itemId || item._id || item.id,
           name: item.itemDetails?.productName || item.productName || item.name || 'Product',
+          productName: item.itemDetails?.productName || item.productName || item.name || 'Product',
+          title: item.itemDetails?.title || item.title || '',
           price: item.itemDetails?.price || item.price || 0,
           size: item.sizeId || item.size || 'M',
           quantity: item.quantity || 1,
           sku: item.sku || item.itemDetails?.sku || `SKU-${item.itemId || item._id || item.id}`,
           brand: item.itemDetails?.brand || item.brand || 'Brand',
           image: item.itemDetails?.images?.[0]?.url || item.image,
+          images: item.itemDetails?.images || item.images || [],
           addedAt: item.addedAt || new Date().toISOString(),
         }));
 
@@ -224,6 +225,8 @@ export const BagProvider = ({ children }) => {
         ...product,
         id: product.id || product._id,
         name: product.name || product.productName || product.title || 'Product',
+        productName: product.productName || product.name || 'Product',
+        title: product.title || '',
         price: price,              // Current selling price (from salePrice or regularPrice)
         regularPrice: regularPrice, // Original price
         salePrice: price,           // Same as price for consistency

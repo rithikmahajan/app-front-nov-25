@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,11 @@ import {
   Easing,
   ScrollView,
   TextInput,
+  ActivityIndicator,
+  Alert,
+  PanResponder,
 } from 'react-native';
-import GlobalBackButton from '../components/GlobalBackButton';
+import { useAddress } from '../contexts/AddressContext';
 
 // Dropdown Arrow Icon Component
 const DropdownArrowIcon = () => (
@@ -38,32 +41,148 @@ const IndiaFlag = () => (
   </View>
 );
 
+// Swipeable Address Card Component
+const SwipeableAddressCard = ({ address, onEdit, onDelete }) => {
+  const translateX = useRef(new Animated.Value(0)).current;
+  const deleteThreshold = -120; // Swipe threshold to trigger delete
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        // Only activate on horizontal swipe (and left swipe specifically)
+        return Math.abs(gestureState.dx) > 10 && gestureState.dx < 0;
+      },
+      onPanResponderMove: (_, gestureState) => {
+        // Only allow left swipe (negative dx)
+        if (gestureState.dx < 0) {
+          translateX.setValue(gestureState.dx);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < deleteThreshold) {
+          // Delete threshold reached - trigger delete
+          Animated.timing(translateX, {
+            toValue: -400, // Slide completely off screen
+            duration: 300,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: true,
+          }).start(() => {
+            onDelete();
+          });
+        } else if (gestureState.dx < -50) {
+          // Partial swipe - snap to reveal delete
+          Animated.spring(translateX, {
+            toValue: -80,
+            useNativeDriver: true,
+            tension: 100,
+            friction: 8,
+          }).start();
+        } else {
+          // Snap back to original position
+          Animated.spring(translateX, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 100,
+            friction: 8,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
+  const resetPosition = () => {
+    Animated.spring(translateX, {
+      toValue: 0,
+      useNativeDriver: true,
+      tension: 100,
+      friction: 8,
+    }).start();
+  };
+
+  return (
+    <View style={styles.swipeableContainer}>
+      {/* Delete Background - Red Indicator */}
+      <View style={styles.deleteBackground}>
+        <View style={styles.deleteIndicator} />
+      </View>
+
+      {/* Main Card Content */}
+      <Animated.View
+        style={[
+          styles.addressCardSwipeable,
+          {
+            transform: [{ translateX }],
+          },
+        ]}
+        {...panResponder.panHandlers}
+      >
+        <View style={styles.addressCard}>
+          <View style={styles.addressInfo}>
+            <Text style={styles.addressName}>
+              {address.firstName} {address.lastName}
+            </Text>
+            <Text style={styles.addressLine}>
+              {address.street || address.address}
+              {address.apartment ? `, ${address.apartment}` : ''}
+            </Text>
+            <Text style={styles.addressLine}>
+              {address.city}, {address.state} {address.zipCode || address.pin}
+            </Text>
+            <Text style={styles.addressLine}>{address.country}</Text>
+            {address.phone && (
+              <Text style={styles.addressEmail}>{address.phone}</Text>
+            )}
+            {address.isDefault && (
+              <View style={styles.defaultBadge}>
+                <Text style={styles.defaultBadgeText}>Default</Text>
+              </View>
+            )}
+          </View>
+          <View style={styles.addressActions}>
+            <TouchableOpacity 
+              style={styles.editButton} 
+              onPress={() => {
+                resetPosition();
+                onEdit(address);
+              }}
+            >
+              <Text style={styles.editButtonText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Animated.View>
+    </View>
+  );
+};
+
 const DeliveryAddressesSettings = ({ navigation }) => {
   const [currentView, setCurrentView] = useState('list'); // 'list' or 'form'
   const [isDefaultAddress, setIsDefaultAddress] = useState(false);
   const slideAnim = React.useRef(new Animated.Value(300)).current;
   const formSlideAnim = React.useRef(new Animated.Value(300)).current;
 
-  // Sample saved address data
-  const [savedAddress] = useState({
-    name: 'John Smith',
-    address: '2950 S 108th St',
-    city: '53227, West Allis, US',
-    email: 'john@mail.com'
-  });
+  // Use AddressContext for real-time data
+  const { addresses, loading, loadAddresses, addAddress, updateAddress, deleteAddress } = useAddress();
+  const [selectedAddressForEdit, setSelectedAddressForEdit] = useState(null);
 
   // Form state
   const [formData, setFormData] = useState({
-    firstName: 'John',
-    lastName: 'Smith',
-    address: '2950 S 108th St',
+    firstName: '',
+    lastName: '',
+    address: '',
     apartment: '',
-    city: 'West Allis',
-    state: 'Delhi',
-    pin: '53227',
+    city: '',
+    state: '',
+    pin: '',
     country: 'India',
+    email: '',
     phone: '+91'
   });
+
+  // Load addresses on mount
+  useEffect(() => {
+    loadAddresses();
+  }, [loadAddresses]);
 
   React.useEffect(() => {
     // Animate in with 300ms ease out
@@ -100,7 +219,20 @@ const DeliveryAddressesSettings = ({ navigation }) => {
     }
   };
 
-  const handleEdit = () => {
+  const handleEdit = (address) => {
+    setSelectedAddressForEdit(address);
+    setFormData({
+      firstName: address.firstName || '',
+      lastName: address.lastName || '',
+      address: address.address || address.street || '',
+      apartment: address.apartment || '',
+      city: address.city || '',
+      state: address.state || '',
+      pin: address.pin || address.zipCode || '',
+      country: address.country || 'India',
+      email: address.email || '',
+      phone: address.phone || '+91'
+    });
     setCurrentView('form');
     formSlideAnim.setValue(300);
     Animated.timing(formSlideAnim, {
@@ -112,6 +244,19 @@ const DeliveryAddressesSettings = ({ navigation }) => {
   };
 
   const handleAddAddress = () => {
+    setSelectedAddressForEdit(null);
+    setFormData({
+      firstName: '',
+      lastName: '',
+      address: '',
+      apartment: '',
+      city: '',
+      state: '',
+      pin: '',
+      country: 'India',
+      email: '',
+      phone: '+91'
+    });
     setCurrentView('form');
     formSlideAnim.setValue(300);
     Animated.timing(formSlideAnim, {
@@ -122,21 +267,82 @@ const DeliveryAddressesSettings = ({ navigation }) => {
     }).start();
   };
 
-  const handleSave = () => {
-    // Save the address data
-    // Saving address logged - removed for production
-    // Set as default logged - removed for production
-    
-    // Animate back to list view
-    Animated.timing(formSlideAnim, {
-      toValue: 300,
-      duration: 300,
-      easing: Easing.in(Easing.back(1.7)),
-      useNativeDriver: true,
-    }).start(() => {
-      setCurrentView('list');
-      formSlideAnim.setValue(0);
-    });
+  const handleSave = async () => {
+    try {
+      // Prepare address data
+      const addressData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        street: formData.address,
+        apartment: formData.apartment,
+        city: formData.city,
+        state: formData.state,
+        zipCode: formData.pin,
+        country: formData.country,
+        email: formData.email,
+        phone: formData.phone,
+        isDefault: isDefaultAddress
+      };
+
+      let result;
+      if (selectedAddressForEdit) {
+        // Update existing address
+        result = await updateAddress(selectedAddressForEdit._id, addressData);
+      } else {
+        // Create new address
+        result = await addAddress(addressData);
+      }
+
+      if (result.success) {
+        Alert.alert(
+          'Success',
+          selectedAddressForEdit ? 'Address updated successfully' : 'Address added successfully'
+        );
+        
+        // Reload addresses
+        await loadAddresses();
+        
+        // Animate back to list view
+        Animated.timing(formSlideAnim, {
+          toValue: 300,
+          duration: 300,
+          easing: Easing.in(Easing.back(1.7)),
+          useNativeDriver: true,
+        }).start(() => {
+          setCurrentView('list');
+          formSlideAnim.setValue(0);
+          setSelectedAddressForEdit(null);
+        });
+      } else {
+        Alert.alert('Error', result.message || 'Failed to save address');
+      }
+    } catch (error) {
+      console.error('Error saving address:', error);
+      Alert.alert('Error', 'Failed to save address. Please try again.');
+    }
+  };
+
+  const handleDeleteAddress = async (addressId) => {
+    Alert.alert(
+      'Delete Address',
+      'Are you sure you want to delete this address?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const result = await deleteAddress(addressId);
+            if (result.success) {
+              Alert.alert('Success', 'Address deleted successfully');
+              await loadAddresses();
+            } else {
+              Alert.alert('Error', result.message || 'Failed to delete address');
+            }
+          }
+        }
+      ]
+    );
   };
 
   const updateFormData = (field, value) => {
@@ -157,28 +363,35 @@ const DeliveryAddressesSettings = ({ navigation }) => {
     >
       {/* Header */}
       <View style={styles.header}>
-        <GlobalBackButton 
-          navigation={navigation}
-          onPress={handleBack}
-          animationDuration={300}
-          customEasing={Easing.in(Easing.back(1.7))}
-        />
+        <View style={styles.headerSpacer} />
         <Text style={styles.headerTitle}>Saved Delivery Address</Text>
         <View style={styles.headerSpacer} />
       </View>
 
-      {/* Address Card */}
-      <View style={styles.addressCard}>
-        <View style={styles.addressInfo}>
-          <Text style={styles.addressName}>{savedAddress.name}</Text>
-          <Text style={styles.addressLine}>{savedAddress.address}</Text>
-          <Text style={styles.addressLine}>{savedAddress.city}</Text>
-          <Text style={styles.addressEmail}>{savedAddress.email}</Text>
+      {/* Loading Indicator */}
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#000000" />
+          <Text style={styles.loadingText}>Loading addresses...</Text>
         </View>
-        <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
-          <Text style={styles.editButtonText}>Edit</Text>
-        </TouchableOpacity>
-      </View>
+      )}
+
+      {/* Address List */}
+      {!loading && addresses.length === 0 && (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No saved addresses yet</Text>
+          <Text style={styles.emptySubtext}>Add your first delivery address</Text>
+        </View>
+      )}
+
+      {!loading && addresses.map((address, index) => (
+        <SwipeableAddressCard
+          key={address._id || index}
+          address={address}
+          onEdit={handleEdit}
+          onDelete={() => handleDeleteAddress(address._id)}
+        />
+      ))}
 
       {/* Add Address Button */}
       <TouchableOpacity style={styles.addAddressButton} onPress={handleAddAddress}>
@@ -198,13 +411,10 @@ const DeliveryAddressesSettings = ({ navigation }) => {
     >
       {/* Header */}
       <View style={styles.header}>
-        <GlobalBackButton 
-          navigation={navigation}
-          onPress={handleBack}
-          animationDuration={300}
-          customEasing={Easing.in(Easing.back(1.7))}
-        />
-        <Text style={styles.headerTitle}>Add Address</Text>
+        <View style={styles.headerSpacer} />
+        <Text style={styles.headerTitle}>
+          {selectedAddressForEdit ? 'Edit Address' : 'Add Address'}
+        </Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -295,6 +505,19 @@ const DeliveryAddressesSettings = ({ navigation }) => {
           />
         </View>
 
+        {/* Email */}
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.textInput}
+            placeholder="Email"
+            value={formData.email}
+            onChangeText={(text) => updateFormData('email', text)}
+            placeholderTextColor="#999999"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        </View>
+
         {/* Phone with Country Code */}
         <View style={styles.inputContainer}>
           <View style={styles.phoneContainer}>
@@ -323,9 +546,11 @@ const DeliveryAddressesSettings = ({ navigation }) => {
           <Text style={styles.checkboxLabel}>Set as default Delivery Address</Text>
         </View>
 
-        {/* Update Address Button */}
+        {/* Save/Update Address Button */}
         <TouchableOpacity style={styles.updateButton} onPress={handleSave}>
-          <Text style={styles.updateButtonText}>Update Address</Text>
+          <Text style={styles.updateButtonText}>
+            {selectedAddressForEdit ? 'Update Address' : 'Save Address'}
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </Animated.View>
@@ -375,6 +600,35 @@ const styles = StyleSheet.create({
     height: 24,
   },
 
+  // Swipeable Container Styles
+  swipeableContainer: {
+    marginHorizontal: 20,
+    marginTop: 10,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  addressCardSwipeable: {
+    backgroundColor: '#FFFFFF',
+    zIndex: 2,
+  },
+  deleteBackground: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 120,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    paddingRight: 30,
+    zIndex: 1,
+  },
+  deleteIndicator: {
+    width: 4,
+    height: 60,
+    backgroundColor: '#FF3B30',
+    borderRadius: 2,
+  },
+
   // Address Card Styles
   addressCard: {
     flexDirection: 'row',
@@ -382,8 +636,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     paddingHorizontal: 20,
     paddingVertical: 20,
-    marginHorizontal: 20,
-    marginTop: 10,
     backgroundColor: '#FFFFFF',
   },
   addressInfo: {
@@ -439,8 +691,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   textInput: {
-    borderWidth: 2,
-    borderColor: '#000000',
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
     borderRadius: 25,
     paddingHorizontal: 20,
     paddingVertical: 14,
@@ -454,8 +706,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderWidth: 2,
-    borderColor: '#000000',
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
     borderRadius: 25,
     paddingHorizontal: 20,
     paddingVertical: 14,
@@ -491,8 +743,8 @@ const styles = StyleSheet.create({
   // Phone Input Styles
   phoneContainer: {
     flexDirection: 'row',
-    borderWidth: 2,
-    borderColor: '#000000',
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
     borderRadius: 25,
     backgroundColor: '#FFFFFF',
     overflow: 'hidden',
@@ -588,6 +840,57 @@ const styles = StyleSheet.create({
   },
   updateButtonText: {
     fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  
+  // Loading & Empty States
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666666',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#666666',
+    textAlign: 'center',
+  },
+  
+  // Address Actions
+  addressActions: {
+    flexDirection: 'row',
+  },
+  
+  // Default Badge
+  defaultBadge: {
+    backgroundColor: '#000000',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 8,
+    alignSelf: 'flex-start',
+  },
+  defaultBadgeText: {
+    fontSize: 12,
     fontWeight: '600',
     color: '#FFFFFF',
   },

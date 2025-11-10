@@ -4,12 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
 } from 'react-native';
 import { Colors, FontFamilies } from '../constants';
 import HeartIcon from '../assets/icons/HeartIcon';
-import GlobalBackButton from '../components/GlobalBackButton';
 import { useFavorites } from '../contexts/FavoritesContext';
+import FavouritesContent from './favouritescontent';
 
 const FavouritesScreen = React.memo(({ navigation }) => {
   const { getFavoritesCount } = useFavorites();
@@ -20,87 +19,22 @@ const FavouritesScreen = React.memo(({ navigation }) => {
   // Check if we should show content or empty state
   const hasFavorites = favoritesCount > 0;
 
-  // Optimized handlers with useCallback
-  const handleBackPress = useCallback(() => {
-    console.log('Back button pressed, navigating to Home');
-    navigation.navigate('Home');
-  }, [navigation]);
-
+  // Optimized handler with useCallback
   const handleAddFavouritesNow = useCallback(() => {
     navigation.navigate('Home');
   }, [navigation]);
 
-  const handleViewFavorites = useCallback(() => {
-    navigation.navigate('FavouritesContent');
-  }, [navigation]);
-
-  // If there are favorites, show a different UI that leads to content
+  // If there are favorites, show the content directly
   if (hasFavorites) {
-    return (
-      <SafeAreaView style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={handleBackPress}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-            accessibilityHint="Navigate to previous screen"
-          >
-            <GlobalBackButton onPress={handleBackPress} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle} accessibilityRole="header">Favourites</Text>
-          <View style={styles.headerRight} />
-        </View>
-
-        {/* Content */}
-        <View style={styles.content}>
-          <View style={styles.heartIconContainer}>
-            <View style={styles.heartIconCircle}>
-              <HeartIcon size={35} color="#FF0000" filled={true} />
-            </View>
-          </View>
-
-          <View style={styles.textContainer}>
-            <Text style={styles.emptyText}>
-              You have {favoritesCount} <Text style={styles.boldText}>favourite{favoritesCount > 1 ? 's' : ''}</Text>!
-            </Text>
-            <Text style={styles.descriptionText}>
-              Tap below to view your favourites.
-            </Text>
-          </View>
-        </View>
-
-        {/* View Favourites Button */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={styles.addFavouritesButton}
-            onPress={handleViewFavorites}
-            accessibilityRole="button"
-            accessibilityLabel="View Favourites"
-            accessibilityHint="Navigate to favourites list"
-          >
-            <Text style={styles.buttonText}>View Favourites</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
+    return <FavouritesContent navigation={navigation} />;
   }
 
   // Empty state - no favorites
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={handleBackPress}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-          accessibilityHint="Navigate to previous screen"
-        >
-          <GlobalBackButton onPress={handleBackPress} />
-        </TouchableOpacity>
+        <View style={styles.headerLeft} />
         <Text style={styles.headerTitle} accessibilityRole="header">Favourites</Text>
         <View style={styles.headerRight} />
       </View>
@@ -140,7 +74,7 @@ const FavouritesScreen = React.memo(({ navigation }) => {
           <Text style={styles.buttonText}>Add Favourites Now</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 });
 
@@ -158,10 +92,8 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     backgroundColor: Colors.white,
   },
-  backButton: {
+  headerLeft: {
     width: 68,
-    height: 24,
-    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 16,

@@ -13,7 +13,7 @@ import { Alert } from 'react-native';
 export const fetchAllProducts = async () => {
   try {
     console.log('📦 Fetching all products from backend...');
-    const response = await yoraaAPI.makeRequest('/api/products', 'GET', null, false);
+    const response = await yoraaAPI.makeRequest('/api/items', 'GET', null, false);
     
     if (response && Array.isArray(response)) {
       console.log(`✅ Fetched ${response.length} products from backend`);
@@ -36,7 +36,7 @@ export const fetchAllProducts = async () => {
 export const checkProductExists = async (productId) => {
   try {
     console.log(`🔍 Checking if product exists: ${productId}`);
-    const response = await yoraaAPI.makeRequest(`/api/products/${productId}`, 'GET', null, false);
+    const response = await yoraaAPI.makeRequest(`/api/items/${productId}`, 'GET', null, false);
     
     console.log('🔍 Backend response structure:', JSON.stringify(response, null, 2));
     

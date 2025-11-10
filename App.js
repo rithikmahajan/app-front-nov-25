@@ -15,8 +15,11 @@ import {
   SafeAreaView,
   Platform,
   AppState,
+  Alert,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Config from 'react-native-config';
 import { EnhancedLayout } from './src/components/layout';
 import SplashScreen from './src/components/SplashScreen';
 import { Colors } from './src/constants';
@@ -51,6 +54,62 @@ function App() {
   
   // Ref to track if component is mounted (prevent setState on unmounted component)
   const isMountedRef = useRef(true);
+
+  // 🚀 PRODUCTION FIX: Clear cache on first launch to ensure fresh data
+  useEffect(() => {
+    const clearCacheForProduction = async () => {
+      try {
+        // Only clear cache in production builds
+        if (!__DEV__) {
+          const hasCleared = await AsyncStorage.getItem('cache_cleared_v1');
+          
+          if (!hasCleared) {
+            console.log('🧹 Production mode: Clearing old cache data...');
+            
+            // Clear all cached data except auth tokens
+            const allKeys = await AsyncStorage.getAllKeys();
+            const keysToRemove = allKeys.filter(key => 
+              !key.includes('token') && 
+              !key.includes('auth') && 
+              !key.includes('user') &&
+              !key.includes('session')
+            );
+            
+            if (keysToRemove.length > 0) {
+              await AsyncStorage.multiRemove(keysToRemove);
+              console.log(`✅ Cleared ${keysToRemove.length} cache keys`);
+            }
+            
+            await AsyncStorage.setItem('cache_cleared_v1', 'true');
+          }
+          
+          // Log environment info for debugging
+          console.log('🔍 Production Environment Check:');
+          console.log('  __DEV__:', __DEV__);
+          console.log('  APP_ENV:', Config.APP_ENV);
+          console.log('  BACKEND_URL:', Config.BACKEND_URL);
+          console.log('  BUILD_TYPE:', Config.BUILD_TYPE);
+          
+          // Test backend connectivity
+          try {
+            const response = await fetch(`${Config.BACKEND_URL || 'https://api.yoraa.in.net/api'}/health`, {
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' },
+              timeout: 10000,
+            });
+            const data = await response.json();
+            console.log('✅ Backend connected:', data);
+          } catch (error) {
+            console.error('❌ Backend connection error:', error.message);
+          }
+        }
+      } catch (error) {
+        console.error('Cache clear error:', error);
+      }
+    };
+
+    clearCacheForProduction();
+  }, []);
 
   // Initialize native modules safely
   useEffect(() => {

@@ -10,7 +10,7 @@ import {
 import GlobalBackButton from '../components/GlobalBackButton';
 
 const TryOnProTips = ({ navigation, route }) => {
-  const { product, previousScreen } = route?.params || {};
+  const { product } = route?.params || {};
 
   const handleNext = () => {
     // Navigate to upload photo screen
@@ -21,11 +21,8 @@ const TryOnProTips = ({ navigation, route }) => {
   };
 
   const handleBack = () => {
-    if (previousScreen) {
-      navigation?.goBack();
-    } else {
-      navigation?.navigate('ProductDetailsMain');
-    }
+    // Navigate back to ProductDetailsMain with the product data
+    navigation?.navigate('ProductDetailsMain', { product });
   };
 
   return (
@@ -35,12 +32,7 @@ const TryOnProTips = ({ navigation, route }) => {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={handleBack}
-          >
-            <GlobalBackButton />
-          </TouchableOpacity>
+          <GlobalBackButton onPress={handleBack} />
         </View>
 
         {/* Content */}

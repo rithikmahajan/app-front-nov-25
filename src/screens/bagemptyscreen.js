@@ -7,7 +7,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import BagIconSvg from '../assets/icons/BagIconSvg';
-import GlobalBackButton from '../components/GlobalBackButton';
+import BottomNavigationBar from '../components/bottomnavigationbar';
 import { useBag } from '../contexts/BagContext';
 
 const BagEmptyScreen = React.memo(({ navigation }) => {
@@ -20,11 +20,6 @@ const BagEmptyScreen = React.memo(({ navigation }) => {
   const hasBagItems = bagItemsCount > 0;
 
   // Optimized handlers with useCallback
-  const handleBackPress = useCallback(() => {
-    console.log('Back button pressed, navigating to Home');
-    navigation.navigate('Home');
-  }, [navigation]);
-
   const handleShopNow = useCallback(() => {
     navigation.navigate('Home');
   }, [navigation]);
@@ -33,21 +28,18 @@ const BagEmptyScreen = React.memo(({ navigation }) => {
     navigation.navigate('BagContent');
   }, [navigation]);
 
+  const handleTabChange = useCallback((tabName) => {
+    console.log('Tab changed to:', tabName);
+    navigation.navigate(tabName);
+  }, [navigation]);
+
   // If there are items in bag, show a different UI that leads to content
   if (hasBagItems) {
     return (
       <SafeAreaView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={handleBackPress}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-            accessibilityHint="Navigate to previous screen"
-          >
-            <GlobalBackButton onPress={handleBackPress} />
-          </TouchableOpacity>
+          <View style={styles.headerLeft} />
           <Text style={styles.headerTitle} accessibilityRole="header">Bag</Text>
           <View style={styles.headerRight} />
         </View>
@@ -80,6 +72,14 @@ const BagEmptyScreen = React.memo(({ navigation }) => {
             <Text style={styles.buttonText}>View Bag</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Bottom Navigation Bar */}
+        <View style={styles.bottomNavContainer}>
+          <BottomNavigationBar 
+            activeTab="Shop" 
+            onTabChange={handleTabChange}
+          />
+        </View>
       </SafeAreaView>
     );
   }
@@ -89,15 +89,7 @@ const BagEmptyScreen = React.memo(({ navigation }) => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={handleBackPress}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-          accessibilityHint="Navigate to previous screen"
-        >
-          <GlobalBackButton onPress={handleBackPress} />
-        </TouchableOpacity>
+        <View style={styles.headerLeft} />
         <Text style={styles.headerTitle} accessibilityRole="header">Bag</Text>
         <View style={styles.headerRight} />
       </View>
@@ -132,6 +124,14 @@ const BagEmptyScreen = React.memo(({ navigation }) => {
           <Text style={styles.buttonText}>Shop Now</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Bottom Navigation Bar */}
+      <View style={styles.bottomNavContainer}>
+        <BottomNavigationBar 
+          activeTab="Shop" 
+          onTabChange={handleTabChange}
+        />
+      </View>
     </SafeAreaView>
   );
 });
@@ -152,9 +152,8 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     backgroundColor: '#FFFFFF',
   },
-  backButton: {
+  headerLeft: {
     width: 68,
-    alignItems: 'flex-start',
   },
   headerTitle: {
     fontSize: 16,
@@ -228,7 +227,7 @@ const styles = StyleSheet.create({
   // Button Styles
   buttonContainer: {
     paddingHorizontal: 24,
-    paddingBottom: 34,
+    paddingBottom: 100, // Increased to account for bottom navigation bar
   },
 
   shopNowButton: {
@@ -255,6 +254,15 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontFamily: 'Montserrat-Medium',
     lineHeight: 19.2,
+  },
+
+  // Bottom Navigation Bar Styles
+  bottomNavContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
   },
 });
 

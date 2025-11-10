@@ -30,14 +30,27 @@ export const AddressProvider = ({ children }) => {
         return;
       }
       
-      // Try apiService first
+      // Use yoraaAPI directly (it has better token management)
       let response;
       try {
-        response = await apiService.getAddresses();
-      } catch (apiServiceError) {
-        console.warn('apiService failed, trying yoraaAPI as fallback:', apiServiceError.message);
-        // Fallback to yoraaAPI
         response = await yoraaAPI.getAddresses();
+      } catch (yoraaAPIError) {
+        // If yoraaAPI fails, try apiService as fallback
+        console.warn('yoraaAPI failed, trying apiService as fallback:', yoraaAPIError.message);
+        try {
+          response = await apiService.getAddresses();
+        } catch (apiServiceError) {
+          // If both fail with 404, it means no addresses exist or endpoint not available
+          if (apiServiceError.response?.status === 404 || yoraaAPIError.response?.status === 404) {
+            console.log('📍 No addresses found or endpoint not available - this is normal for new users');
+            setAddresses([]);
+            setSelectedAddress(null);
+            setLoading(false);
+            return;
+          }
+          console.error('Both API services failed to load addresses');
+          throw apiServiceError;
+        }
       }
       
       if (response.success && response.data) {
@@ -49,7 +62,14 @@ export const AddressProvider = ({ children }) => {
         }
       }
     } catch (error) {
-      console.error('Error loading addresses:', error);
+      // Only log as error if it's not a 404
+      if (error.response?.status === 404) {
+        console.log('📍 Address endpoint returned 404 - user may not have any addresses yet');
+      } else {
+        console.error('Error loading addresses:', error);
+      }
+      // Set empty addresses on error to prevent infinite loading
+      setAddresses([]);
     } finally {
       setLoading(false);
     }
@@ -60,14 +80,14 @@ export const AddressProvider = ({ children }) => {
     try {
       setLoading(true);
       
-      // Try apiService first
+      // Use yoraaAPI directly (it has better token management)
       let response;
       try {
-        response = await apiService.createAddress(addressData);
-      } catch (apiServiceError) {
-        console.warn('apiService failed, trying yoraaAPI as fallback:', apiServiceError.message);
-        // Fallback to yoraaAPI
         response = await yoraaAPI.createAddress(addressData);
+      } catch (yoraaAPIError) {
+        // If yoraaAPI fails, try apiService as fallback
+        console.warn('yoraaAPI failed, trying apiService as fallback:', yoraaAPIError.message);
+        response = await apiService.createAddress(addressData);
       }
       
       if (response.success && response.data) {
@@ -102,7 +122,16 @@ export const AddressProvider = ({ children }) => {
   const updateAddress = async (addressId, addressData) => {
     try {
       setLoading(true);
-      const response = await apiService.updateAddress(addressId, addressData);
+      
+      // Use yoraaAPI directly (it has better token management)
+      let response;
+      try {
+        response = await yoraaAPI.updateAddress(addressId, addressData);
+      } catch (yoraaAPIError) {
+        // If yoraaAPI fails, try apiService as fallback
+        console.warn('yoraaAPI failed, trying apiService as fallback:', yoraaAPIError.message);
+        response = await apiService.updateAddress(addressId, addressData);
+      }
       
       if (response.success && response.data) {
         setAddresses(prev => 
@@ -132,7 +161,16 @@ export const AddressProvider = ({ children }) => {
   const deleteAddress = async (addressId) => {
     try {
       setLoading(true);
-      const response = await apiService.deleteAddress(addressId);
+      
+      // Use yoraaAPI directly (it has better token management)
+      let response;
+      try {
+        response = await yoraaAPI.deleteAddress(addressId);
+      } catch (yoraaAPIError) {
+        // If yoraaAPI fails, try apiService as fallback
+        console.warn('yoraaAPI failed, trying apiService as fallback:', yoraaAPIError.message);
+        response = await apiService.deleteAddress(addressId);
+      }
       
       if (response.success) {
         setAddresses(prev => prev.filter(addr => addr._id !== addressId));

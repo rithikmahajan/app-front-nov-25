@@ -14,13 +14,14 @@ import {
   Alert,
 } from 'react-native';
 import { Colors, FontFamilies } from '../constants';
-import { YoraaAPI } from '../../YoraaAPIClient';
 import apiService from '../services/apiService';
 import { useBag } from '../contexts/BagContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 
 const FavouritesModalOverlayForSizeSelection = ({ route, navigation }) => {
   const { product } = route.params || {};
   const { addToBag } = useBag();
+  const { removeFromFavorites } = useFavorites();
   
   // Product data state
   const [productData, setProductData] = useState(null);
@@ -30,8 +31,6 @@ const FavouritesModalOverlayForSizeSelection = ({ route, navigation }) => {
   // Size selection state
   const [selectedQuantity, setSelectedQuantity] = useState('1');
   const [selectedSize, setSelectedSize] = useState('S');
-  const [selectedUnit, setSelectedUnit] = useState('cm');
-  const [activeTab, setActiveTab] = useState('sizeChart');
   
   // API data for size charts
   const [sizeChartData, setSizeChartData] = useState([]);
@@ -41,61 +40,6 @@ const FavouritesModalOverlayForSizeSelection = ({ route, navigation }) => {
   const translateY = useRef(new Animated.Value(0)).current;
   const screenHeight = Dimensions.get('window').height;
   
-  const loadSizeChartData = useCallback(async () => {
-    try {
-      // Try to get detailed product info with size chart from API
-      if (product?.subcategoryId) {
-        const response = await apiService.getFilteredItems({
-          subcategory: [product.subcategoryId],
-          page: 1,
-          limit: 50
-        });
-
-        if (response?.data?.items?.length > 0) {
-          // Find matching product
-          const matchingProduct = response.data.items.find(item => 
-            item._id === product._id || 
-            item.productName === product.productName ||
-            item.title === product.title
-          );
-
-          if (matchingProduct) {
-            console.log('✅ Found matching product with full data:', matchingProduct.productName);
-            
-            // Extract size chart data
-            if (matchingProduct.sizes && matchingProduct.sizes.length > 0) {
-              const sizes = matchingProduct.sizes.map(size => ({
-                size: size.size,
-                waistCm: size.waistCm || '71.1',
-                inseamCm: size.inseamCm || '70.1',
-                waistIn: size.waistIn || '28.0',
-                inseamIn: size.inseamIn || '27.6',
-                available: size.available !== false
-              }));
-              setSizeChartData(sizes);
-            }
-
-            // Extract size chart image
-            if (matchingProduct.sizeChartImage?.url) {
-              setSizeChartImage({
-                url: matchingProduct.sizeChartImage.url,
-                filename: matchingProduct.sizeChartImage.filename,
-                uploadedAt: matchingProduct.sizeChartImage.uploadedAt
-              });
-              console.log('✅ Size chart image found:', matchingProduct.sizeChartImage.url);
-            }
-
-            // Update product data with full information
-            setProductData(matchingProduct);
-          }
-        }
-      }
-    } catch (err) {
-      console.error('❌ Error loading size chart data:', err);
-      // Don't set error here as basic product data should still work
-    }
-  }, [product]);
-
   const loadProductData = useCallback(async () => {
     try {
       setLoading(true);
@@ -103,11 +47,118 @@ const FavouritesModalOverlayForSizeSelection = ({ route, navigation }) => {
 
       console.log('🔍 Loading product data for:', product);
 
-      // Set basic product data from props
-      setProductData(product);
+      // Fetch complete product data from API
+      if (!product?._id && !product?.productId && !product?.itemId) {
+        console.log('⚠️ No product ID found');
+        setError('Product ID not available');
+        setLoading(false);
+        return;
+      }
 
-      // Load size chart data from API
-      await loadSizeChartData();
+      const productId = product._id || product.productId || product.itemId;
+      console.log('🔍 Fetching product with ID:', productId);
+      
+      const response = await apiService.getItemById(productId);
+
+      if (response?.data) {
+        const fullProduct = response.data;
+        console.log('✅ Full product data loaded:', fullProduct.productName);
+        console.log('🔍 Product sizes:', fullProduct.sizes);
+        
+        // Set the complete product data
+        setProductData(fullProduct);
+
+        // Extract size chart data with stock information
+        if (fullProduct.sizes && fullProduct.sizes.length > 0) {
+          const dynamicSizes = fullProduct.sizes
+            .filter(size => size.size) // Only include sizes with size field
+            .map(size => {
+              // Helper function to safely get value with multiple field name variations
+              const getValue = (obj, keys) => {
+                for (const key of keys) {
+                  if (obj.hasOwnProperty(key)) {
+                    const val = obj[key];
+                    if (val !== undefined && val !== null && val !== '' && val !== 'N/A' && val !== '-') {
+                      const numVal = Number(val);
+                      return !isNaN(numVal) ? numVal : val;
+                    }
+                  }
+                }
+                return null;
+              };
+              
+              // Extract measurements with camelCase priority to match backend structure
+              const chestCm = getValue(size, ['chestCm', 'Chest (cm)', 'chest (cm)']);
+              const chestIn = getValue(size, ['chestIn', 'Chest (in)', 'chest (in)']);
+              const frontLengthCm = getValue(size, ['frontLengthCm', 'Front Length (cm)', 'length (cm)', 'Length (cm)']);
+              const frontLengthIn = getValue(size, ['frontLengthIn', 'Front Length (in)', 'length (in)', 'Length (in)']);
+              const shoulderCm = getValue(size, ['acrossShoulderCm', 'Shoulder (cm)', 'shoulder (cm)', 'shoulderCm']);
+              const shoulderIn = getValue(size, ['acrossShoulderIn', 'Shoulder (in)', 'shoulder (in)', 'shoulderIn']);
+              const waistCm = getValue(size, ['fitWaistCm', 'Waist (cm)', 'waist (cm)', 'waistCm']);
+              const waistIn = getValue(size, ['toFitWaistIn', 'Waist (in)', 'waist (in)', 'waistIn']);
+              const inseamCm = getValue(size, ['inseamLengthCm', 'Inseam (cm)', 'inseam (cm)', 'inseamCm']);
+              const inseamIn = getValue(size, ['inseamLengthIn', 'Inseam (in)', 'inseam (in)', 'inseamIn']);
+              const hipCm = getValue(size, ['hipCm', 'Hip (cm)', 'hip (cm)']);
+              const hipIn = getValue(size, ['hipIn', 'Hip (in)', 'hip (in)']);
+              
+              console.log('📏 [Modal] Extracted measurements:', {
+                size: size.size,
+                chestCm, chestIn, frontLengthCm, frontLengthIn,
+                shoulderCm, shoulderIn, waistCm, waistIn, 
+                inseamCm, inseamIn, hipCm, hipIn
+              });
+              
+              return {
+                size: size.size,
+                // Map all available backend fields - use extracted values
+                chestCm,
+                chestIn,
+                frontLengthCm,
+                frontLengthIn,
+                acrossShoulderCm: shoulderCm,
+                acrossShoulderIn: shoulderIn,
+                waistCm,
+                waistIn,
+                inseamCm,
+                inseamIn,
+                hipCm,
+                hipIn,
+                quantity: size.quantity || 0,
+                stock: size.stock || size.quantity || 0,
+                regularPrice: size.regularPrice || 0,
+                salePrice: size.salePrice || 0,
+                available: (size.stock || size.quantity || 0) > 0
+              };
+            });
+          
+          setSizeChartData(dynamicSizes);
+          console.log('✅ Size chart data with stock loaded:', dynamicSizes);
+
+          
+          // Set first available size as default
+          const firstAvailableSize = dynamicSizes.find(s => s.available);
+          if (firstAvailableSize) {
+            setSelectedSize(firstAvailableSize.size);
+          }
+        } else {
+          console.log('⚠️ No sizes found in product');
+          setSizeChartData([]);
+          setError('No size information available for this product');
+        }
+
+        // Extract size chart image
+        if (fullProduct.sizeChartImage?.url) {
+          setSizeChartImage({
+            url: fullProduct.sizeChartImage.url,
+            filename: fullProduct.sizeChartImage.filename,
+            uploadedAt: fullProduct.sizeChartImage.uploadedAt
+          });
+          console.log('✅ Size chart image found:', fullProduct.sizeChartImage.url);
+        }
+      } else {
+        console.log('⚠️ No product data found in API response');
+        setError('Product not found in database');
+      }
       
     } catch (err) {
       console.error('❌ Error loading product data:', err);
@@ -115,7 +166,7 @@ const FavouritesModalOverlayForSizeSelection = ({ route, navigation }) => {
     } finally {
       setLoading(false);
     }
-  }, [product, loadSizeChartData]);
+  }, [product]);
 
   // Load product data and size chart information
   useEffect(() => {
@@ -163,25 +214,37 @@ const FavouritesModalOverlayForSizeSelection = ({ route, navigation }) => {
     })
   ).current;
 
-  // Generate quantity options (Remove, 1, 2, 3, 4, 5, ...)
+  // Generate quantity options based on selected size stock (NO STATIC DATA)
+  const getMaxQuantityForSize = () => {
+    const selectedSizeData = sizeChartData.find(size => size.size === selectedSize);
+    if (selectedSizeData && selectedSizeData.stock > 0) {
+      // Limit to max 10 or available stock, whichever is lower
+      return Math.min(selectedSizeData.stock, 10);
+    }
+    return 0; // No stock available
+  };
+
+  const maxQuantity = getMaxQuantityForSize();
+  
   const quantityOptions = [
     { id: 'remove', label: 'Remove', isRemove: true },
-    ...Array.from({ length: 10 }, (_, i) => ({ id: `${i + 1}`, label: `${i + 1}` }))
+    ...Array.from({ length: maxQuantity }, (_, i) => ({ 
+      id: `${i + 1}`, 
+      label: `${i + 1}`,
+      available: true 
+    }))
   ];
 
-  // Generate size options from product data or default sizes
+  // Generate size options from product data (NO FALLBACK - only show real data)
   const availableSizes = sizeChartData.length > 0 
     ? sizeChartData.map(size => ({
         id: size.size,
         label: size.size,
-        available: size.available
+        available: size.available,
+        stock: size.stock,
+        quantity: size.quantity
       }))
-    : [
-        { id: 'S', label: 'S', available: true },
-        { id: 'M', label: 'M', available: true },
-        { id: 'L', label: 'L', available: true },
-        { id: 'XL', label: 'XL', available: true }
-      ];
+    : [];
 
   const handleQuantitySelect = (quantityId) => {
     if (quantityId === 'remove') {
@@ -207,7 +270,8 @@ const FavouritesModalOverlayForSizeSelection = ({ route, navigation }) => {
             style: 'destructive',
             onPress: async () => {
               try {
-                await YoraaAPI.removeFromWishlist(product._id);
+                const productId = product._id || product.productId || product.itemId;
+                await removeFromFavorites(productId);
                 console.log('✅ Item removed from wishlist');
                 navigation.goBack();
                 // Optionally refresh the favorites list
@@ -289,14 +353,6 @@ const FavouritesModalOverlayForSizeSelection = ({ route, navigation }) => {
     });
   };
 
-  const handleUnitToggle = (unit) => {
-    setSelectedUnit(unit);
-  };
-
-  const handleTabSwitch = (tab) => {
-    setActiveTab(tab);
-  };
-
   const handleClose = () => {
     navigation.goBack();
   };
@@ -344,6 +400,8 @@ const FavouritesModalOverlayForSizeSelection = ({ route, navigation }) => {
   const renderSizeOption = (option) => {
     const isSelected = option.id === selectedSize;
     const isDisabled = !option.available;
+    const stockCount = option.stock || option.quantity || 0;
+    const isLowStock = stockCount > 0 && stockCount <= 3;
     
     return (
       <TouchableOpacity
@@ -363,6 +421,16 @@ const FavouritesModalOverlayForSizeSelection = ({ route, navigation }) => {
         ]}>
           {option.label}
         </Text>
+        {!isDisabled && isLowStock && (
+          <Text style={styles.lowStockIndicator}>
+            {stockCount} left
+          </Text>
+        )}
+        {isDisabled && (
+          <Text style={styles.outOfStockIndicator}>
+            Out of stock
+          </Text>
+        )}
       </TouchableOpacity>
     );
   };
@@ -472,141 +540,61 @@ const FavouritesModalOverlayForSizeSelection = ({ route, navigation }) => {
                 </View>
               </View>
 
-              {/* Quantity Section */}
-              <Text style={styles.sectionTitle}>Quantity</Text>
-              <ScrollView 
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.quantityOptionsScrollView}
-                contentContainerStyle={styles.quantityOptionsContainer}
-              >
-                {quantityOptions.map(renderQuantityOption)}
-              </ScrollView>
+              {/* Show message if no sizes available */}
+              {availableSizes.length === 0 && (
+                <View style={styles.noSizesContainer}>
+                  <Text style={styles.noSizesText}>
+                    No sizes available for this product at the moment.
+                  </Text>
+                </View>
+              )}
 
-              {/* Size Section */}
-              <Text style={styles.sectionTitle}>Size</Text>
-              <ScrollView 
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.sizeOptionsScrollView}
-                contentContainerStyle={styles.sizeOptionsContainer}
-              >
-                {availableSizes.map(renderSizeOption)}
-              </ScrollView>
+              {/* Quantity Section - Only show if sizes are available */}
+              {availableSizes.length > 0 && (
+                <>
+                  <Text style={styles.sectionTitle}>Quantity</Text>
+                  {maxQuantity > 0 ? (
+                    <ScrollView 
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      style={styles.quantityOptionsScrollView}
+                      contentContainerStyle={styles.quantityOptionsContainer}
+                    >
+                      {quantityOptions.map(renderQuantityOption)}
+                    </ScrollView>
+                  ) : (
+                    <View style={styles.noStockContainer}>
+                      <Text style={styles.noStockText}>
+                        Selected size is out of stock
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Size Section */}
+                  <Text style={styles.sectionTitle}>Size</Text>
+                  <ScrollView 
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.sizeOptionsScrollView}
+                    contentContainerStyle={styles.sizeOptionsContainer}
+                  >
+                    {availableSizes.map(renderSizeOption)}
+                  </ScrollView>
+
+                  {/* Size Chart Button - Always visible when sizes are available */}
+                  <TouchableOpacity 
+                    style={styles.sizeChartButton}
+                    onPress={handleSizeChart}
+                  >
+                    <Text style={styles.sizeChartButtonText}>Size Chart</Text>
+                  </TouchableOpacity>
+                </>
+              )}
             </>
           )}
 
-          {/* Size Chart Section */}
-          {!loading && !error && sizeChartData.length > 0 && (
-            <>
-              <View style={styles.sizeChartHeader}>
-                <Text style={styles.sizeChartTitle}>SIZE SELECTION</Text>
-              </View>
-
-              {/* Tab Navigation */}
-              <View style={styles.tabNavigation}>
-                <TouchableOpacity
-                  style={[styles.tab, activeTab === 'sizeChart' && styles.activeTab]}
-                  onPress={() => handleTabSwitch('sizeChart')}
-                >
-                  <Text style={[styles.tabText, activeTab === 'sizeChart' && styles.activeTabText]}>
-                    Size Chart
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.tab, activeTab === 'howToMeasure' && styles.activeTab]}
-                  onPress={() => handleTabSwitch('howToMeasure')}
-                >
-                  <Text style={[styles.tabText, activeTab === 'howToMeasure' && styles.activeTabText]}>
-                    How To Measure
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Tab Content */}
-              <View style={styles.tabContent}>
-                {activeTab === 'sizeChart' ? (
-                  <View style={styles.sizeChartContent}>
-                    {/* Unit Toggle */}
-                    <View style={styles.unitToggleContainer}>
-                      <Text style={styles.selectSizeText}>Select size in</Text>
-                      <View style={styles.unitToggle}>
-                        <TouchableOpacity
-                          style={[styles.unitButton, selectedUnit === 'in' && styles.unitButtonActive]}
-                          onPress={() => handleUnitToggle('in')}
-                        >
-                          <Text style={[styles.unitText, selectedUnit === 'in' && styles.unitTextActive]}>in</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={[styles.unitButton, selectedUnit === 'cm' && styles.unitButtonActive]}
-                          onPress={() => handleUnitToggle('cm')}
-                        >
-                          <Text style={[styles.unitText, selectedUnit === 'cm' && styles.unitTextActive]}>cm</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-
-                    {/* Size Chart Table */}
-                    <View style={styles.tableContainer}>
-                      {/* Table Header */}
-                      <View style={styles.tableHeader}>
-                        <Text style={styles.tableHeaderText}>Size</Text>
-                        <Text style={styles.tableHeaderText}>
-                          To fit waist({selectedUnit})
-                        </Text>
-                        <Text style={styles.tableHeaderText}>
-                          Inseam Length({selectedUnit})
-                        </Text>
-                      </View>
-
-                      {/* Table Rows */}
-                      {sizeChartData.map((item, index) => (
-                        <View 
-                          key={item.size} 
-                          style={[
-                            styles.tableRow,
-                            index === sizeChartData.length - 1 && styles.lastTableRow
-                          ]}
-                        >
-                          <Text style={styles.tableCellText}>{item.size}</Text>
-                          <Text style={styles.tableCellText}>
-                            {selectedUnit === 'cm' ? item.waistCm : item.waistIn}
-                          </Text>
-                          <Text style={styles.tableCellText}>
-                            {selectedUnit === 'cm' ? item.inseamCm : item.inseamIn}
-                          </Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                ) : (
-                  <View style={styles.howToMeasureContent}>
-                    {sizeChartImage?.url ? (
-                      <View style={styles.measurementImageContainer}>
-                        <Image 
-                          source={{ uri: sizeChartImage.url }}
-                          style={styles.measurementImage}
-                          resizeMode="contain"
-                        />
-                        <Text style={styles.measurementInstructions}>
-                          Follow the measurement guide above to find your perfect size.
-                        </Text>
-                      </View>
-                    ) : (
-                      <View style={styles.noImageContainer}>
-                        <Text style={styles.noImageText}>
-                          Measurement guide not available for this product.
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                )}
-              </View>
-            </>
-          )}
-
-          {/* Fallback Size Chart Link */}
-          {!loading && !error && sizeChartData.length === 0 && (
+          {/* Size Chart Button - Fallback when no size data available */}
+          {!loading && !error && availableSizes.length === 0 && (
             <TouchableOpacity 
               style={styles.sizeChartContainer}
               onPress={handleSizeChart}
@@ -615,12 +603,21 @@ const FavouritesModalOverlayForSizeSelection = ({ route, navigation }) => {
             </TouchableOpacity>
           )}
 
-          {/* Add to Bag Button */}
+          {/* Move to Bag Button */}
           <TouchableOpacity 
-            style={styles.addToBagButton}
+            style={[
+              styles.addToBagButton,
+              (availableSizes.length === 0 || maxQuantity === 0) && styles.addToBagButtonDisabled
+            ]}
             onPress={handleAddToBag}
+            disabled={availableSizes.length === 0 || maxQuantity === 0}
           >
-            <Text style={styles.addToBagButtonText}>Add to Bag</Text>
+            <Text style={[
+              styles.addToBagButtonText,
+              (availableSizes.length === 0 || maxQuantity === 0) && styles.addToBagButtonTextDisabled
+            ]}>
+              {availableSizes.length === 0 ? 'No Sizes Available' : maxQuantity === 0 ? 'Out of Stock' : 'Move to Bag'}
+            </Text>
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -820,6 +817,7 @@ const styles = StyleSheet.create({
     minWidth: 50,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
   },
   sizeOptionSelected: {
     borderColor: Colors.black,
@@ -838,6 +836,48 @@ const styles = StyleSheet.create({
   },
   sizeOptionTextSelected: {
     color: Colors.white,
+  },
+  lowStockIndicator: {
+    fontSize: 9,
+    fontWeight: '500',
+    fontFamily: FontFamilies.montserrat,
+    color: '#FF9500',
+    marginTop: 2,
+  },
+  outOfStockIndicator: {
+    fontSize: 9,
+    fontWeight: '500',
+    fontFamily: FontFamilies.montserrat,
+    color: '#FF6B6B',
+    marginTop: 2,
+  },
+  noSizesContainer: {
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  noSizesText: {
+    fontSize: 16,
+    fontWeight: '400',
+    fontFamily: FontFamilies.montserrat,
+    color: '#767676',
+    textAlign: 'center',
+  },
+  noStockContainer: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    backgroundColor: '#FFF5F5',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 8,
+  },
+  noStockText: {
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: FontFamilies.montserrat,
+    color: '#FF6B6B',
+    textAlign: 'center',
   },
   sizeOptionTextDisabled: {
     color: '#BABABA',
@@ -1006,6 +1046,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   
+  // Size Chart Button
+  sizeChartButton: {
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 24,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  sizeChartButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: FontFamilies.montserrat,
+    color: Colors.black,
+    textDecorationLine: 'underline',
+    lineHeight: 16.8,
+  },
+  
   // Fallback Size Chart Link
   sizeChartContainer: {
     alignSelf: 'center',
@@ -1028,12 +1085,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: 60.283,
   },
+  addToBagButtonDisabled: {
+    backgroundColor: '#E4E4E4',
+    opacity: 0.6,
+  },
   addToBagButtonText: {
     fontSize: 16,
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.white,
     lineHeight: 19.2,
+  },
+  addToBagButtonTextDisabled: {
+    color: '#999999',
   },
 });
 

@@ -6,52 +6,107 @@ import {
   ScrollView,
   TouchableOpacity,
   Animated,
-  Dimensions,
   SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
-import { FontSizes, FontWeights, Spacing, BorderRadius, Shadows } from '../constants';
 import authManager from '../services/authManager';
 import { yoraaAPI } from '../services/yoraaAPI';
 import auth from '@react-native-firebase/auth';
-
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-
-// Sample user data
-const USER_POINTS = {
-  current: 100,
-  used: 0,
-  level: 'bronze', // bronze, silver, gold, platinum, black
-};
-
-const LEVELS = [
-  { name: 'bronze', points: 100, color: '#CD7F32' },
-  { name: 'silver', points: 200, color: '#D9D9D9' },
-  { name: 'gold', points: 300, color: '#D4AF37' },
-  { name: 'platinum', points: 400, color: '#B075A5' },
-  { name: 'black', points: 500, color: '#000000' },
-];
-
-const LANGUAGES = [
-  { code: 'en', name: 'English (United Kingdom)', flag: '🇬🇧' },
-  { code: 'hi', name: 'हिंदी (India)', flag: '🇮🇳' },
-  { code: 'es', name: 'Español (España)', flag: '🇪🇸' },
-];
-
-const REGIONS = [
-  { code: 'UK', name: 'United Kingdom (GBP £)', flag: '🇬🇧' },
-  { code: 'IN', name: 'India (USD $)', flag: '🇮🇳' },
-  { code: 'US', name: 'United States (USD $)', flag: '🇺🇸' },
-];
 
 const SHOPPING_PREFERENCES = ['Women', 'Men'];
 const ADDITIONAL_PREFERENCES = ['Boy', 'Women', 'Mens', 'Girls'];
 
 const RewardsScreen = ({ navigation, route }) => {
-  const [activeTab, setActiveTab] = useState('giveaways'); // Default to giveaways as per requirement
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
-  const [selectedRegion, setSelectedRegion] = useState('IN');
+  const [activeTab, setActiveTab] = useState('rewards'); // Default to rewards tab
   const [selectedShoppingPreference, setSelectedShoppingPreference] = useState('Women');
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+  
+  // API-driven state
+  const [bannerData, setBannerData] = useState(null);
+  const [userPoints, setUserPoints] = useState(null);
+  const [loyaltyTiers, setLoyaltyTiers] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedAdditionalPreferences, setSelectedAdditionalPreferences] = useState(['Boy']);
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  // Fetch banner and rewards data from API
+  useEffect(() => {
+    const fetchRewardsData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        console.log('🎯 Fetching rewards data...');
+        
+        let bannerSuccess = false;
+        let tiersSuccess = false;
+        
+        // Fetch banner data (required)
+        try {
+          const bannerResponse = await yoraaAPI.getRewardsBanner();
+          console.log('📦 Banner response:', bannerResponse);
+          if (bannerResponse?.data) {
+            setBannerData(bannerResponse.data);
+            bannerSuccess = true;
+          }
+        } catch (bannerError) {
+          console.error('❌ Banner fetch failed:', bannerError.message);
+        }
+        
+        // Fetch loyalty tiers (required)
+        try {
+          const tiersResponse = await yoraaAPI.getLoyaltyTiers();
+          console.log('📦 Tiers response:', tiersResponse);
+          if (tiersResponse?.tiers && Array.isArray(tiersResponse.tiers)) {
+            setLoyaltyTiers(tiersResponse.tiers);
+            tiersSuccess = true;
+          }
+        } catch (tiersError) {
+          console.error('❌ Tiers fetch failed:', tiersError.message);
+        }
+        
+        // Fetch user points if authenticated (optional - can fail gracefully)
+        if (isUserAuthenticated) {
+          try {
+            const loyaltyStatus = await yoraaAPI.getUserLoyaltyStatus();
+            console.log('📦 User loyalty status:', loyaltyStatus);
+            if (loyaltyStatus) {
+              setUserPoints(loyaltyStatus);
+              console.log('✅ User points loaded:', loyaltyStatus.points);
+            }
+          } catch (pointsError) {
+            console.log('⚠️ Could not fetch user points:', pointsError.message);
+            
+            // Check if it's a backend validation error
+            if (pointsError.message.includes('userId') || pointsError.message.includes('required')) {
+              console.error('🚨 BACKEND ERROR: Backend cannot extract userId from JWT token');
+              console.error('📋 Backend team: Check BACKEND_URGENT_FIX_REQUIRED.md for fix');
+            }
+            
+            // Don't throw - user just won't see their points
+            setUserPoints(null);
+          }
+        } else {
+          console.log('⚠️ User not authenticated, skipping points fetch');
+          setUserPoints(null);
+        }
+        
+        // Only set error if BOTH critical endpoints failed
+        if (!bannerSuccess && !tiersSuccess) {
+          setError('Unable to connect to backend. Please check your connection and try again.');
+        }
+        
+      } catch (err) {
+        console.error('❌ Error fetching rewards data:', err);
+        setError(err.message || 'Failed to load rewards data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRewardsData();
+  }, [isUserAuthenticated]);
 
   // Check authentication status on component mount
   useEffect(() => {
@@ -98,8 +153,6 @@ const RewardsScreen = ({ navigation, route }) => {
 
     return removeAuthListener;
   }, [navigation, route?.params?.fromCheckout, route?.params?.bagData]);
-  const [selectedAdditionalPreferences, setSelectedAdditionalPreferences] = useState(['Boy']);
-  const scrollY = useRef(new Animated.Value(0)).current;
 
   const renderTabButtons = () => (
     <View style={styles.tabContainer}>
@@ -122,63 +175,143 @@ const RewardsScreen = ({ navigation, route }) => {
     </View>
   );
 
-  const renderRewardsTab = () => (
-    <ScrollView 
-      style={styles.container} 
-      contentContainerStyle={styles.scrollContentContainer}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Black promotional section */}
-      <View style={styles.promoSection}>
-        <Text style={styles.promoWant}>WANT</Text>
-        <Text style={styles.promoDiscount}>10% OFF</Text>
-        <Text style={styles.promoSubtext}>YOUR NEXT PURCHASE?</Text>
-        <Text style={styles.promoBonus}>PLUS REWARD GIVEAWAY AND MORE!</Text>
-        
-        <Text style={styles.promoQuestion}>What are you waiting for?</Text>
-        <Text style={styles.promoCTA}>Become arewards member today!</Text>
-      </View>
+  const renderRewardsTab = () => {
+    // Show loading state
+    if (loading) {
+      return (
+        <View style={[styles.container, styles.centerContent]}>
+          <ActivityIndicator size="large" color="#000000" />
+          <Text style={styles.loadingText}>Loading rewards...</Text>
+        </View>
+      );
+    }
 
-      {/* Progress indicator */}
-      <View style={styles.progressSection}>
-        <View style={styles.levelIndicator}>
-          {LEVELS.map((level, index) => (
-            <View key={level.name} style={styles.levelPoint}>
-              <View style={[
-                styles.levelDot,
-                { backgroundColor: level.color },
-                USER_POINTS.current >= level.points && styles.levelDotActive
-              ]}>
-                <Text style={[
-                  styles.levelPoints,
-                  { color: level.name === 'silver' || level.name === 'gold' || level.name === 'platinum' ? '#000000' : '#FFFFFF' }
-                ]}>
-                  {level.points}
-                </Text>
+    // Show error state if API failed
+    if (error) {
+      return (
+        <View style={[styles.container, styles.centerContent]}>
+          <Text style={styles.errorText}>Connection Error</Text>
+          <Text style={styles.errorSubtext}>
+            {error}
+          </Text>
+          <TouchableOpacity 
+            style={styles.retryButton}
+            onPress={() => {
+              setLoading(true);
+              setError(null);
+              // Trigger re-fetch by updating a dependency
+              setIsUserAuthenticated(prev => prev);
+            }}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    // Use API data - no fallbacks
+    const banner = bannerData || {};
+    const tiers = loyaltyTiers || [];
+    const userPointsData = userPoints?.points || null;
+    const hasPoints = userPointsData && (userPointsData.current > 0 || userPointsData.used > 0);
+    
+    // Debug logging
+    console.log('🔍 DEBUG - userPoints:', JSON.stringify(userPoints, null, 2));
+    console.log('🔍 DEBUG - userPointsData:', JSON.stringify(userPointsData, null, 2));
+    console.log('🔍 DEBUG - hasPoints:', hasPoints);
+
+    return (
+      <ScrollView 
+        style={styles.container} 
+        contentContainerStyle={styles.scrollContentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Black promotional section - API driven */}
+        <View style={styles.promoSection}>
+          <Text style={styles.promoWant}>{banner.headerText || 'WANT'}</Text>
+          <Text style={styles.promoDiscount}>{banner.discountText || '10% OFF'}</Text>
+          <Text style={styles.promoSubtext}>{banner.subtitleText || 'YOUR NEXT PURCHASE?'}</Text>
+          <Text style={styles.promoBonus}>{banner.bonusText || 'PLUS REWARD GIVEAWAY AND MORE!'}</Text>
+          
+          <Text style={styles.promoQuestion}>{banner.questionText || 'What are you waiting for?'}</Text>
+          <Text style={styles.promoCTA}>{banner.ctaText || 'Become a rewards member today!'}</Text>
+        </View>
+
+        {/* Progress indicator */}
+        <View style={styles.progressSection}>
+          {tiers.length > 0 && (
+            <View style={styles.levelIndicator}>
+              {tiers.map((tier, index) => {
+                const tierName = tier.name?.toLowerCase() || '';
+                const textColor = (tierName === 'silver' || tierName === 'gold' || tierName === 'platinum') ? '#000000' : '#FFFFFF';
+                const currentPoints = userPointsData?.current || 0;
+                
+                // Show user's current points for ALL tiers (like Flipkart)
+                // This displays the user's actual point balance across all circles
+                const displayPoints = currentPoints > 0 ? currentPoints : tier.pointsRequired;
+                
+                // Debug logging for first tier only
+                if (index === 0) {
+                  console.log('🎯 Tier Display Debug (Flipkart-style):');
+                  console.log('  - User current points:', currentPoints);
+                  console.log('  - Tier requirement:', tier.pointsRequired);
+                  console.log('  - Display value:', displayPoints);
+                  console.log('  - Logic: Showing user balance for all circles');
+                }
+                
+                return (
+                  <View key={tier.id || tier.name} style={styles.levelPoint}>
+                    <View style={[
+                      styles.levelDot,
+                      { backgroundColor: tier.color || '#CD7F32' },
+                      currentPoints >= tier.pointsRequired && styles.levelDotActive
+                    ]}>
+                      <Text style={[
+                        styles.levelPoints,
+                        { color: textColor }
+                      ]}>
+                        {displayPoints}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+          
+          <Text style={styles.journeyText}>
+            The journey to becoming ✨ XCLUSIVE
+          </Text>
+          
+          {/* Show different UI based on whether user has points */}
+          {hasPoints ? (
+            <View style={styles.pointsSection}>
+              <TouchableOpacity onPress={() => navigation.navigate('PointsHistory', { previousScreen: 'Rewards', activeSubTab: activeTab })}>
+                <Text style={styles.currentPointsLabel}>Current Points</Text>
+              </TouchableOpacity>
+              <View style={styles.pointsRow}>
+                <Text style={styles.currentPoints}>{userPointsData.current}</Text>
+                <View style={styles.pointsUsedSection}>
+                  <Text style={styles.pointsUsed}>{userPointsData.used}</Text>
+                  <Text style={styles.pointsUsedLabel}>Points Used</Text>
+                </View>
               </View>
             </View>
-          ))}
-        </View>
-        
-        <Text style={styles.journeyText}>
-          The journey to becoming ✨ XCLUSIVE
-        </Text>
-        
-        <View style={styles.pointsSection}>
-          <TouchableOpacity onPress={() => navigation.navigate('PointsHistory', { previousScreen: 'Rewards', activeSubTab: activeTab })}>
-            <Text style={styles.currentPointsLabel}>Current Points</Text>
-          </TouchableOpacity>
-          <View style={styles.pointsRow}>
-            <Text style={styles.currentPoints}>{USER_POINTS.current}</Text>
-            <View style={styles.pointsUsedSection}>
-              <Text style={styles.pointsUsed}>{USER_POINTS.used}</Text>
-              <Text style={styles.pointsUsedLabel}>Points Used</Text>
+          ) : (
+            <View style={styles.noPointsSection}>
+              <Text style={styles.noPointsText}>No purchases yet</Text>
+              <TouchableOpacity 
+                style={styles.shopNowButton}
+                onPress={() => navigation.navigate('Home')}
+              >
+                <Text style={styles.shopNowButtonText}>Shop Now to Earn Points</Text>
+              </TouchableOpacity>
             </View>
-          </View>
+          )}
         </View>
-      </View>
-    </ScrollView>
-  );
+      </ScrollView>
+    );
+  };
 
   const renderGiveawaysTab = () => (
     <ScrollView 
@@ -340,6 +473,66 @@ const styles = StyleSheet.create({
   },
   scrollContentContainer: {
     paddingBottom: 120, // Moderate padding for bottom navigation
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: '#767676',
+    fontFamily: 'Montserrat-Medium',
+  },
+  errorText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    fontFamily: 'Montserrat-SemiBold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  errorSubtext: {
+    fontSize: 14,
+    color: '#767676',
+    fontFamily: 'Montserrat-Regular',
+    textAlign: 'center',
+    paddingHorizontal: 40,
+    marginBottom: 10,
+  },
+  errorDetail: {
+    fontSize: 12,
+    color: '#CA3327',
+    fontFamily: 'Montserrat-Regular',
+    textAlign: 'center',
+    paddingHorizontal: 30,
+    marginBottom: 20,
+  },
+  contactButton: {
+    backgroundColor: '#000000',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  contactButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: 'Montserrat-Medium',
+  },
+  retryButton: {
+    backgroundColor: '#000000',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Montserrat-SemiBold',
   },
   
   // Tab Styles
@@ -517,6 +710,36 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Medium',
     fontWeight: '500',
     textAlign: 'right',
+  },
+
+  // No points section
+  noPointsSection: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 30,
+    paddingHorizontal: 20,
+  },
+  noPointsText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#767676',
+    marginBottom: 20,
+    fontFamily: 'Montserrat-Medium',
+    textAlign: 'center',
+  },
+  shopNowButton: {
+    backgroundColor: '#000000',
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    borderRadius: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shopNowButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: 'Montserrat-Medium',
   },
 
   // Giveaways Tab Styles

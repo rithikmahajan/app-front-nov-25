@@ -4,7 +4,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class YoraaAPIClient {
-  constructor(baseURL = 'http://localhost:8001') {
+  constructor(baseURL = __DEV__ ? 'http://localhost:8001' : 'http://185.193.19.244:8080') {
     this.baseURL = baseURL;
     this.userToken = null;
     this.adminToken = null;

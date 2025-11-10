@@ -26,6 +26,8 @@ import { Colors, FontSizes, FontWeights, Spacing, BorderRadius } from '../consta
 import { MicrophoneIcon, CameraIcon, ScanBarcodeIcon, SearchIcon } from '../assets/icons';
 import { useAccessibility } from '../hooks/useAccessibility';
 import yoraaAPI from '../services/yoraaBackendAPI';
+import { apiService } from '../services/apiService';
+import { formatPrice } from '../utils/currencyUtils';
 
 // Grid separator component
 const GridSeparator = () => <View style={{ height: 20 }} />;
@@ -93,7 +95,7 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
   useEffect(() => {
     const setupVoiceRecognition = () => {
       Voice.onSpeechStart = (e) => {
-        console.log('🎤 Speech recognition started');
+        console.log('🎤 Speech recognition started', e);
         setIsListening(true);
         
         // Clear previous search text when speech actually starts
@@ -105,28 +107,69 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
       };
 
       Voice.onSpeechEnd = (e) => {
-        console.log('🎤 Speech recognition ended');
+        console.log('🎤 Speech recognition ended', e);
         setIsListening(false);
         setIsRecording(false);
       };
 
       Voice.onSpeechError = (e) => {
-        console.error('🎤 Speech recognition error:', e);
+        // Better error logging - extract error details
+        const errorCode = e?.error?.code || e?.code || 'unknown';
+        const errorMsg = e?.error?.message || e?.message || 'Unknown error';
+        
+        console.error('🎤 Speech recognition error:', {
+          code: errorCode,
+          message: errorMsg,
+          fullError: e
+        });
+        
         setIsListening(false);
         setIsRecording(false);
+        
+        // Handle specific error codes
+        if (errorCode === '7' || errorCode === 7) {
+          // No speech input detected
+          console.log('🎤 No speech detected - user may not have spoken');
+          return; // Don't show error for this
+        }
+        
+        if (errorCode === '5' || errorCode === 5) {
+          // Client side error
+          console.log('🎤 Client error - possibly permissions');
+          Alert.alert(
+            'Microphone Access',
+            'Please enable microphone access in Settings to use voice search.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Open Settings', onPress: () => Linking.openSettings() }
+            ]
+          );
+          return;
+        }
+        
+        // Show user-friendly error for other cases
         Alert.alert(
-          'Voice Recognition Error',
+          'Voice Recognition',
           'Unable to recognize speech. Please try again or type your search.',
           [{ text: 'OK' }]
         );
       };
 
       Voice.onSpeechResults = async (e) => {
-        console.log('🎤 Speech results:', e);
+        console.log('🎤 Speech results received:', e);
         if (e.value && e.value.length > 0) {
           const recognizedText = e.value[0];
+          console.log('🎤 Recognized text:', recognizedText);
+          
           setVoiceResults(e.value);
           setSearchText(recognizedText);
+          
+          // Stop listening immediately after getting results (Amazon-like behavior)
+          try {
+            await Voice.stop();
+          } catch (stopError) {
+            console.log('🎤 Stop error (non-critical):', stopError);
+          }
           
           // Automatically perform search with the recognized text
           if (recognizedText.trim().length > 0) {
@@ -140,8 +183,15 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
         if (e.value && e.value.length > 0) {
           setVoiceResults(e.value);
           // Update search text with partial results for real-time feedback
-          setSearchText(e.value[0] || '');
+          const partialText = e.value[0] || '';
+          console.log('🎤 Partial text:', partialText);
+          setSearchText(partialText);
         }
+      };
+
+      Voice.onSpeechVolumeChanged = (e) => {
+        // Log volume to indicate listening is active
+        console.log('🎤 Volume:', e?.value);
       };
     };
 
@@ -150,6 +200,8 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
     return () => {
       Voice.destroy().then(() => {
         Voice.removeAllListeners();
+      }).catch(err => {
+        console.log('🎤 Voice destroy error (non-critical):', err);
       });
     };
   }, [performVoiceSearch]);
@@ -423,6 +475,19 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
     try {
       console.log('🎤 Voice search button pressed');
       
+      // If currently listening, stop (Amazon-like behavior)
+      if (isListening) {
+        console.log('🎤 Stopping voice recognition');
+        try {
+          await Voice.stop();
+          setIsListening(false);
+          setIsRecording(false);
+        } catch (stopError) {
+          console.log('🎤 Stop error:', stopError);
+        }
+        return;
+      }
+      
       // Always recheck permissions first and wait for the result
       let permissionsGranted = false;
       
@@ -505,33 +570,33 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
       
       console.log('🎤 Permissions granted, starting voice recognition');
 
-      if (isListening) {
-        // Stop listening
-        console.log('🎤 Stopping voice recognition');
-        await Voice.stop();
-        setIsListening(false);
-        setIsRecording(false);
-      } else {
-        // Start listening - Clear all previous search state for new voice search
-        console.log('🎤 Starting voice recognition');
-        setIsListening(true);
-        setIsRecording(true);
-        setVoiceResults([]);
-        
-        // Clear previous search results and state for new voice search
-        setSearchResults([]);
-        setSearchSuggestions([]);
-        setErrorMessage('');
-        setShowRetryButton(false);
-        setIsLoadingSuggestions(false);
-        setIsLoadingResults(false);
-        
-        // Clear search text to show fresh voice input
-        setSearchText('');
-        
-        // Use simpler options that are more likely to work
-        await Voice.start('en-US');
+      // Start listening - Clear all previous search state for new voice search
+      console.log('🎤 Starting voice recognition');
+      setIsListening(true);
+      setIsRecording(true);
+      setVoiceResults([]);
+      
+      // Clear previous search results and state for new voice search
+      setSearchResults([]);
+      setSearchSuggestions([]);
+      setErrorMessage('');
+      setShowRetryButton(false);
+      setIsLoadingSuggestions(false);
+      setIsLoadingResults(false);
+      
+      // Clear search text to show fresh voice input
+      setSearchText('');
+      
+      // Check if Voice is available first
+      const available = await Voice.isAvailable();
+      if (!available) {
+        throw new Error('Voice recognition is not available on this device');
       }
+      
+      // Start with locale (Amazon uses locale-specific recognition)
+      await Voice.start('en-US');
+      console.log('🎤 Voice recognition started successfully');
+      
     } catch (error) {
       console.error('🎤 Voice search error:', error);
       setIsListening(false);
@@ -539,21 +604,25 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
       
       // More specific error handling based on the error type
       let voiceErrorMessage = 'Unable to start voice recognition. Please try again or type your search.';
+      let showSettingsButton = false;
       
       if (error.message?.includes('permissions') || error.message?.includes('authorization')) {
         voiceErrorMessage = 'Microphone or speech recognition permission denied. Please enable them in Settings.';
+        showSettingsButton = true;
       } else if (error.message?.includes('network') || error.message?.includes('connection')) {
         voiceErrorMessage = 'Network error. Please check your internet connection and try again.';
       } else if (error.message?.includes('not available') || error.message?.includes('unavailable')) {
         voiceErrorMessage = 'Voice recognition is not available on this device.';
+      } else if (error.message?.includes('busy')) {
+        voiceErrorMessage = 'Voice recognition is busy. Please wait a moment and try again.';
       }
       
       Alert.alert(
-        'Voice Search Error',
+        'Voice Search',
         voiceErrorMessage,
         [
           { text: 'OK' },
-          ...(error.message?.includes('permissions') || error.message?.includes('authorization') ? 
+          ...(showSettingsButton ? 
             [{ text: 'Open Settings', onPress: () => Linking.openSettings() }] : 
             []
           )
@@ -591,15 +660,63 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
     setSearchText(suggestion);
   };
 
-  const handleProductPress = (product) => {
-    if (navigation && navigation.navigate) {
-      navigation.navigate('ProductDetail', { product });
+  const handleProductPress = async (product) => {
+    console.log('🔍 Product pressed from search:', product);
+    
+    if (!navigation || !navigation.navigate) {
+      console.warn('⚠️ Navigation not available');
+      return;
+    }
+
+    try {
+      // Get the product/item ID
+      const productId = product._id || product.id || product.itemId;
+      
+      if (!productId) {
+        console.warn('⚠️ No product ID found, using product as-is');
+        // Fallback to passing the product directly if no ID
+        navigation.navigate('ProductDetailsMain', { product });
+        return;
+      }
+
+      console.log('🔄 Fetching full product details for ID:', productId);
+      
+      // Fetch the complete item details from the API
+      const response = await apiService.getItemById(productId);
+      
+      if (response && response.success && response.data) {
+        const fullProduct = response.data;
+        console.log('✅ Fetched full product details:', {
+          name: fullProduct.productName,
+          hasImages: !!fullProduct.images?.length,
+          hasSizes: !!fullProduct.sizes?.length,
+        });
+        
+        // Navigate with the complete product data
+        navigation.navigate('ProductDetailsMain', { 
+          product: fullProduct,
+          previousScreen: 'Search'
+        });
+      } else {
+        console.warn('⚠️ Failed to fetch full product details, using search result');
+        // Fallback to the search result
+        navigation.navigate('ProductDetailsMain', { 
+          product,
+          previousScreen: 'Search'
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error fetching product details:', error);
+      // On error, still navigate with whatever data we have
+      navigation.navigate('ProductDetailsMain', { 
+        product,
+        previousScreen: 'Search'
+      });
     }
   };
 
   const handleTakePhoto = async () => {
     console.log('handleTakePhoto called');
-    Alert.alert('Debug', 'Take Photo button pressed');
     
     try {
       // Request camera permission on iOS
@@ -750,7 +867,7 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
       style={styles.gridProductItem}
       onPress={() => handleProductPress(item)}
       accessibilityRole="button"
-      accessibilityLabel={`${item.name}, ${item.price || item.currentPrice}`}
+      accessibilityLabel={`${item.name}, ${formatPrice(item.price || item.currentPrice)}`}
       accessibilityHint="Tap to view product details"
     >
       {/* Product Image - Grid Style */}
@@ -775,7 +892,7 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
           {item.name || item.title || 'Product Name'}
         </Text>
         <Text style={styles.gridProductPrice}>
-          {item.price || item.currentPrice || '₹0'}
+          {formatPrice(item.price || item.currentPrice)}
         </Text>
       </View>
     </TouchableOpacity>
@@ -857,6 +974,21 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
               accessibilityHint="Type to search for products"
             />
             
+            {/* Microphone positioned inline with search elements */}
+            <TouchableOpacity 
+              style={styles.micButton}
+              onPress={handleVoiceSearch}
+              accessibilityRole="button"
+              accessibilityLabel={isRecording ? "Stop voice recording" : "Start voice search"}
+              accessibilityHint="Use voice to search for products"
+            >
+              <MicrophoneIcon 
+                color={isRecording ? Colors.primary : "#000000"} 
+                width={20}
+                height={20}
+              />
+            </TouchableOpacity>
+            
             <TouchableOpacity 
               style={styles.cancelButton} 
               onPress={handleClose}
@@ -867,26 +999,11 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
           </View>
-          
-          {/* Microphone positioned absolutely like in Figma */}
-          <TouchableOpacity 
-            style={styles.micButtonAbsolute}
-            onPress={handleVoiceSearch}
-            accessibilityRole="button"
-            accessibilityLabel={isRecording ? "Stop voice recording" : "Start voice search"}
-            accessibilityHint="Use voice to search for products"
-          >
-            <MicrophoneIcon 
-              color={isRecording ? Colors.primary : "#000000"} 
-              width={20}
-              height={20}
-            />
-          </TouchableOpacity>
         </View>
 
         {/* Action Buttons - only show when no search text and no search results */}
         {!searchResults.length && searchText.trim().length === 0 && (
-          <>
+          <View style={styles.actionButtonsContainer}>
             <TouchableOpacity 
               style={[styles.actionButton, styles.cameraButton]} 
               onPress={handleCameraPress}
@@ -908,7 +1025,7 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
               <ScanBarcodeIcon color="#000000" width={19} height={19} />
               <Text style={styles.actionButtonText}> Scan Barcode</Text>
             </TouchableOpacity>
-          </>
+          </View>
         )}
 
         {/* Search Results */}
@@ -1062,15 +1179,7 @@ const styles = StyleSheet.create({
     height: 20,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  micButtonAbsolute: {
-    position: 'absolute',
-    left: 262,
-    top: 28,
-    width: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginRight: 12,
   },
   cancelButton: {
     justifyContent: 'center',
@@ -1084,15 +1193,11 @@ const styles = StyleSheet.create({
     letterSpacing: -0.32,
     lineHeight: 16,
   },
-  actionButtons: {
+  actionButtonsContainer: {
     flexDirection: 'row',
     paddingHorizontal: 24,
-    paddingTop: 24,
+    paddingTop: 8,
     gap: 12,
-    position: 'absolute',
-    top: 98,
-    left: 0,
-    right: 0,
   },
   actionButton: {
     flexDirection: 'row',
@@ -1105,17 +1210,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#000000',
     height: 36,
-    position: 'absolute',
   },
   cameraButton: {
     width: 128,
-    left: 24,
-    top: 98,
   },
   scanBarcodeButton: {
     width: 191,
-    left: 160,
-    top: 98,
   },
   actionButtonText: {
     fontSize: 16,

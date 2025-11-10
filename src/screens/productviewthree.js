@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,19 +8,49 @@ import {
   SafeAreaView,
   StatusBar,
   Image,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { FontSizes, FontWeights, Spacing, BorderRadius } from '../constants';
 import GlobalSearchIcon from '../assets/icons/GlobalSearchIcon';
 import FilterIcon from '../assets/icons/FilterIcon';
-import { GlobalCartIcon } from '../assets/icons';
 import BottomNavigationBar from '../components/bottomnavigationbar';
 import { useProductActions } from '../hooks/useProductActions';
 import { AnimatedHeartIcon } from '../components';
+import { apiService } from '../services/apiService';
 
-const ProductViewThree = ({ navigation }) => {
-  const { handleToggleFavorite, handleAddToCart, checkIsFavorite } = useProductActions(navigation);
-  const [likedProducts, setLikedProducts] = useState(new Set(['1', '3'])); // Some products pre-liked
+// Icon components defined outside to avoid re-rendering
+const BackIcon = () => (
+  <Svg width="10" height="17" viewBox="0 0 10 17" fill="none">
+    <Path d="M8.5 16L1 8.5L8.5 1" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
+
+const GridIcon = () => (
+  <View style={{ width: 24, height: 24, position: 'relative' }}>
+    <View style={{ position: 'absolute', width: 7, height: 7, borderWidth: 1, borderColor: '#000000', top: 3, left: 5 }} />
+    <View style={{ position: 'absolute', width: 7, height: 7, borderWidth: 1, borderColor: '#000000', top: 3, right: 4 }} />
+    <View style={{ position: 'absolute', width: 7, height: 7, borderWidth: 1, borderColor: '#000000', bottom: 3, left: 5 }} />
+    <View style={{ position: 'absolute', width: 7, height: 7, borderWidth: 1, borderColor: '#000000', bottom: 3, right: 4 }} />
+  </View>
+);
+
+const ProductViewThree = ({ navigation, route }) => {
+  const { handleToggleFavorite, checkIsFavorite } = useProductActions(navigation);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  // Get route params to pass along
+  const routeParams = route?.params || {};
+  const subcategoryId = route?.params?.subcategoryId || '68d7e6091447aecb79415ba5';
+  const subcategoryName = route?.params?.subcategoryName || 'Products';
+  
+  // Debug logging
+  console.log('📍 ProductViewThree - Route params:', route?.params);
+  console.log('📍 ProductViewThree - Subcategory ID:', subcategoryId);
+  console.log('📍 ProductViewThree - Subcategory name:', subcategoryName);
 
   const handleFilterPress = () => {
     if (navigation && navigation.navigate) {
@@ -40,85 +70,97 @@ const ProductViewThree = ({ navigation }) => {
     }
   };
 
-  // Mock product data for the Pinterest-style layout
-  const products = [
-    {
-      id: '1',
-      image: 'product1',
-      height: 300,
-    },
-    {
-      id: '2',
-      image: 'product2',
-      height: 200,
-    },
-    {
-      id: '3',
-      image: 'product3',
-      height: 280,
-    },
-    {
-      id: '4',
-      image: 'product4',
-      height: 240,
-    },
-    {
-      id: '5',
-      image: 'product5',
-      height: 320,
-    },
-    {
-      id: '6',
-      image: 'product6',
-      height: 260,
-    },
-  ];
+  // Fetch products from backend API by subcategory
+  useEffect(() => {
+    fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subcategoryId]);
 
-  const toggleLike = (productId) => {
-    const newLikedProducts = new Set(likedProducts);
-    if (newLikedProducts.has(productId)) {
-      newLikedProducts.delete(productId);
-    } else {
-      newLikedProducts.add(productId);
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log(`� Fetching latest items for subcategory ${subcategoryId}...`);
+      
+      const response = await apiService.getLatestItemsBySubcategory(subcategoryId);
+      
+      if (response.success && response.data) {
+        console.log('✅ Products fetched successfully:', response.data);
+        // The API returns data.items array
+        const items = response.data.items || [];
+        console.log(`📦 Found ${items.length} items for subcategory ${subcategoryId}`);
+        
+        // Add random heights for Pinterest-style layout
+        const itemsWithHeights = items.map((item, index) => ({
+          ...item,
+          height: 200 + (index % 3) * 60, // Varying heights: 200, 260, 320
+        }));
+        
+        setProducts(itemsWithHeights);
+      } else {
+        throw new Error(response.message || 'Failed to fetch products');
+      }
+    } catch (err) {
+      console.error('❌ Error fetching products:', err);
+      setError(err.message || 'Failed to load products for this subcategory');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-    setLikedProducts(newLikedProducts);
   };
 
-  // Icon Components
-  const BackIcon = () => (
-    <Svg width="10" height="17" viewBox="0 0 10 17" fill="none">
-      <Path d="M8.5 16L1 8.5L8.5 1" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    </Svg>
-  );
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchProducts();
+  };
 
-  const GridIcon = () => (
-    <View style={styles.gridIcon}>
-      <View style={[styles.gridSquare, { top: 3, left: 5 }]} />
-      <View style={[styles.gridSquare, { top: 3, right: 4 }]} />
-      <View style={[styles.gridSquare, { bottom: 3, left: 5 }]} />
-      <View style={[styles.gridSquare, { bottom: 3, right: 4 }]} />
-    </View>
-  );
+  // Helper function to get product image URL
+  const getProductImageUrl = (product) => {
+    // Check if images array exists and has items
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      // Return the first image's URL (images are objects with url property)
+      return product.images[0].url || product.images[0];
+    }
+    // Fallback to image property
+    if (product.image) {
+      return product.image;
+    }
+    return null;
+  };
 
   // Removed custom FilterIcon, using imported SVG FilterIcon instead
 
   const renderProduct = (product, index) => {
-    const isLiked = likedProducts.has(product.id);
+    if (!product) return null;
+    
+    const imageUrl = getProductImageUrl(product);
+    const productHeight = product.height || 240;
     
     return (
       <View 
-        key={product.id} 
+        key={product.id || product._id || `product-${index}`} 
         style={[
           styles.productContainer,
-          { height: product.height }
+          { height: productHeight }
         ]}
       >
         {/* Product Image */}
         <TouchableOpacity 
-          style={[styles.imageContainer, { height: product.height }]}
+          style={[styles.imageContainer, { height: productHeight }]}
           onPress={() => navigation.navigate('ProductDetailsMain', { product, previousScreen: 'ProductViewThree' })}
         >
-          <View style={[styles.imagePlaceholder, { height: product.height }]} />
+          {imageUrl ? (
+            <Image
+              source={{ uri: imageUrl }}
+              style={[styles.productImage, { height: productHeight }]}
+              resizeMode="cover"
+              onError={(e) => {
+                console.warn('⚠️ Error loading image:', e.nativeEvent.error);
+              }}
+            />
+          ) : (
+            <View style={[styles.imagePlaceholder, { height: productHeight }]} />
+          )}
           
           {/* Animated Heart Icon */}
           <AnimatedHeartIcon
@@ -132,18 +174,6 @@ const ProductViewThree = ({ navigation }) => {
             filledColor="#FF0000"
             unfilledColor="#000000"
           />
-
-          {/* Shopping Bag Icon */}
-          <TouchableOpacity 
-            style={styles.bagButton}
-            onPress={async () => {
-              await handleAddToCart(product, { showAlert: true });
-            }}
-          >
-            <View style={styles.bagIconContainer}>
-              <GlobalCartIcon size={16} />
-            </View>
-          </TouchableOpacity>
         </TouchableOpacity>
       </View>
     );
@@ -163,13 +193,14 @@ const ProductViewThree = ({ navigation }) => {
 
   const handleBackPress = () => {
     if (navigation) {
-      navigation.navigate('ProductViewTwo');
+      navigation.goBack();
     }
   };
 
   const handleGridPress = () => {
+    console.log('🔄 ProductViewThree -> ProductViewOne - Passing params:', routeParams);
     if (navigation) {
-      navigation.navigate('ProductViewOne');
+      navigation.navigate('ProductViewOne', routeParams);
     }
   };
 
@@ -190,7 +221,7 @@ const ProductViewThree = ({ navigation }) => {
         </View>
         
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}></Text>
+          <Text style={styles.headerTitle}>{subcategoryName}</Text>
         </View>
         
         <View style={styles.headerRight}>
@@ -209,11 +240,40 @@ const ProductViewThree = ({ navigation }) => {
       </View>
 
       {/* Product Grid - Pinterest Style */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.pinterestGrid}>
-          {renderColumn(leftColumnProducts)}
-          {renderColumn(rightColumnProducts)}
-        </View>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#000000']}
+            tintColor="#000000"
+          />
+        }
+      >
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#000000" />
+            <Text style={styles.loadingText}>Loading products...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={fetchProducts}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : products.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No products available</Text>
+          </View>
+        ) : (
+          <View style={styles.pinterestGrid}>
+            {renderColumn(leftColumnProducts)}
+            {renderColumn(rightColumnProducts)}
+          </View>
+        )}
       </ScrollView>
 
       {/* Bottom Navigation - Absolute Position */}
@@ -241,47 +301,35 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 12,
     backgroundColor: '#FFFFFF',
-    zIndex: 1,
+    height: 90,
   },
-  
   headerLeft: {
+    width: 68,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    width: 68,
   },
-  
   headerCenter: {
     flex: 1,
     alignItems: 'center',
   },
-  
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
   headerTitle: {
     fontSize: 16,
     fontWeight: '500',
     color: '#000000',
-    textAlign: 'center',
     letterSpacing: -0.4,
+    fontFamily: 'Montserrat-Medium',
+    textAlign: 'center',
   },
-  
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  
   backButton: {
-    width: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 8,
   },
-  
   iconButton: {
-    width: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 4,
   },
   
   // Icon Styles
@@ -374,6 +422,64 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   
+  productImage: {
+    width: '100%',
+    borderRadius: 8,
+  },
+  
+  // Loading, Error, Empty States
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 60,
+    minHeight: 300,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#666666',
+    fontFamily: 'Montserrat-Regular',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    minHeight: 300,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#FF0000',
+    fontFamily: 'Montserrat-Regular',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: '#000000',
+    borderRadius: 6,
+  },
+  retryButtonText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontFamily: 'Montserrat-Medium',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 60,
+    minHeight: 300,
+  },
+  emptyText: {
+    fontSize: 16,
+    fontFamily: 'Montserrat-Medium',
+    color: '#666666',
+  },
+  
   heartButton: {
     position: 'absolute',
     top: 12,
@@ -385,30 +491,6 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  
-  bagButton: {
-    position: 'absolute',
-    bottom: 12,
-    right: 12,
-    zIndex: 2,
-  },
-  
-  bagIconContainer: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
@@ -441,35 +523,6 @@ const styles = StyleSheet.create({
     width: 12,
     height: 11,
     backgroundColor: '#FF4444',
-  },
-  
-  bagIcon: {
-    width: 20,
-    height: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  
-  bagBody: {
-    width: 16,
-    height: 14,
-    borderWidth: 1,
-    borderColor: '#14142B',
-    borderTopWidth: 0,
-    borderRadius: 2,
-    marginTop: 4,
-  },
-  
-  bagHandle: {
-    position: 'absolute',
-    top: 0,
-    width: 8,
-    height: 8,
-    borderWidth: 1,
-    borderColor: '#14142B',
-    borderBottomWidth: 0,
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
   },
   
   // Bottom Navigation Container

@@ -7,9 +7,6 @@ import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-// 🚀 SIMPLIFIED: Using direct localhost connection (no IP needed!)
-const USE_LOCALHOST = true; // Much simpler approach!
-
 // Network configuration for different environments and platforms
 export const NetworkConfig = {
   development: {
@@ -20,15 +17,20 @@ export const NetworkConfig = {
     WEBSOCKET_URL: 'ws://localhost:8001',
   },
   production: {
-    API_URL: 'http://185.193.19.244:8000/api',
-    WEBSOCKET_URL: 'ws://185.193.19.244:8000',
+    API_URL: 'http://185.193.19.244:8080/api',
+    WEBSOCKET_URL: 'ws://185.193.19.244:8080',
   }
 };
 
 // Auto-detect the appropriate API URL based on platform and environment
 export const getApiUrl = () => {
-  // 🔧 USING PRODUCTION SERVER (port 8000 is the actual working port)
-  return 'http://185.193.19.244:8000/api';
+  // 🔧 Development: Use localhost:8001, Production: Use VPS server port 8080
+  if (__DEV__) {
+    return Platform.OS === 'android' 
+      ? 'http://10.0.2.2:8001/api'  // Android emulator maps localhost to 10.0.2.2
+      : 'http://localhost:8001/api'; // iOS simulator uses localhost directly
+  }
+  return 'http://185.193.19.244:8080/api';
 };
 
 // Network connectivity checker

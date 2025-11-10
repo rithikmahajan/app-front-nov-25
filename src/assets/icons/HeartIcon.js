@@ -1,32 +1,24 @@
 import React from 'react';
-import Svg, { G, Path, Defs, ClipPath, Rect } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 
-const HeartIcon = ({ size = 21, color = '#000000', filled = false }) => {
-  // Calculate the scale factor based on the desired size vs original size (21x21)
-  const scale = size / 21;
+const HeartIcon = ({ size = 23, color = '#000000', filled = false }) => {
+  // Calculate the scale factor based on the desired size vs original size (23x23)
+  const scale = size / 23;
   
   return (
     <Svg 
       width={size} 
       height={size} 
-      viewBox="0 0 21 21" 
+      viewBox="0 0 23 23" 
       fill="none"
       style={{ transform: [{ scale }] }}
     >
-      <G clipPath="url(#clip0_10516_830)">
-        <Path 
-          d="M10.5 17.7793L17.2759 10.9063C17.9871 10.1952 18.3866 9.23075 18.3866 8.22509C18.3866 7.21942 17.9871 6.25495 17.2759 5.54384C16.5648 4.83273 15.6004 4.43323 14.5947 4.43323C13.589 4.43323 12.6246 4.83273 11.9134 5.54384L10.5 6.8602L9.08661 5.54384C8.37549 4.83273 7.41102 4.43323 6.40536 4.43323C5.39969 4.43323 4.43522 4.83273 3.72411 5.54384C3.01299 6.25495 2.61349 7.21942 2.61349 8.22509C2.61349 9.23075 3.01299 10.1952 3.72411 10.9063L10.5 17.7793Z" 
-          stroke={filled ? color : color} 
-          fill={filled ? color : 'none'}
-          strokeLinecap="round" 
-          strokeLinejoin="round"
-        />
-      </G>
-      <Defs>
-        <ClipPath id="clip0_10516_830">
-          <Rect width="19.4118" height="19.4118" fill="white" transform="translate(0.794128 0.794067)"/>
-        </ClipPath>
-      </Defs>
+      <Path 
+        d="M2.65666 3.61494C0.392237 5.87937 0.392239 9.55072 2.65666 11.8151L11.4396 20.5981L11.5 20.5377L11.5604 20.5982L20.3434 11.8152C22.6078 9.5508 22.6078 5.87944 20.3434 3.61502C18.079 1.35059 14.4076 1.3506 12.1432 3.61502L11.8536 3.90461C11.6584 4.09987 11.3418 4.09987 11.1465 3.90461L10.8569 3.61494C8.59244 1.35052 4.92108 1.35052 2.65666 3.61494Z" 
+        stroke={color} 
+        fill={filled ? color : 'none'}
+        strokeWidth="1.5"
+      />
     </Svg>
   );
 };

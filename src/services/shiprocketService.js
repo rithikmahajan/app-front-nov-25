@@ -4,7 +4,7 @@
  */
 
 const SHIPROCKET_EMAIL = 'support@yoraa.in';
-const SHIPROCKET_PASSWORD = 'R@2727thik';
+const SHIPROCKET_PASSWORD = 'R@0621thik';
 const SHIPROCKET_BASE_URL = 'https://apiv2.shiprocket.in/v1/external';
 
 // Token caching to avoid repeated authentication

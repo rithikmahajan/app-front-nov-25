@@ -377,6 +377,12 @@ class ChatService {
       throw new Error('No chat session found');
     }
 
+    // Check if rating already submitted
+    if (this.activeSession.rating) {
+      console.log('⚠️ Rating already submitted for this session');
+      return { success: true, message: 'Rating already submitted' };
+    }
+
     // Allow rating submission for ended sessions (ended by user or admin)
     if (this.activeSession.status === 'active') {
       throw new Error('Cannot rate an active session. Please end the session first.');
@@ -407,6 +413,18 @@ class ChatService {
         throw new Error(response.message || 'Failed to submit rating');
       }
     } catch (error) {
+      // Handle duplicate rating submission gracefully
+      if (error.message && error.message.includes('already submitted')) {
+        console.log('⚠️ Rating already submitted for this session');
+        // Mark as submitted and clear session
+        if (this.activeSession) {
+          this.activeSession.rating = rating;
+        }
+        this.activeSession = null;
+        this.lastMessageId = null;
+        return { success: true, message: 'Rating already submitted' };
+      }
+      
       console.error('❌ Error submitting chat rating:', error);
       throw error;
     }

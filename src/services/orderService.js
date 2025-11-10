@@ -470,33 +470,32 @@ export const createOrder = async (cart, address, additionalOptions = {}) => {
       }
     }
     
-    // 4️⃣ Prepare request body as per backend specification with corrected authentication data
+    // 4️⃣ Prepare request body with cart and address data
+    // Backend validation requires: cart items, delivery address with phone and email
     const requestBody = {
-      // Amount - Backend will recalculate this
-      amount: frontendCalculation.total, // Used for validation only
-      
-      // Cart Data
-      cart: formattedCart, // Array of cart items
-      
-      // Address Data  
-      staticAddress: formattedAddress, // Complete address object
-      
-      // Additional Info (Optional)
-      orderNotes: additionalOptions.orderNotes || '', // Optional
-      paymentMethod: additionalOptions.paymentMethod || 'razorpay', // Optional - Default: razorpay
-      
-      // ✅ FIX: Include authentication data if available
-      userId: userId || null, // Optional - Firebase UID
-      userToken: userToken || null // Optional - For auth
+      amount: frontendCalculation.total,
+      cart: formattedCart,
+      staticAddress: formattedAddress,
+      orderNotes: additionalOptions.orderNotes || '',
+      paymentMethod: additionalOptions.paymentMethod || 'razorpay'
     };
     
-    console.log('📋 Sending order creation request:', JSON.stringify(requestBody, null, 2));
-    console.log('� Sending order creation request with authentication:', {
-      hasUserId: !!requestBody.userId,
-      hasUserToken: !!requestBody.userToken,
-      userId: requestBody.userId,
-      tokenLength: requestBody.userToken ? requestBody.userToken.length : 0
+    console.log('📋 Order creation request body prepared:', {
+      amount: requestBody.amount,
+      cartItems: requestBody.cart?.length,
+      hasAddress: !!requestBody.staticAddress,
+      deliveryPhone: requestBody.staticAddress?.phone,
+      deliveryEmail: requestBody.staticAddress?.email
     });
+    
+    // Store order metadata for later use in verification
+    const orderMetadata = {
+      cart: formattedCart,
+      staticAddress: formattedAddress,
+      amount: frontendCalculation.total,
+      orderNotes: additionalOptions.orderNotes || '',
+      paymentMethod: additionalOptions.paymentMethod || 'razorpay'
+    };
     
     console.log('�🔍 Request validation details:', {
       hasAmount: !!requestBody.amount,
@@ -526,11 +525,12 @@ export const createOrder = async (cart, address, additionalOptions = {}) => {
       } : null
     });
     
-    // 5️⃣ Make API call
+    // 5️⃣ Make API call - ✅ FIXED: Using correct /api/payment/create-order endpoint
     let response;
     try {
-      // Primary API call
-      response = await apiService.post('/razorpay/create-order', requestBody);
+      // ✅ Using NEW standard endpoint /api/payment/create-order (backend fixed Oct 16, 2025)
+      console.log('📡 Calling /api/payment/create-order endpoint...');
+      response = await apiService.post('/payment/create-order', requestBody);
       console.log('✅ Order created via apiService:', response);
     } catch (apiServiceError) {
       console.warn('apiService failed, trying yoraaAPI as fallback:', apiServiceError.message);
@@ -542,8 +542,9 @@ export const createOrder = async (cart, address, additionalOptions = {}) => {
         throw new Error('Backend validation failed: Invalid item IDs. The backend team needs to deploy the ObjectId conversion fix.');
       }
       
-      // Try fallback API call
-      response = await yoraaAPI.makeRequest('/api/razorpay/create-order', 'POST', requestBody, true);
+      // Try fallback API call with NEW endpoint
+      console.log('📡 Calling /api/payment/create-order endpoint (fallback)...');
+      response = await yoraaAPI.makeRequest('/api/payment/create-order', 'POST', requestBody, true);
       console.log('✅ Order created via yoraaAPI fallback:', response);
     }
     
@@ -557,7 +558,16 @@ export const createOrder = async (cart, address, additionalOptions = {}) => {
     console.log('🔍 Order details:', response.order_details);
     console.log('🛒 Cart calculation:', response.cart_calculation);
     
-    return response;
+    // ✅ FIX: Include original request data in response for payment verification
+    // This ensures all necessary data is available when creating the order after payment
+    return {
+      ...response,
+      // Include metadata for later use (stored for verification phase)
+      cart: orderMetadata.cart,
+      staticAddress: orderMetadata.staticAddress,
+      userId: userId,
+      orderNotes: orderMetadata.orderNotes
+    };
     
   } catch (error) {
     console.error('❌ Order creation failed:', error);
@@ -630,23 +640,45 @@ Do you want to proceed with ₹${backendAmount.toFixed(2)}?`;
  * Now includes Shiprocket shipment creation
  */
 export const verifyPayment = async (paymentData) => {
-  console.log('🔐 Verifying payment:', paymentData);
-  console.log('📦 Payment data includes:', {
+  console.log('🔐 Verifying payment with complete order data:', paymentData);
+  console.log('📦 Payment data validation:', {
     hasPaymentId: !!paymentData.razorpay_payment_id,
     hasOrderId: !!paymentData.razorpay_order_id,
-    hasSignature: !!paymentData.razorpay_signature
+    hasSignature: !!paymentData.razorpay_signature,
+    hasCart: !!paymentData.cart,
+    hasAddress: !!paymentData.staticAddress,
+    hasAmount: !!paymentData.amount,
+    cartItemCount: paymentData.cart?.length || 0
   });
   
   try {
+    // ✅ CRITICAL FIX: Backend expects ONLY razorpay fields, no order details
+    // Backend documentation states: "Request Body: razorpay_order_id, razorpay_payment_id, razorpay_signature"
+    // The backend will create the order and Shiprocket shipment based on these payment details
+    const verificationPayload = {
+      razorpay_order_id: paymentData.razorpay_order_id,
+      razorpay_payment_id: paymentData.razorpay_payment_id,
+      razorpay_signature: paymentData.razorpay_signature
+    };
+    
+    // Log request payload for debugging
+    console.log('📤 Sending SIMPLIFIED verification payload (backend creates order):', {
+      razorpay_order_id: verificationPayload.razorpay_order_id,
+      razorpay_payment_id: verificationPayload.razorpay_payment_id,
+      razorpay_signature: verificationPayload.razorpay_signature?.substring(0, 20) + '...'
+    });
+    
     let response;
     try {
-      // Primary API call
-      response = await apiService.post('/razorpay/verify-payment', paymentData);
+      // ✅ Using NEW standard endpoint /api/payment/verify-payment (backend fixed Oct 16, 2025)
+      console.log('📡 Sending verification request to /api/payment/verify-payment...');
+      response = await apiService.post('/payment/verify-payment', verificationPayload);
       console.log('✅ Payment verification via apiService successful');
     } catch (apiServiceError) {
       console.warn('apiService verification failed, trying yoraaAPI:', apiServiceError.message);
-      // Fallback API call
-      response = await yoraaAPI.makeRequest('/api/razorpay/verify-payment', 'POST', paymentData, true);
+      // Fallback API call with NEW endpoint
+      console.log('📡 Sending verification request to /api/payment/verify-payment (fallback)...');
+      response = await yoraaAPI.makeRequest('/api/payment/verify-payment', 'POST', verificationPayload, true);
       console.log('✅ Payment verification via yoraaAPI successful');
     }
     
@@ -722,8 +754,10 @@ export const handlePaymentCancellation = async (databaseOrderId) => {
   }
   
   try {
-    // Optional: Mark order as cancelled
-    await apiService.post('/orders/cancel', { orderId: databaseOrderId });
+    // Mark order as cancelled - orderId must be in URL path
+    await apiService.post(`/orders/cancel/${databaseOrderId}`, { 
+      reason: 'Payment cancelled by user' 
+    });
     console.log('✅ Order marked as cancelled');
   } catch (error) {
     console.error('❌ Failed to cancel order:', error);

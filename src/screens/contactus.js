@@ -563,15 +563,22 @@ Guest User`;
     try {
       // Submit rating through chat service
       if (selectedRating > 0) {
-        await chatService.submitRating(selectedRating, '');
-        console.log('✅ Chat rating submitted successfully');
+        const result = await chatService.submitRating(selectedRating, '');
+        if (result.success) {
+          console.log('✅ Chat rating submitted successfully');
+        }
       }
       
       // End the chat session
       await chatService.endChatSession(selectedRating);
       
     } catch (error) {
-      console.error('❌ Error submitting rating:', error);
+      // Silently handle duplicate rating or other errors
+      if (error.message && error.message.includes('already submitted')) {
+        console.log('⚠️ Rating already submitted, continuing...');
+      } else {
+        console.error('❌ Error submitting rating:', error);
+      }
       // Continue with UI flow even if API call fails
     }
 

@@ -30,7 +30,7 @@ const TrashIcon = ({ size = 20 }) => (
 );
 
 const FavouritesContentEditView = ({ navigation }) => {
-  const { loadFavorites } = useFavorites();
+  const { loadFavoritesFromAPI, removeFromFavorites } = useFavorites();
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isClearing, setIsClearing] = useState(false);
@@ -78,18 +78,26 @@ const FavouritesContentEditView = ({ navigation }) => {
     try {
       setRemovingItems(prev => new Set([...prev, itemId]));
       
-      await yoraaAPI.removeFromWishlist(itemId);
+      // Find the product ID from the wishlist item
+      const wishlistItem = wishlistItems.find(i => i.id === itemId);
+      if (!wishlistItem) {
+        console.error('Item not found:', itemId);
+        return;
+      }
+      
+      // Use context method which handles the API call and state updates
+      await removeFromFavorites(wishlistItem.productId);
       
       // Remove from local state
       setWishlistItems(prev => prev.filter(item => item.id !== itemId));
       
       // Refresh favorites context
-      await loadFavorites();
+      await loadFavoritesFromAPI();
       
       console.log('Item removed successfully:', itemId);
     } catch (error) {
       console.error('Error removing item:', error);
-      Alert.alert('Error', 'Failed to remove item from wishlist');
+      // The context already shows an error alert, so we don't need to show another one
     } finally {
       setRemovingItems(prev => {
         const newSet = new Set(prev);
@@ -113,9 +121,9 @@ const FavouritesContentEditView = ({ navigation }) => {
             try {
               setIsClearing(true);
               
-              // Remove all items one by one
+              // Remove all items one by one using context method
               const removePromises = wishlistItems.map(item => 
-                yoraaAPI.removeFromWishlist(item.id)
+                removeFromFavorites(item.productId)
               );
               
               await Promise.all(removePromises);
@@ -124,7 +132,7 @@ const FavouritesContentEditView = ({ navigation }) => {
               setWishlistItems([]);
               
               // Refresh favorites context
-              await loadFavorites();
+              await loadFavoritesFromAPI();
               
               console.log('All items cleared successfully');
             } catch (error) {

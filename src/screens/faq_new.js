@@ -87,17 +87,25 @@ const FAQScreen = ({ navigation }) => {
         const response = await YoraaAPI.getFAQs();
         console.log('[FAQ] API Response:', response);
         
-        if (response && response.faqs && Array.isArray(response.faqs)) {
+        // Handle multiple response formats from backend
+        let faqs = [];
+        if (response && response.data && response.data.faqs && Array.isArray(response.data.faqs)) {
+          console.log('[FAQ] Successfully loaded FAQs from response.data.faqs:', response.data.faqs.length);
+          faqs = response.data.faqs;
+        } else if (response && response.faqs && Array.isArray(response.faqs)) {
           console.log('[FAQ] Successfully loaded FAQs from response.faqs:', response.faqs.length);
-          setFaqData(response.faqs);
+          faqs = response.faqs;
         } else if (response && Array.isArray(response)) {
           console.log('[FAQ] Successfully loaded FAQs from direct array:', response.length);
-          setFaqData(response);
+          faqs = response;
         } else {
           console.warn('[FAQ] Unexpected FAQ response format:', response);
           setFaqData([]);
           setError('No FAQ data available');
+          return;
         }
+        
+        setFaqData(faqs);
       } catch (apiError) {
         console.error('[FAQ] Error fetching FAQs:', apiError);
         setError(YoraaAPI.handleError(apiError));
@@ -134,15 +142,22 @@ const FAQScreen = ({ navigation }) => {
       await YoraaAPI.initialize();
       const response = await YoraaAPI.getFAQs();
       
-      if (response && response.faqs && Array.isArray(response.faqs)) {
-        setFaqData(response.faqs);
+      // Handle multiple response formats from backend
+      let faqs = [];
+      if (response && response.data && response.data.faqs && Array.isArray(response.data.faqs)) {
+        faqs = response.data.faqs;
+      } else if (response && response.faqs && Array.isArray(response.faqs)) {
+        faqs = response.faqs;
       } else if (response && Array.isArray(response)) {
-        setFaqData(response);
+        faqs = response;
       } else {
         console.warn('Unexpected FAQ response format:', response);
         setFaqData([]);
         setError('No FAQ data available');
+        return;
       }
+      
+      setFaqData(faqs);
     } catch (apiError) {
       console.error('Error refreshing FAQs:', apiError);
       setError(YoraaAPI.handleError(apiError));

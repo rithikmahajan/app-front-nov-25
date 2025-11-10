@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,13 +7,128 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
+  ActivityIndicator,
+  Image,
+  PanResponder,
 } from 'react-native';
+import { Colors } from '../constants';
+import apiService from '../services/apiService';
 
 const { height: screenHeight } = Dimensions.get('window');
 
-const BagSizeSelectorSizeChart = ({ visible, onClose }) => {
-  const [activeTab, setActiveTab] = useState('US');
-  const [selectedUnit, setSelectedUnit] = useState('in');
+const BagSizeSelectorSizeChart = ({ visible, onClose, product }) => {
+  const [activeTab, setActiveTab] = useState('sizeChart'); // 'sizeChart' or 'howToMeasure'
+  const [measurementUnit, setMeasurementUnit] = useState('cm'); // 'cm' or 'in'
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Dynamic data state
+  const [sizeChartData, setSizeChartData] = useState([]);
+  const [sizeChartImage, setSizeChartImage] = useState(null);
+
+  // Load dynamic data from API when modal becomes visible
+  useEffect(() => {
+    if (visible && product) {
+      loadProductSizeData();
+    }
+  }, [visible, product]);
+
+  const loadProductSizeData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      console.log('🔍 [Bag Size Chart] Loading size chart data for product:', product);
+
+      if (!product?._id && !product?.productId && !product?.itemId && !product?.id) {
+        console.log('⚠️ [Bag Size Chart] No product ID found');
+        setSizeChartData([]);
+        setError('Product ID not available');
+        setLoading(false);
+        return;
+      }
+
+      const productId = product._id || product.productId || product.itemId || product.id;
+      console.log('🔍 [Bag Size Chart] Fetching product with ID:', productId);
+      
+      const response = await apiService.getItemById(productId);
+
+      if (response?.data) {
+        const matchingProduct = response.data;
+        console.log('✅ [Bag Size Chart] Found product:', matchingProduct.productName);
+        
+        if (matchingProduct.sizes && matchingProduct.sizes.length > 0) {
+          const dynamicSizes = matchingProduct.sizes
+            .filter(size => size.size)
+            .map(size => {
+              // Helper function to safely get value with multiple field name variations
+              const getValue = (obj, keys) => {
+                for (const key of keys) {
+                  if (obj.hasOwnProperty(key)) {
+                    const val = obj[key];
+                    if (val !== undefined && val !== null && val !== '' && val !== 'N/A' && val !== '-') {
+                      const numVal = Number(val);
+                      return !isNaN(numVal) ? numVal : val;
+                    }
+                  }
+                }
+                return null;
+              };
+              
+              // Extract measurements with camelCase priority to match backend structure
+              const chestCm = getValue(size, ['chestCm', 'Chest (cm)', 'chest (cm)']);
+              const chestIn = getValue(size, ['chestIn', 'Chest (in)', 'chest (in)']);
+              const frontLengthCm = getValue(size, ['frontLengthCm', 'Front Length (cm)', 'length (cm)', 'Length (cm)']);
+              const frontLengthIn = getValue(size, ['frontLengthIn', 'Front Length (in)', 'length (in)', 'Length (in)']);
+              const shoulderCm = getValue(size, ['acrossShoulderCm', 'Shoulder (cm)', 'shoulder (cm)', 'shoulderCm']);
+              const shoulderIn = getValue(size, ['acrossShoulderIn', 'Shoulder (in)', 'shoulder (in)', 'shoulderIn']);
+              const waistCm = getValue(size, ['fitWaistCm', 'Waist (cm)', 'waist (cm)', 'waistCm']);
+              const waistIn = getValue(size, ['toFitWaistIn', 'Waist (in)', 'waist (in)', 'waistIn']);
+              const inseamCm = getValue(size, ['inseamLengthCm', 'Inseam (cm)', 'inseam (cm)', 'inseamCm']);
+              const inseamIn = getValue(size, ['inseamLengthIn', 'Inseam (in)', 'inseam (in)', 'inseamIn']);
+              const hipCm = getValue(size, ['hipCm', 'Hip (cm)', 'hip (cm)']);
+              const hipIn = getValue(size, ['hipIn', 'Hip (in)', 'hip (in)']);
+              
+              return {
+                size: size.size,
+                chestCm,
+                chestIn,
+                frontLengthCm,
+                frontLengthIn,
+                acrossShoulderCm: shoulderCm,
+                acrossShoulderIn: shoulderIn,
+                waistCm,
+                waistIn,
+                inseamCm,
+                inseamIn,
+                hipCm,
+                hipIn,
+              };
+            });
+          
+          setSizeChartData(dynamicSizes);
+          console.log('✅ [Bag Size Chart] Size chart data loaded with all measurements:', dynamicSizes);
+        } else {
+          setSizeChartData([]);
+          setError('No size information available');
+        }
+
+        if (matchingProduct.sizeChartImage?.url) {
+          setSizeChartImage(matchingProduct.sizeChartImage);
+          console.log('✅ [Bag Size Chart] Size chart image found');
+        }
+      } else {
+        setSizeChartData([]);
+        setError('Product not found');
+      }
+      
+    } catch (err) {
+      console.error('❌ [Bag Size Chart] Error loading:', err);
+      setError('Failed to load size chart data');
+    } finally {
+      setLoading(false);
+    }
+  }, [product]);
 
   const sizeData = {
     US: {
@@ -58,8 +173,198 @@ const BagSizeSelectorSizeChart = ({ visible, onClose }) => {
     onClose();
   };
 
+  const renderSizeChart = () => {
+    if (loading) {
+      return (
+        <View style={[styles.contentContainer, styles.centerContent]}>
+          <ActivityIndicator size="large" color={Colors.black} />
+          <Text style={styles.loadingText}>Loading size chart...</Text>
+        </View>
+      );
+    }
+
+    if (error || !sizeChartData || sizeChartData.length === 0) {
+      return (
+        <View style={[styles.contentContainer, styles.centerContent]}>
+          <Text style={styles.errorText}>{error || 'No size chart data available'}</Text>
+          <TouchableOpacity onPress={loadProductSizeData} style={styles.retryButton}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.contentContainer}>
+        <View style={styles.unitSelectionContainer}>
+          <Text style={styles.selectSizeText}>Select size in</Text>
+          <View style={styles.unitToggle}>
+            {['in', 'cm'].map((unit) => (
+              <TouchableOpacity
+                key={unit}
+                style={[
+                  styles.unitOption,
+                  measurementUnit === unit ? styles.activeUnit : styles.inactiveUnit
+                ]}
+                onPress={() => setMeasurementUnit(unit)}
+              >
+                <Text style={[
+                  styles.unitText,
+                  measurementUnit === unit ? styles.activeUnitText : styles.inactiveUnitText
+                ]}>
+                  {unit}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+        
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={true}
+          style={{ marginHorizontal: -16 }}
+          contentContainerStyle={{ paddingHorizontal: 16 }}
+        >
+          <View style={styles.tableContainer}>
+            {/* Table Header - Dynamic based on available fields */}
+            <View style={styles.tableHeader}>
+              <Text style={styles.headerText}>Size</Text>
+              {/* Only show columns that have data in at least one size variant */}
+              {sizeChartData.some(item => {
+                const value = measurementUnit === 'cm' ? item.chestCm : item.chestIn;
+                return value !== null && value !== undefined && value !== '' && value !== 'N/A' && value !== '-';
+              }) && (
+                <Text style={styles.headerText}>
+                  Chest ({measurementUnit})
+                </Text>
+              )}
+              {sizeChartData.some(item => {
+                const value = measurementUnit === 'cm' ? item.frontLengthCm : item.frontLengthIn;
+                return value !== null && value !== undefined && value !== '' && value !== 'N/A' && value !== '-';
+              }) && (
+                <Text style={styles.headerText}>
+                  Length ({measurementUnit})
+                </Text>
+              )}
+              {sizeChartData.some(item => {
+                const value = measurementUnit === 'cm' ? item.acrossShoulderCm : item.acrossShoulderIn;
+                return value !== null && value !== undefined && value !== '' && value !== 'N/A' && value !== '-';
+              }) && (
+                <Text style={styles.headerText}>
+                  Shoulder ({measurementUnit})
+                </Text>
+              )}
+              {sizeChartData.some(item => {
+                const value = measurementUnit === 'cm' ? item.waistCm : item.waistIn;
+                return value !== null && value !== undefined && value !== '' && value !== 'N/A' && value !== '-';
+              }) && (
+                <Text style={styles.headerText}>
+                  Waist ({measurementUnit})
+                </Text>
+              )}
+              {sizeChartData.some(item => {
+                const value = measurementUnit === 'cm' ? item.inseamCm : item.inseamIn;
+                return value !== null && value !== undefined && value !== '' && value !== 'N/A' && value !== '-';
+              }) && (
+                <Text style={styles.headerText}>
+                  Inseam ({measurementUnit})
+                </Text>
+              )}
+              {sizeChartData.some(item => {
+                const value = measurementUnit === 'cm' ? item.hipCm : item.hipIn;
+                return value !== null && value !== undefined && value !== '' && value !== 'N/A' && value !== '-';
+              }) && (
+                <Text style={styles.headerText}>
+                  Hip ({measurementUnit})
+                </Text>
+              )}
+            </View>
+            
+            {/* Table Rows - Dynamic Data with all available measurements */}
+            {sizeChartData.map((item, index) => {
+              // Helper function to get measurement value based on unit
+              const getMeasurement = (cmField, inField) => {
+                const value = measurementUnit === 'cm' ? item[cmField] : item[inField];
+                if (value === null || value === undefined || value === 'N/A' || value === '-' || value === '') {
+                  return '-';
+                }
+                return value;
+              };
+
+              // Helper to check if column should be shown
+              const shouldShowColumn = (cmField, inField) => {
+                return sizeChartData.some(i => {
+                  const value = measurementUnit === 'cm' ? i[cmField] : i[inField];
+                  return value !== null && value !== undefined && value !== '' && value !== 'N/A' && value !== '-';
+                });
+              };
+
+              return (
+                <View key={index} style={styles.tableRow}>
+                  <Text style={styles.cellText}>{item.size}</Text>
+                  {shouldShowColumn('chestCm', 'chestIn') && (
+                    <Text style={styles.cellText}>
+                      {getMeasurement('chestCm', 'chestIn')}
+                    </Text>
+                  )}
+                  {shouldShowColumn('frontLengthCm', 'frontLengthIn') && (
+                    <Text style={styles.cellText}>
+                      {getMeasurement('frontLengthCm', 'frontLengthIn')}
+                    </Text>
+                  )}
+                  {shouldShowColumn('acrossShoulderCm', 'acrossShoulderIn') && (
+                    <Text style={styles.cellText}>
+                      {getMeasurement('acrossShoulderCm', 'acrossShoulderIn')}
+                    </Text>
+                  )}
+                  {shouldShowColumn('waistCm', 'waistIn') && (
+                    <Text style={styles.cellText}>
+                      {getMeasurement('waistCm', 'waistIn')}
+                    </Text>
+                  )}
+                  {shouldShowColumn('inseamCm', 'inseamIn') && (
+                    <Text style={styles.cellText}>
+                      {getMeasurement('inseamCm', 'inseamIn')}
+                    </Text>
+                  )}
+                  {shouldShowColumn('hipCm', 'hipIn') && (
+                    <Text style={styles.cellText}>
+                      {getMeasurement('hipCm', 'hipIn')}
+                    </Text>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        </ScrollView>
+      </View>
+    );
+  };
+
+  const renderHowToMeasure = () => {
+    if (sizeChartImage?.url) {
+      return (
+        <View style={styles.contentContainer}>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Text style={styles.measurementGuideTitle}>How to Measure</Text>
+            <Image
+              source={{ uri: sizeChartImage.url }}
+              style={styles.measurementImage}
+              resizeMode="contain"
+            />
+          </ScrollView>
+        </View>
+      );
+    }
+    return (
+      <View style={[styles.contentContainer, styles.centerContent]}>
+        <Text style={styles.noDataText}>No measurement guide available</Text>
+      </View>
+    );
+  };
+
   const renderTable = () => {
-    const data = sizeData[activeTab][selectedUnit];
+    const data = sizeData[activeTab]?.in || [];
     
     return (
       <View style={styles.tableContainer}>
@@ -97,9 +402,9 @@ const BagSizeSelectorSizeChart = ({ visible, onClose }) => {
           {/* Header */}
           <Text style={styles.headerTitle}>Size Chart</Text>
           
-          {/* Tab Container */}
+          {/* Tab Container - Size Chart / How to Measure */}
           <View style={styles.tabContainer}>
-            {['US', 'UK'].map((tab) => (
+            {['sizeChart', 'howToMeasure'].map((tab) => (
               <TouchableOpacity
                 key={tab}
                 style={styles.tabItem}
@@ -109,7 +414,7 @@ const BagSizeSelectorSizeChart = ({ visible, onClose }) => {
                   styles.tabText,
                   activeTab === tab && styles.activeTabText
                 ]}>
-                  {tab}
+                  {tab === 'sizeChart' ? 'Size Chart' : 'How to Measure'}
                 </Text>
                 {activeTab === tab && <View style={styles.tabUnderline} />}
               </TouchableOpacity>
@@ -117,41 +422,7 @@ const BagSizeSelectorSizeChart = ({ visible, onClose }) => {
           </View>
           
           {/* Content */}
-          <View style={styles.contentContainer}>
-            {/* Unit Selection */}
-            <View style={styles.unitSelectionContainer}>
-              <Text style={styles.selectSizeText}>Select your size</Text>
-              
-              <View style={styles.unitToggle}>
-                {['in', 'cm'].map((unit) => (
-                  <TouchableOpacity
-                    key={unit}
-                    style={[
-                      styles.unitOption,
-                      selectedUnit === unit ? styles.activeUnit : styles.inactiveUnit
-                    ]}
-                    onPress={() => setSelectedUnit(unit)}
-                  >
-                    <Text style={[
-                      styles.unitText,
-                      selectedUnit === unit ? styles.activeUnitText : styles.inactiveUnitText
-                    ]}>
-                      {unit}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-            
-            {/* Size Table */}
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {renderTable()}
-              
-              <Text style={styles.measurementText}>
-                All measurements are in {selectedUnit === 'in' ? 'inches' : 'centimeters'}
-              </Text>
-            </ScrollView>
-          </View>
+          {activeTab === 'sizeChart' ? renderSizeChart() : renderHowToMeasure()}
           
           {/* Done Button */}
           <TouchableOpacity style={styles.doneButton} onPress={handleClose}>
@@ -234,7 +505,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 2,
-    marginBottom: 24,
+    marginBottom: 20,
     height: 45,
   },
   selectSizeText: {
@@ -281,35 +552,39 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     backgroundColor: '#000000',
-    height: 45,
+    height: 50,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
   },
   headerText: {
-    flex: 1,
+    minWidth: 80,
     fontSize: 13,
     fontWeight: '600',
     color: '#FFFFFF',
-    letterSpacing: -0.4,
+    letterSpacing: -0.2,
     textAlign: 'center',
+    paddingHorizontal: 8,
   },
   tableRow: {
     backgroundColor: '#FFFFFF',
-    height: 45,
+    height: 50,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#F2F2F2',
   },
   cellText: {
-    flex: 1,
-    fontSize: 16,
+    minWidth: 80,
+    fontSize: 15,
     fontWeight: '400',
     color: '#000000',
-    letterSpacing: -0.4,
+    letterSpacing: -0.2,
     textAlign: 'center',
+    paddingHorizontal: 8,
   },
   measurementText: {
     fontSize: 16,
@@ -333,6 +608,54 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#FFFFFF',
     lineHeight: 19.2,
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    fontWeight: '400',
+    color: '#666666',
+    marginTop: 16,
+  },
+  errorText: {
+    fontSize: 16,
+    fontWeight: '400',
+    color: '#FF0000',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#000000',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  retryButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#FFFFFF',
+  },
+  noDataText: {
+    fontSize: 16,
+    fontWeight: '400',
+    color: '#666666',
+    textAlign: 'center',
+  },
+  measurementGuideTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 16,
+    marginTop: 20,
+    textAlign: 'center',
+  },
+  measurementImage: {
+    width: '100%',
+    height: 400,
+    borderRadius: 8,
+    backgroundColor: '#F8F8F8',
   },
 });
 

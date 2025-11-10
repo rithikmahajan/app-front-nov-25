@@ -9,25 +9,33 @@ import {
   StatusBar,
   Image,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
+import Video from 'react-native-video';
 import Svg, { Path, Rect } from 'react-native-svg';
 import GlobalSearchIcon from '../assets/icons/GlobalSearchIcon';
 import FilterIcon from '../assets/icons/FilterIcon';
-import { GlobalCartIcon } from '../assets/icons';
 import BottomNavigationBar from '../components/bottomnavigationbar';
 import { useFavorites } from '../contexts/FavoritesContext';
-import { useBag } from '../contexts/BagContext';
 import { apiService } from '../services/apiService';
 import { AnimatedHeartIcon } from '../components';
 
 const ProductViewOne = ({ navigation, route }) => {
   const { toggleFavorite, isFavorite } = useFavorites();
-  const { addToBag } = useBag();
   
   // Get subcategory ID from route parameters
   const subcategoryId = route?.params?.subcategoryId || '68d7e6091447aecb79415ba5';
   const subcategoryName = route?.params?.subcategoryName || 'Products';
+  
+  // Get category information to pass to product details for back navigation
+  const categoryName = route?.params?.categoryName || null;
+  
+  // Get route params to pass along when switching views
+  const routeParams = route?.params || {};
+  
+  // Debug logging
+  console.log('📍 ProductViewOne - Route params:', route?.params);
+  console.log('📍 ProductViewOne - Subcategory name:', subcategoryName);
+  console.log('📍 ProductViewOne - Category name:', categoryName);
   
   // State management for API data
   const [items, setItems] = useState([]);
@@ -100,10 +108,6 @@ const ProductViewOne = ({ navigation, route }) => {
     return images[0]?.url || null;
   };
 
-  const toggleLike = (productId) => {
-    toggleFavorite(productId);
-  };
-
   const BackIcon = () => (
     <Svg width="10" height="17" viewBox="0 0 10 17" fill="none">
       <Path d="M8.5 16L1 8.5L8.5 1" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -129,22 +133,61 @@ const ProductViewOne = ({ navigation, route }) => {
     const imageUrl = getFirstImage(item.images);
     const price = formatPrice(item.sizes);
     
+    // Check if first media is a video
+    const firstMedia = item.images && item.images.length > 0 ? item.images[0] : null;
+    const isFirstMediaVideo = firstMedia && (
+      firstMedia.mediaType === 'video' || 
+      firstMedia.type === 'video' ||
+      (firstMedia.url && (
+        firstMedia.url.includes('.mp4') || 
+        firstMedia.url.includes('.mov') || 
+        firstMedia.url.includes('.avi') ||
+        firstMedia.url.includes('.m4v')
+      ))
+    );
+    
     return (
       <View key={item._id} style={[
         styles.productContainer,
         !isFirstInRow && styles.productContainerRight
       ]}>
-        {/* Product Image */}
+        {/* Product Image/Video */}
         <TouchableOpacity 
           style={styles.imageContainer}
-          onPress={() => navigation.navigate('ProductDetailsMain', { product: item, previousScreen: 'ProductViewOne' })}
+          onPress={() => navigation.navigate('ProductDetailsMain', { 
+            product: item, 
+            previousScreen: 'ProductViewOne',
+            categoryName: categoryName, // Pass category for back navigation to Home
+            subcategoryName: subcategoryName
+          })}
         >
           {imageUrl ? (
-            <Image 
-              source={{ uri: imageUrl }}
-              style={styles.productImage}
-              resizeMode="cover"
-            />
+            isFirstMediaVideo ? (
+              <View style={styles.videoContainer}>
+                <Video
+                  source={{ uri: imageUrl }}
+                  style={styles.productImage}
+                  resizeMode="cover"
+                  repeat={true}
+                  muted={true}
+                  paused={true}
+                  controls={false}
+                />
+                {/* Video Play Icon Indicator */}
+                <View style={styles.videoPlayIcon}>
+                  <Svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                    <Rect width="40" height="40" rx="20" fill="rgba(0, 0, 0, 0.6)" />
+                    <Path d="M16 12L28 20L16 28V12Z" fill="white" />
+                  </Svg>
+                </View>
+              </View>
+            ) : (
+              <Image 
+                source={{ uri: imageUrl }}
+                style={styles.productImage}
+                resizeMode="cover"
+              />
+            )
           ) : (
             <View style={styles.imagePlaceholder} />
           )}
@@ -165,30 +208,6 @@ const ProductViewOne = ({ navigation, route }) => {
             filledColor="#FF0000"
             unfilledColor="#000000"
           />
-
-          {/* Shopping Bag Icon */}
-          <TouchableOpacity 
-            style={styles.bagButton}
-            onPress={async (e) => {
-              e.stopPropagation();
-              try {
-                // Check if item has multiple sizes
-                if (item.sizes && Array.isArray(item.sizes) && item.sizes.length > 1) {
-                  // Navigate to size selection or use first available size
-                  const defaultSize = item.sizes[0]?.size || 'M';
-                  await addToBag(item, defaultSize);
-                } else {
-                  await addToBag(item);
-                }
-              } catch (cartError) {
-                console.error('Error adding to cart:', cartError);
-              }
-            }}
-          >
-            <View style={styles.bagIconContainer}>
-              <GlobalCartIcon size={16} />
-            </View>
-          </TouchableOpacity>
         </TouchableOpacity>
 
         {/* Product Info */}
@@ -210,7 +229,7 @@ const ProductViewOne = ({ navigation, route }) => {
 
   const handleBackPress = () => {
     if (navigation) {
-      navigation.navigate('Home');
+      navigation.goBack();
     }
   };
 
@@ -235,7 +254,10 @@ const ProductViewOne = ({ navigation, route }) => {
             <GlobalSearchIcon size={20} color="#000000" />
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('ProductViewTwo')}>
+          <TouchableOpacity style={styles.iconButton} onPress={() => {
+            console.log('🔄 ProductViewOne -> ProductViewTwo - Passing params:', routeParams);
+            navigation.navigate('ProductViewTwo', routeParams);
+          }}>
             <GridIcon />
           </TouchableOpacity>
           
@@ -477,20 +499,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  
-  bagButton: {
-    position: 'absolute',
-    bottom: 12,
-    right: 12,
-  },
-  bagIconContainer: {
-    width: 34,
-    height: 34,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 17,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
 
   // Heart Icon
   heartIcon: {
@@ -511,36 +519,6 @@ const styles = StyleSheet.create({
   heartFilled: {
     backgroundColor: '#CA3327',
     borderColor: '#CA3327',
-  },
-
-  // Shopping Bag Icon
-  bagIcon: {
-    width: 19,
-    height: 19,
-    position: 'relative',
-  },
-  bagBody: {
-    position: 'absolute',
-    bottom: 0,
-    left: 2,
-    width: 15,
-    height: 13,
-    borderWidth: 1,
-    borderColor: '#14142B',
-    backgroundColor: 'transparent',
-  },
-  bagHandle: {
-    position: 'absolute',
-    top: 1,
-    left: 5,
-    width: 9,
-    height: 8,
-    borderWidth: 1,
-    borderBottomWidth: 0,
-    borderColor: '#14142B',
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-    backgroundColor: 'transparent',
   },
 
   // Product Info Styles
@@ -587,6 +565,24 @@ const styles = StyleSheet.create({
     letterSpacing: -0.14,
     fontFamily: 'Montserrat-Medium',
     lineHeight: 17,
+  },
+
+  // Video Styles
+  videoContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 200,
+  },
+  videoPlayIcon: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -20,
+    marginLeft: -20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   // Loading and Error States

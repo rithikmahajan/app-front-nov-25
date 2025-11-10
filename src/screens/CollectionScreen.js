@@ -17,9 +17,9 @@ import {
   Image,
 } from 'react-native';
 import { FontSizes, FontWeights, Spacing, BorderRadius } from '../constants';
-import { GlobalSearchIcon, FilterIcon, GlobalCartIcon, HeartIcon } from '../assets/icons';
+import { GlobalSearchIcon, FilterIcon, HeartIcon } from '../assets/icons';
 import { useFavorites } from '../contexts/FavoritesContext';
-import { useBag } from '../contexts/BagContext';
+// import { useBag } from '../contexts/BagContext'; // Removed as cart button is no longer displayed
 import { apiService } from '../services/apiService';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -309,7 +309,7 @@ const FILTER_OPTIONS = {
   kidsSizes: ['BOY', 'GIRL'],
 };
 
-const CollectionScreen = ({ navigation }) => {
+const CollectionScreen = ({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [selectedSizes, setSelectedSizes] = useState([]);
@@ -326,8 +326,8 @@ const CollectionScreen = ({ navigation }) => {
   // Use the FavoritesContext
   const { toggleFavorite, isFavorite } = useFavorites();
 
-  // Use the BagContext
-  const { addToBag } = useBag();
+  // Use the BagContext (commented out as cart button is removed)
+  // const { addToBag } = useBag();
 
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
@@ -342,6 +342,17 @@ const CollectionScreen = ({ navigation }) => {
       fetchItemsForSubcategory(activeTab);
     }
   }, [activeTab]);
+
+  // Restore active tab when returning to screen
+  useEffect(() => {
+    // Check if returning from a product details screen with saved tab
+    if (route?.params?.returnToTab) {
+      console.log('🔄 Restoring active tab:', route.params.returnToTab);
+      setActiveTab(route.params.returnToTab);
+      // Clear the param so it doesn't interfere with future navigations
+      navigation.setParams({ returnToTab: undefined });
+    }
+  }, [route?.params?.returnToTab, navigation]);
 
   const fetchSubcategories = async () => {
     try {
@@ -463,16 +474,15 @@ const CollectionScreen = ({ navigation }) => {
     }
   };
 
-  const handleAddToBag = (product) => {
-    // For now, add with default size. In a real app, you might want to show a size selector
-    const productToAdd = {
-      ...product,
-      size: 'M', // Default size - could be made configurable
-    };
-    
-    addToBag(productToAdd);
-    console.log('Added to bag! Check your Bag to see all items.');
-  };
+  // Removed handleAddToBag function as cart button is no longer displayed
+  // const handleAddToBag = (product) => {
+  //   const productToAdd = {
+  //     ...product,
+  //     size: 'M',
+  //   };
+  //   addToBag(productToAdd);
+  //   console.log('Added to bag! Check your Bag to see all items.');
+  // };
 
   const openFilterModal = () => {
     if (navigation && navigation.navigate) {
@@ -501,8 +511,6 @@ const CollectionScreen = ({ navigation }) => {
     setSelectedColors([]);
     setSelectedSort('ASCENDING PRICE');
   };
-
-  const renderSeparator = () => <View style={styles.itemSeparator} />;
 
   // Helper function to extract price from item data structure
   const getItemPrice = (item) => {
@@ -615,7 +623,8 @@ const CollectionScreen = ({ navigation }) => {
         onPress={() => navigation?.navigate('ProductDetailsMain', { 
           product: item,
           item: item, // Pass item as well for compatibility
-          previousScreen: 'Collection' 
+          previousScreen: 'Collection',
+          activeTab: activeTab // Pass the active tab to restore when returning
         })}
       >
         <View style={styles.productImageContainer}>
@@ -642,15 +651,6 @@ const CollectionScreen = ({ navigation }) => {
             isFavorite={isFavorite(item.id || item._id)}
             style={styles.heartButton}
           />
-          <TouchableOpacity 
-            style={styles.cartButton}
-            onPress={(e) => {
-              e.stopPropagation();
-              handleAddToBag(item);
-            }}
-          >
-            <GlobalCartIcon size={16} />
-          </TouchableOpacity>
         </View>
         <View style={styles.productInfo}>
           {/* Display only product name and price as requested */}
@@ -755,7 +755,6 @@ const CollectionScreen = ({ navigation }) => {
               numColumns={2}
             contentContainerStyle={styles.productsContainer}
             showsVerticalScrollIndicator={false}
-            ItemSeparatorComponent={renderSeparator}
             columnWrapperStyle={styles.productRow}
             removeClippedSubviews={true}
             maxToRenderPerBatch={10}
@@ -771,12 +770,13 @@ const CollectionScreen = ({ navigation }) => {
               />
             }
             getItemLayout={(data, index) => {
-              // Safer getItemLayout with additional validation
+              // Safer getItemLayout with 2 columns layout
               const safeIndex = Math.max(0, index || 0);
-              const itemLength = 240;
+              const itemHeight = 250; // Approximate height per row
+              const rowIndex = Math.floor(safeIndex / 2);
               return {
-                length: itemLength,
-                offset: itemLength * Math.floor(safeIndex / 2),
+                length: itemHeight,
+                offset: itemHeight * rowIndex,
                 index: safeIndex,
               };
             }}
@@ -880,26 +880,24 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Regular',
   },
   productsContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 16,
-    alignItems: 'center',
+    paddingBottom: 100,
   },
   productRow: {
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 0,
-    marginBottom: 40,
-    gap: 16,
+    marginBottom: 0,
     width: '100%',
   },
   productCard: {
-    flex: 1,
-    maxWidth: 180,
+    width: '48%',
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 4,
+    marginBottom: 16,
   },
   productImageContainer: {
     position: 'relative',
-    height: 180,
+    aspectRatio: 1,
     width: '100%',
     borderRadius: 8,
     overflow: 'hidden',

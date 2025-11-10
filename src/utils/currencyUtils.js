@@ -205,16 +205,26 @@ export const setUserLocation = async (location) => {
  * FORCE INR ONLY MODE: Always uses INR formatting
  */
 export const formatPrice = (price, location = null, options = {}) => {
-  if (!price || isNaN(price)) return '₹0';
+  if (!price) return '₹0';
+  
+  // Convert to string to handle both string and number inputs
+  let priceStr = String(price);
+  
+  // Remove any currency symbols (US$, $, USD, etc.) and trim whitespace
+  priceStr = priceStr.replace(/US\$|USD|\$|£|€|₹/gi, '').trim();
+  
+  // Extract numeric value
+  const numericPrice = parseFloat(priceStr.replace(/[^0-9.]/g, ''));
+  
+  // Check if conversion was successful
+  if (isNaN(numericPrice)) return '₹0';
   
   // Always use India location when INR only mode is enabled
   const loc = FORCE_INR_ONLY ? DEFAULT_LOCATION : (location || DEFAULT_LOCATION);
   const {
-    showDecimals = true,
+    showDecimals = false,
     showSymbol = true
   } = options;
-
-  const numericPrice = parseFloat(price);
   
   try {
     const formatted = new Intl.NumberFormat(loc.locale, {
@@ -229,7 +239,7 @@ export const formatPrice = (price, location = null, options = {}) => {
     // Fallback formatting
     const symbol = showSymbol ? loc.symbol : '';
     const decimals = showDecimals ? numericPrice.toFixed(2) : Math.round(numericPrice);
-    return `${symbol}${decimals}`;
+    return `${symbol}${decimals.toLocaleString('en-IN')}`;
   }
 };
 

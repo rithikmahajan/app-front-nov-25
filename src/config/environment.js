@@ -8,12 +8,14 @@ class EnvironmentConfig {
     this.isDevelopment = this.env === 'development' || __DEV__;
     this.isProduction = this.env === 'production' && !__DEV__;
     
-    // API Configuration - Support both local and production backends
+    // 🎯 API Configuration - Read from .env files
+    // .env.development: API_BASE_URL=http://localhost:8001/api
+    // .env.production: BACKEND_URL=https://api.yoraa.in.net/api
     this.api = {
-      // Development uses localhost on port 8001 (or 10.0.2.2 for Android)
-      baseUrl: Config.API_BASE_URL || 'http://localhost:8001/api',
-      // Production uses actual server IP - Port 8000 is the ACTUAL working port
-      backendUrl: Config.BACKEND_URL || 'http://185.193.19.244:8000/api',
+      // Development: Read from .env.development (default: localhost:8001)
+      baseUrl: Config.API_BASE_URL || Config.BACKEND_URL || 'http://localhost:8001/api',
+      // Production: Read from .env.production (default: Cloudflare tunnel domain)
+      backendUrl: Config.BACKEND_URL || Config.API_BASE_URL || 'https://api.yoraa.in.net/api',
     };
     
     // App Configuration
@@ -60,20 +62,31 @@ class EnvironmentConfig {
 
   /**
    * Get the appropriate API URL based on environment and platform
+   * This is the SINGLE SOURCE OF TRUTH for API URLs
    */
   getApiUrl() {
     if (this.isDevelopment) {
-      // Development mode - use localhost backend
+      // Development mode - use localhost backend from .env.development
       if (this.platform.isAndroid) {
         // Android emulator uses 10.0.2.2 to access host machine
-        return this.api.baseUrl.replace('localhost', '10.0.2.2');
+        const url = this.api.baseUrl.replace('localhost', '10.0.2.2');
+        if (__DEV__) {
+          console.log('🤖 Android Emulator URL:', url);
+        }
+        return url;
       } else {
-        // iOS Simulator - direct localhost
+        // iOS Simulator - direct localhost from .env.development
+        if (__DEV__) {
+          console.log('📱 iOS Simulator URL:', this.api.baseUrl);
+        }
         return this.api.baseUrl;
       }
     }
     
-    // Production - use production backend (port 8000 is the ACTUAL working port)
+    // Production - use production backend from .env.production (port 8080)
+    if (!__DEV__) {
+      console.log('🚀 Production URL:', this.api.backendUrl);
+    }
     return this.api.backendUrl;
   }
 

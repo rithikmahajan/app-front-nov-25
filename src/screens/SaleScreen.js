@@ -5,376 +5,277 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  FlatList,
-  Image,
   ActivityIndicator,
-  RefreshControl,
+  Image,
 } from 'react-native';
-import { Spacing, BorderRadius, Shadows } from '../constants';
-import { useFavorites } from '../contexts/FavoritesContext';
-import { useBag } from '../contexts/BagContext';
-import { AnimatedHeartIcon } from '../components';
-import { GlobalCartIcon } from '../assets/icons';
-import yoraaAPI from '../services/yoraaBackendAPI';
 import { apiService } from '../services/apiService';
+import yoraaBackendAPI from '../services/yoraaBackendAPI';
+import RightArrowIcon from '../assets/icons/RightArrowIcon';
 
 const SaleScreen = React.memo(({ navigation, route }) => {
-  const { categoryId: routeCategoryId, categoryName } = route.params || {};
-  const { isFavorite, toggleFavorite } = useFavorites();
-  const { addToBag } = useBag();
-
-  // State management
-  const [selectedTab, setSelectedTab] = useState('Men');
+  const [activeTab, setActiveTab] = useState('');
   const [categories, setCategories] = useState([]);
-  const [subcategories, setSubcategories] = useState([]);
-  const [saleItems, setSaleItems] = useState([
-    {
-      _id: 'sale-init-1',
-      productName: 'Premium T-Shirt',
-      price: 2999,
-      salePrice: 1999,
-      discountPercentage: 33,
-      isSale: true,
-      category: 'men',
-      subcategory: 'shirts',
-      images: []
-    },
-    {
-      _id: 'sale-init-2',
-      productName: 'Classic Jeans',
-      price: 4999,
-      salePrice: 3499,
-      discountPercentage: 30,
-      isSale: true,
-      category: 'men',
-      subcategory: 'pants',
-      images: []
-    }
-  ]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [currentSubcategories, setCurrentSubcategories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch categories for tabs
-  const fetchCategories = useCallback(async () => {
-    try {
-      const response = await apiService.getCategories();
-      if (response && response.success) {
-        const mainCategories = response.data.filter(category => 
-          ['men', 'women', 'kids'].includes(category.name.toLowerCase())
-        );
-        setCategories(mainCategories);
-        
-        // Set first category as selected tab if none selected
-        if (mainCategories.length > 0 && !selectedTab) {
-          setSelectedTab(mainCategories[0].name);
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching categories:', err);
-    }
-  }, [selectedTab]);
-
-  // Fetch subcategories for selected category
-  const fetchSubcategories = useCallback(async (catId) => {
-    try {
-      const response = await apiService.getSubcategoriesByCategory(catId);
-      if (response && response.success) {
-        setSubcategories(response.data || []);
-      }
-    } catch (err) {
-      console.error('Error fetching subcategories:', err);
-      setSubcategories([]);
-    }
-  }, []);
-
-  // Fetch sale items for specific category/subcategory
-  const fetchSaleItems = useCallback(async (catId = null, subCatId = null) => {
-    try {
-      let response;
-      
-      if (subCatId) {
-        response = await yoraaAPI.getSaleItemsBySubcategory(subCatId);
-      } else if (catId) {
-        response = await yoraaAPI.getSaleItemsByCategory(catId);
-      } else {
-        response = await yoraaAPI.getSaleItems();
-      }
-
-      if (response && response.success && response.data) {
-        // Handle backend response format: { success: true, data: { products: [...] } }
-        const products = response.data.products || response.data.items || response.data || [];
-        setSaleItems(products);
-      } else {
-        setSaleItems([]);
-      }
-    } catch (err) {
-      console.error('Error fetching sale items:', err);
-      // Fallback: use mock sale data to prevent crashes
-      const mockSaleItems = [
-        {
-          _id: 'mock-sale-1',
-          productName: 'Sale Item 1',
-          price: 2999,
-          salePrice: 1999,
-          discountPercentage: 33,
-          isSale: true,
-          category: 'men',
-          subcategory: 'shirts',
-          images: []
-        },
-        {
-          _id: 'mock-sale-2', 
-          productName: 'Sale Item 2',
-          price: 3999,
-          salePrice: 2499,
-          discountPercentage: 37,
-          isSale: true,
-          category: 'women',
-          subcategory: 'dresses',
-          images: []
-        }
-      ];
-      setSaleItems(mockSaleItems);
-    }
-  }, []);
-
-  // Load initial data
-  const loadData = useCallback(async () => {
+  // Fetch categories from API
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-
-      await fetchCategories();
       
-      // If specific category provided, use it
-      if (routeCategoryId) {
-        await fetchSaleItems(routeCategoryId);
-        await fetchSubcategories(routeCategoryId);
-      } else {
-        // Load sale items for first category
-        const response = await apiService.getCategories();
-        if (response && response.success && response.data.length > 0) {
-          const firstMainCategory = response.data.find(cat => 
-            ['men', 'women', 'kids'].includes(cat.name.toLowerCase())
-          );
-          if (firstMainCategory) {
-            await fetchSaleItems(firstMainCategory._id);
-            await fetchSubcategories(firstMainCategory._id);
-            setSelectedTab(firstMainCategory.name);
-          }
-        }
+      console.log('Fetching categories for Sale screen...');
+      
+      // Fetch categories only
+      const categoriesResponse = await apiService.getCategories();
+      
+      console.log('Categories API Response:', categoriesResponse);
+      
+      let finalCategories = [];
+
+      // Process categories if successful
+      if (categoriesResponse && categoriesResponse.success) {
+        const apiCategories = categoriesResponse.data || [];
+        finalCategories = apiCategories.map((category) => ({
+          id: category._id,
+          name: category.name.charAt(0).toUpperCase() + category.name.slice(1).toLowerCase(),
+          originalData: category
+        }));
       }
+
+      setCategories(finalCategories);
+      
+      console.log('Data loaded successfully. Categories:', finalCategories.length);
+      
+      // Set first main category as active tab if no tab is selected
+      if (finalCategories.length > 0) {
+        setActiveTab(prev => {
+          if (!prev) {
+            const firstMainCategory = finalCategories.find(category => 
+              ['men', 'women', 'kids'].includes(category.name.toLowerCase())
+            );
+            return firstMainCategory ? firstMainCategory.name : prev;
+          }
+          return prev;
+        });
+      }
+      
     } catch (err) {
-      setError(err.message);
-      console.error('Error loading data:', err);
+      console.error('Data fetch error:', err);
+      const errorMessage = err.userMessage || err.message || 'Failed to fetch data';
+        
+      setError(errorMessage);
+      
+      // Minimal fallback data - only categories for tabs
+      const fallbackCategories = [
+        { id: 'men', name: 'Men' },
+        { id: 'women', name: 'Women' },
+        { id: 'kids', name: 'Kids' },
+      ];
+      
+      setCategories(fallbackCategories);
+      console.log('Using fallback categories only:', fallbackCategories);
+      
+      // Set first main category as active tab if no tab is selected
+      setActiveTab(prev => {
+        if (!prev && fallbackCategories.length > 0) {
+          const firstMainCategory = fallbackCategories.find(category => 
+            ['men', 'women', 'kids'].includes(category.name.toLowerCase())
+          );
+          return firstMainCategory ? firstMainCategory.name : prev;
+        }
+        return prev;
+      });
     } finally {
       setLoading(false);
     }
-  }, [routeCategoryId, fetchCategories, fetchSaleItems, fetchSubcategories]);
+  }, []);
 
-  // Handle tab change
-  const handleTabChange = useCallback(async (tab) => {
-    setSelectedTab(tab);
-    const selectedCategory = categories.find(cat => 
-      cat.name.toLowerCase() === tab.toLowerCase()
+  // Fetch subcategories with sale items for a specific category
+  const fetchSubcategoriesWithSaleItems = useCallback(async (categoryId) => {
+    try {
+      console.log(`Fetching subcategories with sale items for category ID: ${categoryId}`);
+      
+      // First, get all subcategories for this category
+      const subcategoriesResponse = await apiService.getSubcategoriesByCategory(categoryId);
+      console.log('Subcategories API Response:', subcategoriesResponse);
+      
+      if (subcategoriesResponse && subcategoriesResponse.success) {
+        const allSubcategories = subcategoriesResponse.data || [];
+        
+        // Now fetch sale items for this category to determine which subcategories have sale products
+        const saleItemsResponse = await yoraaBackendAPI.getSaleItemsByCategory(categoryId);
+        console.log('Sale Items API Response:', saleItemsResponse);
+        
+        if (saleItemsResponse && saleItemsResponse.success) {
+          const saleProducts = saleItemsResponse.data?.products || saleItemsResponse.data?.items || saleItemsResponse.data || [];
+          
+          // Get unique subcategory IDs that have sale items
+          const subcategoriesWithSales = new Set();
+          saleProducts.forEach(product => {
+            if (product.subcategoryId) {
+              subcategoriesWithSales.add(product.subcategoryId);
+            }
+          });
+          
+          // Filter subcategories to only show those with sale items
+          const filteredSubcategories = allSubcategories.filter(sub => 
+            subcategoriesWithSales.has(sub._id)
+          );
+          
+          setCurrentSubcategories(filteredSubcategories);
+          console.log(`✅ Loaded ${filteredSubcategories.length} subcategories with sale items for category ${categoryId}`);
+        } else {
+          console.warn('Sale items API failed or returned no data:', saleItemsResponse);
+          setCurrentSubcategories([]);
+        }
+      } else {
+        console.warn('Subcategories API failed or returned no data:', subcategoriesResponse);
+        setCurrentSubcategories([]);
+      }
+      
+    } catch (err) {
+      console.error('Error fetching subcategories with sale items:', err);
+      setCurrentSubcategories([]);
+    }
+  }, []);
+
+  // Effect to fetch subcategories when active tab changes
+  useEffect(() => {
+    if (activeTab && categories.length > 0) {
+      const selectedCategory = categories.find(cat => 
+        cat.name.toLowerCase() === activeTab.toLowerCase()
+      );
+      
+      if (selectedCategory && selectedCategory.id) {
+        fetchSubcategoriesWithSaleItems(selectedCategory.id);
+      } else {
+        console.log('No category found for activeTab:', activeTab);
+        setCurrentSubcategories([]);
+      }
+    }
+  }, [activeTab, categories, fetchSubcategoriesWithSaleItems]);
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Handle returning to Sale with specific tab selection
+  useEffect(() => {
+    if (route?.params?.returnToCategory) {
+      const categoryToRestore = route.params.returnToCategory;
+      console.log('🔙 Returning to Sale, restoring tab:', categoryToRestore);
+      setActiveTab(categoryToRestore);
+      
+      // Clear the parameter to prevent interference with future navigations
+      if (navigation?.setParams) {
+        navigation.setParams({ returnToCategory: undefined });
+      }
+    }
+  }, [route?.params?.returnToCategory, navigation]);
+
+  // Memoize tabs array - include API categories for main navigation
+  const tabs = useMemo(() => {
+    const mainTabs = [];
+    
+    // Add main category tabs from API (Men, Women, Kids)
+    const mainCategories = categories.filter(category => 
+      ['men', 'women', 'kids'].includes(category.name.toLowerCase())
     );
     
-    if (selectedCategory) {
-      setLoading(true);
-      await fetchSaleItems(selectedCategory._id);
-      await fetchSubcategories(selectedCategory._id);
-      setLoading(false);
-    }
-  }, [categories, fetchSaleItems, fetchSubcategories]);
-
-  // Handle subcategory selection
-  const handleSubcategoryPress = useCallback(async (subcategory) => {
-    setLoading(true);
-    await fetchSaleItems(subcategory.categoryId, subcategory._id);
-    setLoading(false);
-  }, [fetchSaleItems]);
-
-  // Handle product press
-  const handleProductPress = useCallback((product) => {
-    navigation.navigate('productdetails', {
-      productId: product._id,
-      product: product
-    });
-  }, [navigation]);
-
-  // Handle add to bag
-  const handleAddToBag = useCallback(async (product) => {
-    try {
-      // Find first available size
-      const firstSize = product.sizes?.[0];
-      if (firstSize) {
-        await addToBag({
-          ...product,
-          size: firstSize.size,
-          quantity: 1
-        });
-        console.log('Added to bag:', product.productName);
+    mainCategories.forEach(category => {
+      const capitalizedName = category.name.charAt(0).toUpperCase() + category.name.slice(1).toLowerCase();
+      if (!mainTabs.includes(capitalizedName)) {
+        mainTabs.push(capitalizedName);
       }
-    } catch (err) {
-      console.error('Error adding to bag:', err);
-    }
-  }, [addToBag]);
-
-  // Handle refresh
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await loadData();
-    setRefreshing(false);
-  }, [loadData]);
-
-  // Load data on mount
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  // Memoized tabs
-  const tabs = useMemo(() => {
-    return categories.map(cat => 
-      cat.name.charAt(0).toUpperCase() + cat.name.slice(1).toLowerCase()
-    );
+    });
+    
+    return mainTabs;
   }, [categories]);
 
-  // Render product item
-  const renderProductItem = useCallback(({ item }) => {
-    const productName = item.productName || item.name || 'Product';
-    const firstImage = item.images?.[0]?.url;
-    
-    // Get price information
-    let displayPrice = 'Price not available';
-    let originalPrice = null;
-    
-    if (item.sizes && item.sizes.length > 0) {
-      const firstSize = item.sizes[0];
-      if (firstSize.salePrice) {
-        displayPrice = `₹${firstSize.salePrice}`;
-        if (firstSize.regularPrice && firstSize.regularPrice !== firstSize.salePrice) {
-          originalPrice = `₹${firstSize.regularPrice}`;
-        }
-      } else if (firstSize.regularPrice) {
-        displayPrice = `₹${firstSize.regularPrice}`;
-      }
+  // Get display items based on active tab - only subcategories with sale items
+  const displayItems = useMemo(() => {
+    const items = [];
+
+    console.log('🔍 Computing displayItems with:');
+    console.log('- categories.length:', categories.length);
+    console.log('- currentSubcategories.length:', currentSubcategories.length);
+    console.log('- activeTab:', activeTab);
+
+    // Add current subcategories to display items (only those with sale items)
+    if (currentSubcategories.length > 0) {
+      console.log('✅ Adding subcategories with sale items:', currentSubcategories.map(s => s.name));
+      
+      currentSubcategories.forEach(subcategory => {
+        items.push({
+          id: subcategory._id,
+          name: subcategory.name.charAt(0).toUpperCase() + subcategory.name.slice(1).toLowerCase(),
+          imageUrl: subcategory.imageUrl,
+          categoryId: subcategory.categoryId
+        });
+      });
+
+      console.log(`✅ Added ${currentSubcategories.length} subcategories with sale items for ${activeTab}`);
+    } else {
+      console.log('❌ No subcategories with sale items to show for', activeTab);
     }
+    
+    console.log('Final displayItems:', items.map(i => ({ id: i.id, name: i.name })));
+    return items;
+  }, [categories, currentSubcategories, activeTab]);
 
-    return (
-      <TouchableOpacity 
-        style={styles.productCard}
-        onPress={() => handleProductPress(item)}
-        accessibilityRole="button"
-        accessibilityLabel={`${productName} - ${displayPrice}`}
-      >
-        <View style={styles.productImageContainer}>
-          {firstImage ? (
-            <Image 
-              source={{ uri: firstImage }}
-              style={styles.productImage}
-              resizeMode="cover"
-            />
-          ) : (
-            <View style={styles.productImagePlaceholder} />
-          )}
-          
-          {/* Sale Badge */}
-          <View style={styles.saleBadge}>
-            <Text style={styles.saleBadgeText}>SALE</Text>
-          </View>
+  // Optimized navigation handlers with useCallback
+  const handleNavigateToProduct = useCallback((subcategoryId, subcategoryName) => {
+    console.log('Navigating to Sale Products with subcategory:', subcategoryId, subcategoryName);
+    console.log('Current active tab:', activeTab);
+    
+    // Navigate to ProductViewOne but with sale items only
+    navigation?.navigate('ProductViewOne', { 
+      subcategoryId, 
+      subcategoryName: subcategoryName || 'Products',
+      categoryName: activeTab,
+      saleOnly: true // Add flag to filter sale items only
+    });
+  }, [navigation, activeTab]);
 
-          {/* Heart Icon */}
-          <TouchableOpacity
-            style={styles.heartButton}
-            onPress={() => toggleFavorite(item._id)}
-            accessibilityRole="button"
-            accessibilityLabel="Toggle favorite"
-          >
-            <AnimatedHeartIcon
-              isFilled={isFavorite(item._id)}
-              size={20}
-            />
-          </TouchableOpacity>
+  const handleTabPress = useCallback((tab) => {
+    setActiveTab(tab);
+  }, []);
 
-          {/* Cart Icon */}
-          <TouchableOpacity
-            style={styles.cartButton}
-            onPress={() => handleAddToBag(item)}
-            accessibilityRole="button"
-            accessibilityLabel="Add to cart"
-          >
-            <GlobalCartIcon />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.productInfo}>
-          <Text style={styles.productName} numberOfLines={2}>
-            {productName}
-          </Text>
-          <View style={styles.priceContainer}>
-            <Text style={styles.salePrice}>{displayPrice}</Text>
-            {originalPrice && (
-              <Text style={styles.originalPrice}>{originalPrice}</Text>
-            )}
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  }, [handleProductPress, toggleFavorite, isFavorite, handleAddToBag]);
-
-  // Render subcategory item
-  const renderSubcategoryItem = useCallback(({ item }) => (
+  // Memoized category renderer with performance optimization
+  const renderCategoryItem = useCallback((item) => (
     <TouchableOpacity 
-      style={styles.subcategoryCard}
-      onPress={() => handleSubcategoryPress(item)}
+      key={item.id} 
+      style={[
+        styles.categoryItem,
+        item.id === displayItems[displayItems.length - 1]?.id && styles.lastCategoryItem
+      ]}
+      onPress={() => handleNavigateToProduct(item.id, item.name)}
       accessibilityRole="button"
-      accessibilityLabel={`${item.name} subcategory`}
+      accessibilityLabel={`${item.name} category - On Sale`}
+      accessibilityHint="Navigate to sale product listing"
     >
-      <View style={styles.subcategoryImageContainer}>
+      <View style={styles.categoryImageContainer}>
         {item.imageUrl ? (
           <Image 
             source={{ uri: item.imageUrl }}
-            style={styles.subcategoryImage}
+            style={styles.categoryImage}
             resizeMode="cover"
           />
         ) : (
-          <View style={styles.subcategoryImagePlaceholder} />
+          <View style={styles.categoryImagePlaceholder} />
         )}
-        <View style={styles.subcategoryOverlay}>
-          <Text style={styles.subcategoryText}>{item.name}</Text>
-        </View>
       </View>
-    </TouchableOpacity>
-  ), [handleSubcategoryPress]);
-
-  // Render tab item
-  const renderTab = useCallback((tab) => (
-    <TouchableOpacity
-      key={tab}
-      style={styles.tabItem}
-      onPress={() => handleTabChange(tab)}
-      accessibilityRole="tab"
-      accessibilityState={{ selected: selectedTab === tab }}
-    >
-      <Text style={[
-        styles.tabText, 
-        selectedTab === tab && styles.activeTabText
-      ]}>
-        {tab}
-      </Text>
-      {selectedTab === tab && <View style={styles.tabIndicator} />}
-    </TouchableOpacity>
-  ), [selectedTab, handleTabChange]);
-
-  if (loading && !refreshing) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#000000" />
-        <Text style={styles.loadingText}>Loading Sale Items...</Text>
+      <View style={styles.categoryInfo}>
+        <Text style={styles.categoryName}>
+          {item.name}
+        </Text>
       </View>
-    );
-  }
+      <RightArrowIcon size={24} color="#292526" />
+    </TouchableOpacity>
+  ), [handleNavigateToProduct, displayItems]);
 
   return (
     <View style={styles.container}>
@@ -385,86 +286,80 @@ const SaleScreen = React.memo(({ navigation, route }) => {
           onPress={() => navigation.goBack()}
           accessibilityRole="button"
           accessibilityLabel="Go back"
+          accessibilityHint="Return to previous screen"
         >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {categoryName ? `${categoryName} Sale` : 'Sale'}
-        </Text>
+        <Text style={styles.shopTitle} accessibilityRole="header">Sale</Text>
         <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView 
-        style={styles.content}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {/* Category Tabs */}
-        {tabs.length > 0 && (
-          <View style={styles.tabContainer}>
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.tabScrollContainer}
+      {/* Tab Navigation */}
+      <View style={styles.tabContainer}>
+        <View style={styles.tabWrapper}>
+          {tabs.map((tab, index) => (
+            <TouchableOpacity
+              key={tab}
+              style={[
+                styles.tab,
+                activeTab === tab && styles.activeTab,
+                index === 0 && styles.firstTab
+              ]}
+              onPress={() => handleTabPress(tab)}
+              accessibilityRole="tab"
+              accessibilityLabel={`${tab} tab`}
+              accessibilityState={{ selected: activeTab === tab }}
             >
-              {tabs.map(renderTab)}
-            </ScrollView>
-          </View>
-        )}
-
-        {/* Subcategories Section */}
-        {subcategories.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Shop by Category</Text>
-            <FlatList
-              data={subcategories}
-              renderItem={renderSubcategoryItem}
-              keyExtractor={(item) => item._id}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.subcategoryList}
-            />
-          </View>
-        )}
-
-        {/* Sale Items Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {selectedTab} Sale Items ({saleItems.length})
-          </Text>
-          
-          {error && (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-              <TouchableOpacity 
-                style={styles.retryButton}
-                onPress={loadData}
-              >
-                <Text style={styles.retryButtonText}>Retry</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {saleItems.length > 0 ? (
-            <FlatList
-              data={saleItems}
-              renderItem={renderProductItem}
-              keyExtractor={(item) => item._id}
-              numColumns={2}
-              columnWrapperStyle={styles.productRow}
-              contentContainerStyle={styles.productList}
-              scrollEnabled={false}
-            />
-          ) : !loading && (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>
-                No sale items found for {selectedTab}
+              <Text style={[
+                styles.tabText,
+                activeTab === tab && styles.activeTabText
+              ]}>
+                {tab}
               </Text>
-              <Text style={styles.emptySubtext}>
-                Check back later for new deals!
-              </Text>
+              {activeTab === tab && <View style={styles.tabIndicator} />}
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Content */}
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.categoriesContainer}>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#000000" />
+              <Text style={styles.loadingText}>Loading sale items...</Text>
             </View>
+          ) : (
+            <>
+              {error && (
+                <View style={styles.errorBanner}>
+                  <Text style={styles.errorBannerText}>
+                    {error.includes('Network') ? 'Unable to load latest sale items. Showing cached items.' : 'Loading offline sale items.'}
+                  </Text>
+                  <TouchableOpacity 
+                    style={styles.retryBannerButton} 
+                    onPress={fetchData}
+                    accessibilityRole="button"
+                    accessibilityLabel="Retry loading sale items"
+                  >
+                    <Text style={styles.retryBannerButtonText}>Retry</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              {displayItems.length > 0 ? (
+                displayItems.map(renderCategoryItem)
+              ) : (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>
+                    No sale items available for {activeTab}
+                  </Text>
+                  <Text style={styles.emptySubtext}>
+                    Check back later for amazing deals!
+                  </Text>
+                </View>
+              )}
+            </>
           )}
         </View>
       </ScrollView>
@@ -476,65 +371,73 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+    paddingTop: 16,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666666',
-    fontFamily: 'Montserrat-Medium',
-  },
+  
+  // Header Styles
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+    backgroundColor: '#FFFFFF',
   },
   backButton: {
-    padding: 8,
-    marginLeft: -8,
+    padding: 4,
+    marginLeft: -4,
   },
   backButtonText: {
-    fontSize: 24,
+    fontSize: 28,
+    fontWeight: '300',
     color: '#000000',
+    lineHeight: 33.6,
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#000000',
-    fontFamily: 'Montserrat-SemiBold',
+  shopTitle: {
+    fontSize: 28,
+    fontWeight: '500',
+    color: '#CA3327',
+    letterSpacing: -0.168,
+    lineHeight: 33.6,
+    fontFamily: 'Montserrat-Medium',
   },
   headerSpacer: {
-    width: 40,
+    width: 32,
   },
-  content: {
+
+  // Tab Navigation Styles
+  tabContainer: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#CDCDCD',
+    paddingTop: 12,
+    flexDirection: 'row',
+    position: 'relative',
+  },
+  tabWrapper: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingBottom: 4,
     flex: 1,
   },
-  tabContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
-    marginBottom: Spacing.lg,
+  tab: {
+    paddingHorizontal: 16,
+    paddingTop: 0,
+    paddingBottom: 16,
+    position: 'relative',
   },
-  tabScrollContainer: {
-    paddingHorizontal: Spacing.lg,
+  firstTab: {
+    paddingLeft: 16,
   },
-  tabItem: {
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    marginRight: 8,
+  activeTab: {
+    // Active tab styling handled by indicator
   },
   tabText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#767676',
+    letterSpacing: -0.4,
     fontFamily: 'Montserrat-Medium',
   },
   activeTabText: {
@@ -543,195 +446,128 @@ const styles = StyleSheet.create({
   tabIndicator: {
     position: 'absolute',
     bottom: 0,
-    left: 20,
-    right: 20,
+    left: 0,
+    right: 0,
     height: 2,
     backgroundColor: '#000000',
   },
-  section: {
-    marginBottom: Spacing.xl,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#000000',
-    fontFamily: 'Montserrat-SemiBold',
-    paddingHorizontal: Spacing.lg,
-    marginBottom: Spacing.md,
-  },
-  subcategoryList: {
-    paddingHorizontal: Spacing.lg,
-  },
-  subcategoryCard: {
-    width: 200,
-    height: 120,
-    marginRight: 12,
-    borderRadius: BorderRadius.md,
-    overflow: 'hidden',
-  },
-  subcategoryImageContainer: {
+
+  // Content Styles
+  content: {
     flex: 1,
-    position: 'relative',
+    marginTop: 6,
   },
-  subcategoryImage: {
-    width: '100%',
-    height: '100%',
+  categoriesContainer: {
+    paddingTop: 0,
   },
-  subcategoryImagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#EEEEEE',
-  },
-  subcategoryOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: 12,
-  },
-  subcategoryText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    fontFamily: 'Montserrat-SemiBold',
-  },
-  productList: {
-    paddingHorizontal: Spacing.lg,
-  },
-  productRow: {
-    justifyContent: 'space-between',
-  },
-  productCard: {
-    width: '48%',
-    marginBottom: Spacing.lg,
-    backgroundColor: '#FFFFFF',
-    borderRadius: BorderRadius.md,
-    ...Shadows.small,
-  },
-  productImageContainer: {
-    position: 'relative',
-    aspectRatio: 1,
-    borderTopLeftRadius: BorderRadius.md,
-    borderTopRightRadius: BorderRadius.md,
-    overflow: 'hidden',
-  },
-  productImage: {
-    width: '100%',
-    height: '100%',
-  },
-  productImagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#EEEEEE',
-  },
-  saleBadge: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    backgroundColor: '#FF4444',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  saleBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    fontFamily: 'Montserrat-Bold',
-  },
-  heartButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 32,
-    height: 32,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cartButton: {
-    position: 'absolute',
-    bottom: 8,
-    right: 8,
-    width: 32,
-    height: 32,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  productInfo: {
-    padding: 12,
-  },
-  productName: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#000000',
-    fontFamily: 'Montserrat-Medium',
-    marginBottom: 4,
-  },
-  priceContainer: {
+
+  // Category Item Styles
+  categoryItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E4E4E4',
   },
-  salePrice: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FF4444',
-    fontFamily: 'Montserrat-SemiBold',
-    marginRight: 8,
+  lastCategoryItem: {
+    borderBottomWidth: 0,
   },
-  originalPrice: {
+  categoryImageContainer: {
+    marginRight: 16,
+  },
+  categoryImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 8,
+  },
+  categoryImagePlaceholder: {
+    width: 70,
+    height: 70,
+    backgroundColor: '#EEEEEE',
+    borderRadius: 8,
+  },
+  categoryInfo: {
+    flex: 1,
+  },
+  categoryName: {
     fontSize: 14,
     fontWeight: '400',
-    color: '#999999',
+    color: '#000000',
+    letterSpacing: -0.14,
+    lineHeight: 16.8,
     fontFamily: 'Montserrat-Regular',
-    textDecorationLine: 'line-through',
   },
-  emptyContainer: {
+
+  // Loading and Error States
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 40,
-    paddingHorizontal: Spacing.lg,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#767676',
+    fontFamily: 'Montserrat-Regular',
+  },
+  
+  // Error Banner
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFF3CD',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF9800',
+  },
+  errorBannerText: {
+    flex: 1,
+    fontSize: 12,
+    color: '#856404',
+    fontFamily: 'Montserrat-Regular',
+    marginRight: 12,
+  },
+  retryBannerButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#FF9800',
+    borderRadius: 4,
+  },
+  retryBannerButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '500',
+    fontFamily: 'Montserrat-Medium',
+  },
+  
+  // Empty State
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '500',
-    color: '#666666',
-    fontFamily: 'Montserrat-Medium',
+    color: '#000000',
     textAlign: 'center',
     marginBottom: 8,
+    fontFamily: 'Montserrat-Medium',
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#999999',
+    color: '#767676',
+    textAlign: 'center',
     fontFamily: 'Montserrat-Regular',
-    textAlign: 'center',
-  },
-  errorContainer: {
-    alignItems: 'center',
-    paddingVertical: 20,
-    paddingHorizontal: Spacing.lg,
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#FF4444',
-    fontFamily: 'Montserrat-Medium',
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  retryButton: {
-    backgroundColor: '#000000',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: BorderRadius.sm,
-  },
-  retryButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    fontFamily: 'Montserrat-SemiBold',
   },
 });
 

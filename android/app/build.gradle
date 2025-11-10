@@ -61,7 +61,7 @@ react {
 /**
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
  */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -90,12 +90,12 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.yoraapparelsprivatelimited.yoraa"
+    namespace "com.yoraa"
     defaultConfig {
-        applicationId "com.yoraapparelsprivatelimited.yoraa"
+        applicationId "com.yoraa"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode 5
         versionName "1.0"
         // Disable native build for now
         ndk {
@@ -153,4 +153,7 @@ dependencies {
 
     // Google Sign-In dependency
     implementation 'com.google.android.gms:play-services-auth:21.4.0'
+
+    // AndroidX Core for edge-to-edge compatibility (Android 15+)
+    implementation 'androidx.core:core-ktx:1.15.0'
 }

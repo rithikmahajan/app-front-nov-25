@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,21 +7,50 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
+  ActivityIndicator,
+  Image,
+  RefreshControl,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { FontSizes, FontWeights, Spacing, BorderRadius } from '../constants';
 import GlobalSearchIcon from '../assets/icons/GlobalSearchIcon';
 import FilterIcon from '../assets/icons/FilterIcon';
-import { GlobalCartIcon } from '../assets/icons';
 import BottomNavigationBar from '../components/bottomnavigationbar';
-import { useFavorites } from '../contexts/FavoritesContext';
-import { useBag } from '../contexts/BagContext';
 import { useProductActions } from '../hooks/useProductActions';
 import { AnimatedHeartIcon } from '../components';
+import { apiService } from '../services/apiService';
 
-const ProductViewTwo = ({ navigation }) => {
-  const { handleToggleFavorite, handleAddToCart, checkIsFavorite } = useProductActions(navigation);
-  const [likedProducts, setLikedProducts] = useState(new Set(['3', '4'])); // Some products pre-liked
+// Icon components defined outside to avoid re-rendering
+const BackIcon = () => (
+  <Svg width="10" height="17" viewBox="0 0 10 17" fill="none">
+    <Path d="M8.5 16L1 8.5L8.5 1" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
+
+const GridIcon = () => (
+  <View style={{ width: 22, height: 22, position: 'relative' }}>
+    <View style={{ position: 'absolute', width: 8, height: 8, borderWidth: 1, borderColor: '#000000', top: 1, left: 1 }} />
+    <View style={{ position: 'absolute', width: 8, height: 8, borderWidth: 1, borderColor: '#000000', top: 1, right: 1 }} />
+    <View style={{ position: 'absolute', width: 8, height: 8, borderWidth: 1, borderColor: '#000000', bottom: 1, left: 1 }} />
+    <View style={{ position: 'absolute', width: 8, height: 8, borderWidth: 1, borderColor: '#000000', bottom: 1, right: 1 }} />
+  </View>
+);
+
+const ProductViewTwo = ({ navigation, route }) => {
+  const { handleToggleFavorite, checkIsFavorite } = useProductActions(navigation);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  // Get route params to pass along
+  const routeParams = route?.params || {};
+  const subcategoryId = route?.params?.subcategoryId || '68d7e6091447aecb79415ba5';
+  const subcategoryName = route?.params?.subcategoryName || 'Products';
+  
+  // Debug logging
+  console.log('📍 ProductViewTwo - Route params:', route?.params);
+  console.log('📍 ProductViewTwo - Subcategory ID:', subcategoryId);
+  console.log('📍 ProductViewTwo - Subcategory name:', subcategoryName);
 
   const handleFilterPress = () => {
     if (navigation && navigation.navigate) {
@@ -41,84 +70,105 @@ const ProductViewTwo = ({ navigation }) => {
     }
   };
 
-  // Mock product data for the 3-column grid layout
-  const products = [
-    {
-      id: '1',
-      image: 'chair_jeans1',
-    },
-    {
-      id: '2',
-      image: 'orange_jeans',
-    },
-    {
-      id: '3',
-      image: 'black_pants1',
-    },
-    {
-      id: '4',
-      image: 'chair_jeans2',
-    },
-    {
-      id: '5',
-      image: 'orange_jeans2',
-    },
-    {
-      id: '6',
-      image: 'black_pants2',
-    },
-    {
-      id: '7',
-      image: 'chair_jeans3',
-    },
-    {
-      id: '8',
-      image: 'orange_jeans3',
-    },
-    {
-      id: '9',
-      image: 'black_pants3',
-    },
-  ];
+  // Fetch products from backend API by subcategory
+  useEffect(() => {
+    fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subcategoryId]);
 
-  const toggleLike = (productId) => {
-    const newLikedProducts = new Set(likedProducts);
-    if (newLikedProducts.has(productId)) {
-      newLikedProducts.delete(productId);
-    } else {
-      newLikedProducts.add(productId);
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log(`� Fetching latest items for subcategory ${subcategoryId}...`);
+      
+      const response = await apiService.getLatestItemsBySubcategory(subcategoryId);
+      
+      if (response.success && response.data) {
+        console.log('✅ Products fetched successfully:', response.data);
+        // The API returns data.items array
+        const items = response.data.items || [];
+        console.log(`📦 Found ${items.length} items for subcategory ${subcategoryId}`);
+        setProducts(items);
+      } else {
+        throw new Error(response.message || 'Failed to fetch products');
+      }
+    } catch (err) {
+      console.error('❌ Error fetching products:', err);
+      setError(err.message || 'Failed to load products for this subcategory');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-    setLikedProducts(newLikedProducts);
   };
 
-  const BackIcon = () => (
-    <Svg width="10" height="17" viewBox="0 0 10 17" fill="none">
-      <Path d="M8.5 16L1 8.5L8.5 1" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    </Svg>
-  );
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchProducts();
+  };
 
-  const GridIcon = () => (
-    <View style={styles.gridIcon}>
-      <View style={[styles.gridSquare, styles.topLeft]} />
-      <View style={[styles.gridSquare, styles.topRight]} />
-      <View style={[styles.gridSquare, styles.bottomLeft]} />
-      <View style={[styles.gridSquare, styles.bottomRight]} />
-    </View>
-  );
+  // Helper function to get product image URL
+  const getProductImageUrl = (product) => {
+    // Check if images array exists and has items
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      // Return the first image's URL (images are objects with url property)
+      return product.images[0].url || product.images[0];
+    }
+    // Fallback to image property
+    if (product.image) {
+      return product.image;
+    }
+    return null;
+  };
+
+  // Helper function to get product price
+  const getProductPrice = (product) => {
+    // Check sizes array for price
+    if (product.sizes && Array.isArray(product.sizes) && product.sizes.length > 0) {
+      const firstSize = product.sizes[0];
+      if (firstSize.salePrice) {
+        return firstSize.salePrice;
+      }
+      if (firstSize.regularPrice) {
+        return firstSize.regularPrice;
+      }
+    }
+    // Fallback checks
+    if (product.price) {
+      return product.price;
+    }
+    if (product.variants && product.variants.length > 0 && product.variants[0].price) {
+      return product.variants[0].price;
+    }
+    return '0';
+  };
 
   // Removed custom FilterIcon, using imported SVG FilterIcon instead
 
   const renderProduct = (product) => {
-    const isLiked = likedProducts.has(product.id);
+    if (!product) return null;
+    
+    const imageUrl = getProductImageUrl(product);
     
     return (
-      <View key={product.id} style={styles.productContainer}>
+      <View key={product.id || product._id} style={styles.productContainer}>
         {/* Product Image */}
         <TouchableOpacity 
           style={styles.imageContainer}
           onPress={() => navigation.navigate('ProductDetailsMain', { product, previousScreen: 'ProductViewTwo' })}
         >
-          <View style={styles.imagePlaceholder} />
+          {imageUrl ? (
+            <Image
+              source={{ uri: imageUrl }}
+              style={styles.productImage}
+              resizeMode="cover"
+              onError={(e) => {
+                console.warn('⚠️ Error loading image:', e.nativeEvent.error);
+              }}
+            />
+          ) : (
+            <View style={styles.imagePlaceholder} />
+          )}
           
           {/* Animated Heart Icon */}
           <AnimatedHeartIcon
@@ -132,18 +182,6 @@ const ProductViewTwo = ({ navigation }) => {
             filledColor="#FF0000"
             unfilledColor="#000000"
           />
-
-          {/* Shopping Bag Icon */}
-          <TouchableOpacity 
-            style={styles.bagButton}
-            onPress={async () => {
-              await handleAddToCart(product, { showAlert: true });
-            }}
-          >
-            <View style={styles.bagIconContainer}>
-              <GlobalCartIcon size={16} />
-            </View>
-          </TouchableOpacity>
         </TouchableOpacity>
       </View>
     );
@@ -157,13 +195,14 @@ const ProductViewTwo = ({ navigation }) => {
 
   const handleBackPress = () => {
     if (navigation) {
-      navigation.navigate('ProductViewOne');
+      navigation.goBack();
     }
   };
 
   const handleGridPress = () => {
+    console.log('🔄 ProductViewTwo -> ProductViewThree - Passing params:', routeParams);
     if (navigation) {
-      navigation.navigate('ProductViewThree');
+      navigation.navigate('ProductViewThree', routeParams);
     }
   };
 
@@ -180,7 +219,7 @@ const ProductViewTwo = ({ navigation }) => {
         </View>
         
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}></Text>
+          <Text style={styles.headerTitle}>{subcategoryName}</Text>
         </View>
         
         <View style={styles.headerRight}>
@@ -199,10 +238,39 @@ const ProductViewTwo = ({ navigation }) => {
       </View>
 
       {/* Product Grid - 3 Columns */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.productsGrid}>
-          {products.map((product) => renderProduct(product))}
-        </View>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#000000']}
+            tintColor="#000000"
+          />
+        }
+      >
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#000000" />
+            <Text style={styles.loadingText}>Loading products...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={fetchProducts}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : products.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No products available</Text>
+          </View>
+        ) : (
+          <View style={styles.productsGrid}>
+            {products.map((product) => renderProduct(product))}
+          </View>
+        )}
       </ScrollView>
 
       {/* Bottom Navigation - Absolute Position */}
@@ -251,19 +319,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#000000',
+    letterSpacing: -0.4,
+    fontFamily: 'Montserrat-Medium',
     textAlign: 'center',
   },
   backButton: {
     padding: 8,
   },
   iconButton: {
-    padding: 8,
+    padding: 4,
   },
 
   // Content
   content: {
     flex: 1,
-    paddingHorizontal: 2,
+    paddingHorizontal: 8,
   },
   productsGrid: {
     flexDirection: 'row',
@@ -274,9 +344,9 @@ const styles = StyleSheet.create({
 
   // Product Styles
   productContainer: {
-    width: '33%', // 3 columns layout
-    marginBottom: 2,
-    paddingHorizontal: 1,
+    width: '48%', // 2 columns layout
+    marginBottom: 12,
+    paddingHorizontal: 0,
   },
   imageContainer: {
     position: 'relative',
@@ -288,6 +358,64 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#EEEEEE',
     borderRadius: 0,
+  },
+  productImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 0,
+  },
+
+  // Loading, Error, Empty States
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 60,
+    minHeight: 300,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#666666',
+    fontFamily: 'Montserrat-Regular',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    minHeight: 300,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#FF0000',
+    fontFamily: 'Montserrat-Regular',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: '#000000',
+    borderRadius: 6,
+  },
+  retryButtonText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontFamily: 'Montserrat-Medium',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 60,
+    minHeight: 300,
+  },
+  emptyText: {
+    fontSize: 16,
+    fontFamily: 'Montserrat-Medium',
+    color: '#666666',
   },
 
   // Heart Button
@@ -313,33 +441,6 @@ const styles = StyleSheet.create({
   heartIconContainer: {
     width: 12,
     height: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  // Shopping Bag Button
-  bagButton: {
-    position: 'absolute',
-    bottom: 6,
-    right: 6,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  bagIconContainer: {
-    width: 10,
-    height: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -469,35 +570,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF0000',
     borderRadius: 4,
     transform: [{ rotate: '45deg' }],
-  },
-
-  bagIcon: {
-    width: 10,
-    height: 10,
-    position: 'relative',
-  },
-  bagBody: {
-    position: 'absolute',
-    bottom: 0,
-    left: 1,
-    right: 1,
-    height: 7,
-    borderWidth: 1,
-    borderColor: '#14142B',
-    borderRadius: 1,
-  },
-  bagHandle: {
-    position: 'absolute',
-    top: 1,
-    left: 3,
-    right: 3,
-    height: 3,
-    borderTopWidth: 1,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: '#14142B',
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
   },
   
   // Bottom Navigation Container

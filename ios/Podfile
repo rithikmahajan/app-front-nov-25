@@ -48,6 +48,9 @@ target 'YoraaApp' do
   
   # Google reCAPTCHA Enterprise for phone authentication
   pod 'RecaptchaEnterprise'
+  
+  # Razorpay SDK - use latest version compatible with iOS 13.4+
+  pod 'razorpay-pod', '~> 1.3.9'
 
   # Add react-native-camera without subspecs to avoid MLKit conflicts
   # The scanner functionality will work with basic camera features
@@ -61,13 +64,39 @@ target 'YoraaApp' do
       # :ccache_enabled => true
     )
     
-    # Fix for Hermes dSYM generation
+    # XCODE 16 COMPATIBILITY FIXES
+    # Apply to aggregate targets (includes main app target)
+    installer.aggregate_targets.each do |aggregate_target|
+      aggregate_target.user_project.targets.each do |target|
+        target.build_configurations.each do |config|
+          # Disable sandboxing (CRITICAL for Xcode 16 + React Native)
+          config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
+          
+          # Set consistent deployment target
+          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.4'
+          
+          # Disable active arch only for Release
+          if config.name == 'Release'
+            config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
+          end
+        end
+      end
+    end
+    
+    # Fix for Hermes dSYM generation and Xcode 16 compatibility
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
+        # Xcode 16: Disable sandboxing
+        config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
+        
+        # Set consistent deployment target
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.4'
+        
         # Ensure debug information format is set to dwarf-with-dsym for release builds
         if config.name == 'Release'
           config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
           config.build_settings['GENERATE_DSYM'] = 'YES'
+          config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
         end
         
         # Specific fix for Hermes framework

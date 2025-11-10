@@ -8,6 +8,7 @@ import {
   StatusBar,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import GlobalBackButton from '../components/GlobalBackButton';
 import { yoraaAPI } from '../services/yoraaAPI';
@@ -24,6 +25,20 @@ const ProductDetailsReviewThreePointSelection = ({ navigation, route }) => {
 
   console.log('🔍 ThreePointSelection - Product:', product);
   console.log('🔍 ThreePointSelection - Product ID:', productId);
+
+  // Get product image URL from API data
+  const getProductImageUrl = () => {
+    if (!product) return null;
+    
+    // Check various image fields from backend
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      return product.images[0].url || product.images[0];
+    }
+    if (product.image) {
+      return product.image;
+    }
+    return null;
+  };
 
   // Check if all ratings are selected
   const isAllSelected = sizeRating !== null && comfortRating !== null && durabilityRating !== null;
@@ -131,25 +146,23 @@ const ProductDetailsReviewThreePointSelection = ({ navigation, route }) => {
 
   const renderRatingScale = (rating, setRating, labels) => (
     <View style={styles.ratingScale}>
-      {/* Rating dots and lines */}
+      {/* Rating dots */}
       <View style={styles.ratingRow}>
         {[0, 1, 2, 3, 4].map((index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.ratingDotContainer}
-            onPress={() => setRating(index)}
-          >
-            <View style={[
-              styles.ratingDot,
-              rating === index && styles.ratingDotSelected
-            ]} />
-          </TouchableOpacity>
+          <React.Fragment key={index}>
+            <TouchableOpacity
+              style={styles.ratingDotContainer}
+              onPress={() => setRating(index)}
+            >
+              <View style={[
+                styles.ratingDot,
+                rating === index && styles.ratingDotSelected
+              ]} />
+            </TouchableOpacity>
+            {/* Connecting line between dots (not after last dot) */}
+            {index < 4 && <View style={styles.ratingLine} />}
+          </React.Fragment>
         ))}
-        {/* Connecting lines */}
-        <View style={[styles.ratingLine, { left: 20 }]} />
-        <View style={[styles.ratingLine, { left: 86.75 }]} />
-        <View style={[styles.ratingLine, { left: 153.5 }]} />
-        <View style={[styles.ratingLine, { left: 220.25 }]} />
       </View>
       
       {/* Labels */}
@@ -181,9 +194,17 @@ const ProductDetailsReviewThreePointSelection = ({ navigation, route }) => {
       {/* Product Image */}
       <View style={styles.productImageContainer}>
         <View style={styles.productImage}>
-          <View style={styles.imagePlaceholder}>
-            <View style={styles.nikeSwoosh} />
-          </View>
+          {getProductImageUrl() ? (
+            <Image
+              source={{ uri: getProductImageUrl() }}
+              style={styles.productImageActual}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Text style={styles.noImageText}>No Image</Text>
+            </View>
+          )}
         </View>
       </View>
 
@@ -281,21 +302,23 @@ const styles = StyleSheet.create({
     height: 123,
     backgroundColor: '#E5E5E5',
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  productImageActual: {
+    width: '100%',
+    height: '100%',
   },
   imagePlaceholder: {
     width: '100%',
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#E5E5E5',
   },
-  nikeSwoosh: {
-    width: 36,
-    height: 16,
-    backgroundColor: '#000000',
-    borderRadius: 8,
-    transform: [{ skewX: '-20deg' }],
+  noImageText: {
+    fontSize: 12,
+    color: '#999999',
+    fontFamily: 'Montserrat-Regular',
   },
 
   // Rating Container
@@ -324,12 +347,10 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     paddingHorizontal: 0,
     width: 313,
-    position: 'relative',
   },
   ratingDotContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
   },
   ratingDot: {
     width: 17,
@@ -340,14 +361,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   ratingDotSelected: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#000000',
   },
   ratingLine: {
-    position: 'absolute',
     height: 1,
     backgroundColor: '#000000',
     width: 51,
-    top: 8,
+    flex: 0,
   },
   ratingLabels: {
     flexDirection: 'row',

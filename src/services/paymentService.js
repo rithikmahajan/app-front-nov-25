@@ -6,7 +6,6 @@
  * Integrates with order service for complete checkout flow
  */
 
-import { Alert } from 'react-native';
 import RazorpayCheckout from 'react-native-razorpay';
 import orderService from './orderService';
 
@@ -21,7 +20,7 @@ const RAZORPAY_CONFIG = {
   image: 'https://yoraa.com/logo.png', // Company logo URL
   currency: 'INR',
   theme: {
-    color: '#FF6B35' // Yoraa brand color
+    color: '#000000' // Black theme
   }
 };
 
@@ -40,6 +39,11 @@ export const initiatePayment = async (orderResponse, address, onSuccess, onError
   console.log('📍 Using address for prefill:', address);
   
   try {
+    // Check if RazorpayCheckout module is available
+    if (!RazorpayCheckout || typeof RazorpayCheckout.open !== 'function') {
+      throw new Error('Razorpay SDK not properly initialized. Please restart the app.');
+    }
+    
     // Validate required parameters
     if (!orderResponse || !orderResponse.id) {
       throw new Error('Invalid order response - missing order ID');
@@ -92,17 +96,57 @@ export const initiatePayment = async (orderResponse, address, onSuccess, onError
     
     console.log('🚀 About to call RazorpayCheckout.open()...');
     
-    // Open Razorpay checkout
-    const paymentResponse = await RazorpayCheckout.open(razorpayOptions);
-    
-    console.log('✅ RazorpayCheckout.open() resolved successfully');
-    console.log('✅ Payment successful:', paymentResponse);
+    // Open Razorpay checkout with proper error handling
+    let paymentResponse;
+    try {
+      paymentResponse = await RazorpayCheckout.open(razorpayOptions);
+      console.log('✅ RazorpayCheckout.open() resolved successfully');
+      console.log('✅ Payment successful:', paymentResponse);
+    } catch (razorpayError) {
+      // Check if this is a cancellation (code 0) before logging as error
+      const isCancellation = razorpayError?.code === 0 || razorpayError?.code === 'payment_cancelled';
+      
+      if (isCancellation) {
+        console.log('ℹ️ Payment cancelled by user');
+        console.log('ℹ️ Cancellation details:', JSON.stringify(razorpayError, null, 2));
+      } else {
+        // Log actual errors
+        console.error('❌ Razorpay SDK error:', razorpayError);
+        console.error('❌ Error type:', typeof razorpayError);
+        console.error('❌ Error keys:', Object.keys(razorpayError || {}));
+        
+        // Try to extract all possible error properties
+        const errorDetails = {
+          code: razorpayError?.code,
+          description: razorpayError?.description,
+          message: razorpayError?.message,
+          reason: razorpayError?.reason,
+          step: razorpayError?.step,
+          source: razorpayError?.source,
+          error: razorpayError?.error,
+          metadata: razorpayError?.metadata,
+        };
+        
+        console.error('❌ Extracted error details:', JSON.stringify(errorDetails, null, 2));
+      }
+      
+      // Re-throw to be caught by outer catch
+      throw razorpayError;
+    }
     
     // Handle successful payment
     await handlePaymentSuccess(paymentResponse, orderResponse, onSuccess, onError);
     
   } catch (error) {
-    console.error('❌ Razorpay payment error:', error);
+    // Check if cancellation before logging as error
+    const isCancellation = error?.code === 0 || error?.code === 'payment_cancelled';
+    
+    if (isCancellation) {
+      console.log('ℹ️ Payment flow: User cancelled');
+    } else {
+      console.error('❌ Payment flow error:', error);
+    }
+    
     handlePaymentFailure(error, orderResponse, onError);
   }
 };
@@ -114,16 +158,29 @@ export const initiatePayment = async (orderResponse, address, onSuccess, onError
 const handlePaymentSuccess = async (paymentResponse, orderResponse, onSuccess, onError) => {
   try {
     console.log('🔍 Verifying payment:', paymentResponse);
+    console.log('📦 Order response for verification:', orderResponse);
     
-    // Prepare verification data
+    // Prepare verification data with ALL required order creation data
     const verificationData = {
       razorpay_order_id: paymentResponse.razorpay_order_id,
       razorpay_payment_id: paymentResponse.razorpay_payment_id,
       razorpay_signature: paymentResponse.razorpay_signature,
-      database_order_id: orderResponse.database_order_id // Include database order ID if available
+      database_order_id: orderResponse.database_order_id, // Include database order ID if available
+      
+      // ✅ FIX: Include order creation data for backend
+      cart: orderResponse.cart || orderResponse.items,
+      staticAddress: orderResponse.staticAddress || orderResponse.address,
+      amount: orderResponse.amount,
+      userId: orderResponse.userId,
+      orderNotes: orderResponse.orderNotes
     };
     
-    console.log('🔐 Sending payment verification data:', verificationData);
+    console.log('🔐 Sending payment verification data with order details:', {
+      ...verificationData,
+      cart: verificationData.cart ? `${verificationData.cart.length} items` : 'none',
+      hasAddress: !!verificationData.staticAddress,
+      amount: verificationData.amount
+    });
     
     // Verify payment with backend
     const verificationResult = await orderService.verifyPayment(verificationData);
@@ -166,51 +223,73 @@ const handlePaymentSuccess = async (paymentResponse, orderResponse, onSuccess, o
  * Processes payment failures and errors
  */
 const handlePaymentFailure = (error, orderResponse, onError) => {
-  console.error('💳 Payment failed:', error);
+  console.log('💳 Payment response received:', error);
+  console.log('💳 Full error object:', JSON.stringify(error, null, 2));
   
   let errorMessage = 'Payment failed. Please try again.';
   
-  // Enhanced error handling
-  if (error.code) {
+  // Enhanced error handling for Razorpay SDK errors
+  if (error && typeof error.code !== 'undefined') {
+    console.log('🔍 Processing Razorpay response with code:', error.code);
+    
     switch (error.code) {
+      case 0: // User cancelled payment (code 0)
       case 'payment_cancelled':
-        errorMessage = 'Payment was cancelled by user.';
-        console.log('🚫 Payment cancelled by user');
+        console.log('ℹ️ Payment cancelled by user (not an error)');
         
         // Handle payment cancellation cleanup
         if (orderResponse && orderResponse.database_order_id) {
           orderService.handlePaymentCancellation(orderResponse.database_order_id);
         }
-        break;
         
+        // Don't call onError for cancellation - just return silently
+        // User intentionally closed the payment, no need to show error
+        return;
+        
+      case 1: // Payment failed (code 1)
       case 'payment_failed':
-        errorMessage = 'Payment failed. Please check your payment details and try again.';
+        errorMessage = error.description || 'Payment failed. Please check your payment details and try again.';
+        console.error('❌ Payment failed:', errorMessage);
         break;
         
+      case 2: // Network error (code 2)
       case 'network_error':
         errorMessage = 'Network error. Please check your connection and try again.';
+        console.error('❌ Network error during payment');
+        break;
+        
+      case 3: // Payment timed out (code 3)
+        errorMessage = 'Payment timed out. Please try again.';
+        console.error('❌ Payment timed out');
         break;
         
       case 'invalid_order_id':
         errorMessage = 'Invalid order. Please try again.';
+        console.error('❌ Invalid order ID');
         break;
         
       default:
-        errorMessage = error.description || error.message || errorMessage;
+        errorMessage = error.description || error.message || `Payment error (code: ${error.code})`;
+        console.error('❌ Unhandled payment error code:', error.code);
     }
-  } else if (error.message) {
+  } else if (error && error.message) {
     if (error.message.includes('Razorpay key is missing')) {
       errorMessage = 'Payment configuration error. Please contact support.';
+      console.error('❌ Razorpay key missing');
     } else if (error.message.includes('Invalid amount')) {
       errorMessage = 'Invalid order amount. Please refresh and try again.';
+      console.error('❌ Invalid amount');
     } else if (error.message.includes('Order ID is missing')) {
       errorMessage = 'Order creation failed. Please try again.';
+      console.error('❌ Order ID missing');
     } else {
       errorMessage = error.message;
+      console.error('❌ Payment error:', errorMessage);
     }
   }
   
-  // Call error callback or show default error
+  // Call error callback for actual payment errors
+  console.error('❌ Calling error handler with message:', errorMessage);
   if (onError && typeof onError === 'function') {
     onError(new Error(errorMessage));
   } else {

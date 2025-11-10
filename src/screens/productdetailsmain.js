@@ -14,14 +14,19 @@ import {
   Share,
   Image,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
+import Video from 'react-native-video';
 import Svg, { Circle, G, Path, Defs, ClipPath, Rect } from 'react-native-svg';
 import { FontSizes, FontWeights, Spacing, BorderRadius } from '../constants';
 import BottomNavigationBar from '../components/bottomnavigationbar';
 import SizeSelectionModal from './productdetailsmainsizeselectionchart';
 import GlobalBackButton from '../components/GlobalBackButton';
+import BundleRecommendations from '../components/BundleRecommendations';
 import { apiService } from '../services/apiService';
 import { yoraaAPI } from '../services/yoraaAPI';
+import { useFavorites } from '../contexts/FavoritesContext';
+import { useBag } from '../contexts/BagContext';
 
 const { width } = Dimensions.get('window');
 
@@ -32,12 +37,17 @@ const ProductDetailsMain = ({ navigation, route }) => {
     manufacturing: false,
     shipping: false,
   });
-  const [selectedProductIndex, setSelectedProductIndex] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showSizeModal, setShowSizeModal] = useState(false);
   const [showProductDetails, setShowProductDetails] = useState(false);
   const imageSliderRef = useRef(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  // Favorites context
+  const { toggleFavorite, isFavorite } = useFavorites();
+  
+  // Bag context
+  const { addToBag } = useBag();
 
   // API-related state management
   const [apiItems, setApiItems] = useState([]);
@@ -48,6 +58,10 @@ const ProductDetailsMain = ({ navigation, route }) => {
   // Detailed ratings state
   const [detailedRatings, setDetailedRatings] = useState(null);
   const [ratingsLoading, setRatingsLoading] = useState(false);
+
+  // Linked products state
+  const [linkedProducts, setLinkedProducts] = useState([]);
+  const [linkedProductsLoading, setLinkedProductsLoading] = useState(false);
 
   // Get product from route params (clicked product from previous screen)
   const productFromRoute = route?.params?.product;
@@ -116,6 +130,45 @@ const ProductDetailsMain = ({ navigation, route }) => {
     }
   }, []);
 
+  // Fetch linked products for current item
+  const fetchLinkedProducts = useCallback(async (itemId) => {
+    if (!itemId) {
+      console.log('⚠️ No itemId provided to fetchLinkedProducts');
+      return;
+    }
+    
+    try {
+      setLinkedProductsLoading(true);
+      console.log('🔄 Fetching linked products for item:', itemId);
+      
+      const response = await apiService.getItemGroupByItemId(itemId);
+      console.log('✅ Linked Products API Response:', JSON.stringify(response, null, 2));
+      
+      if (response.success && response.data && response.data.items) {
+        console.log(`📦 Found ${response.data.items.length} items in group`);
+        
+        // Set linked products if there are multiple items
+        if (response.data.items.length > 1) {
+          setLinkedProducts(response.data.items);
+          console.log('✅ Set linked products:', response.data.items.map(i => ({ id: i.itemId, name: i.productName })));
+        } else {
+          console.log('ℹ️ Only single product in group, not showing variants');
+          setLinkedProducts([]);
+        }
+      } else {
+        console.log('ℹ️ No linked products found - response.success:', response.success, 'has data:', !!response.data);
+        console.log('💡 To show linked products: Create an Item Group in the admin panel at /item-linking');
+        setLinkedProducts([]);
+      }
+    } catch (err) {
+      console.log('ℹ️ No item group found for this product (this is normal):', err.message);
+      console.log('💡 To enable linked products: Go to admin panel → Item Linking → Create Group');
+      setLinkedProducts([]);
+    } finally {
+      setLinkedProductsLoading(false);
+    }
+  }, []);
+
   // Initialize component data
   useEffect(() => {
     if (productFromRoute) {
@@ -147,6 +200,16 @@ const ProductDetailsMain = ({ navigation, route }) => {
     }
   }, [currentItem, fetchDetailedRatings]);
 
+  // Fetch linked products when currentItem changes
+  useEffect(() => {
+    if (currentItem) {
+      const itemId = currentItem._id || currentItem.id;
+      if (itemId) {
+        fetchLinkedProducts(itemId);
+      }
+    }
+  }, [currentItem, fetchLinkedProducts]);
+
   // Utility functions for API data
   const getFirstImage = (images) => {
     if (images && images.length > 0) {
@@ -173,59 +236,37 @@ const ProductDetailsMain = ({ navigation, route }) => {
     return null;
   };
 
-  // Product variants data with different images
-  const productVariants = [
-    {
-      id: '1',
-      name: 'Nike Everyday Plus Cushioned',
-      subtitle: 'Training Crew Socks (3 Pairs)',
-      price: 'US$22',
-      originalPrice: 'US$10',
-      discountedPrice: 'US$10',
-      images: [
-        { id: '1-1', backgroundColor: '#F5F5F5' },
-        { id: '1-2', backgroundColor: '#EEEEEE' },
-        { id: '1-3', backgroundColor: '#E8E8E8' },
-      ],
-      colors: ['#8B4513', '#CD853F', '#F5F5DC'],
-      thumbnailColor: '#F0F0F0',
-    },
-    {
-      id: '2',
-      name: 'Nike Everyday Max Cushioned',
-      subtitle: 'Training Crew Socks (3 Pairs)',
-      price: 'US$24',
-      originalPrice: 'US$12',
-      discountedPrice: 'US$12',
-      images: [
-        { id: '2-1', backgroundColor: '#DCDCDC' },
-        { id: '2-2', backgroundColor: '#D0D0D0' },
-        { id: '2-3', backgroundColor: '#C8C8C8' },
-      ],
-      colors: ['#000000', '#FFFFFF', '#808080'],
-      thumbnailColor: '#D8D8D8',
-    },
-    {
-      id: '3',
-      name: 'Nike Performance Cushioned',
-      subtitle: 'Training Crew Socks (3 Pairs)',
-      price: 'US$26',
-      originalPrice: 'US$14',
-      discountedPrice: 'US$14',
-      images: [
-        { id: '3-1', backgroundColor: '#E6E6E6' },
-        { id: '3-2', backgroundColor: '#E0E0E0' },
-        { id: '3-3', backgroundColor: '#DADADA' },
-      ],
-      colors: ['#FF0000', '#00FF00', '#0000FF'],
-      thumbnailColor: '#E3E3E3',
-    },
-  ];
+  // Handle favorite toggle
+  const handleFavoriteToggle = async () => {
+    if (!currentItem) return;
+    
+    const productId = currentItem._id || currentItem.id;
+    await toggleFavorite(productId);
+  };
 
-  // Get current selected product
-  const currentProduct = productVariants && productVariants.length > 0 && selectedProductIndex >= 0 && selectedProductIndex < productVariants.length 
-    ? productVariants[selectedProductIndex] 
-    : productVariants[0] || null;
+  // Check if current product is favorited
+  const isCurrentProductFavorited = currentItem ? isFavorite(currentItem._id || currentItem.id) : false;
+
+  // Handle add to bag
+  const handleAddToBag = async () => {
+    if (!currentItem) {
+      Alert.alert('Error', 'Product information not available');
+      return;
+    }
+
+    if (!activeSize) {
+      Alert.alert('Select Size', 'Please select a size before adding to bag');
+      return;
+    }
+
+    try {
+      await addToBag(currentItem, activeSize);
+      Alert.alert('Success', 'Item added to bag successfully!');
+    } catch (error) {
+      console.error('Error adding to bag:', error);
+      Alert.alert('Error', 'Failed to add item to bag. Please try again.');
+    }
+  };
 
   // Share function
   const handleShare = async () => {
@@ -236,7 +277,7 @@ const ProductDetailsMain = ({ navigation, route }) => {
       
       const result = await Share.share({
         message: message,
-        title: currentProduct.name,
+        title: productName,
         url: '', // Add your product URL here if available
       });
 
@@ -249,10 +290,58 @@ const ProductDetailsMain = ({ navigation, route }) => {
       } else if (result.action === Share.dismissedAction) {
         // dismissed
       }
-    } catch (error) {
+    } catch (err) {
       if (__DEV__) {
-        console.error('Error sharing:', error.message);
+        console.error('Error sharing:', err.message);
       }
+    }
+  };
+
+  // Handle linked product variant selection
+  const handleLinkedProductSelect = async (variantItemId) => {
+    // Extract the actual ID if an object was passed
+    const actualItemId = typeof variantItemId === 'object' ? (variantItemId._id || variantItemId.id) : variantItemId;
+    
+    if (!actualItemId || actualItemId === (currentItem?._id || currentItem?.id)) {
+      return; // Already selected or invalid
+    }
+    
+    try {
+      console.log('🔄 Switching to linked product:', actualItemId);
+      setLoading(true);
+      
+      // Fetch the full product details for the selected variant
+      const response = await apiService.getItemById(actualItemId);
+      
+      if (response.success && response.data) {
+        console.log('✅ Successfully fetched variant:', response.data.productName);
+        
+        // Update current item directly - this is faster and smoother than navigation
+        setCurrentItem(response.data);
+        
+        // Reset image slider to first image
+        setActiveImageIndex(0);
+        if (imageSliderRef.current) {
+          imageSliderRef.current.scrollToIndex({ index: 0, animated: false });
+        }
+        
+        // Reset size selection
+        setActiveSize(null);
+        
+        // Scroll to top of the page
+        // This gives a better UX when switching variants
+        
+        console.log('✅ Product variant switched successfully');
+      } else {
+        console.error('❌ Failed to fetch variant details');
+        Alert.alert('Error', 'Failed to load product variant');
+      }
+    } catch (err) {
+      console.error('❌ Error switching variant:', err);
+      console.error('Error details:', err.message, err.response?.data);
+      Alert.alert('Error', 'Failed to switch product variant. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -305,7 +394,7 @@ const ProductDetailsMain = ({ navigation, route }) => {
     </View>
   );
 
-  const HeartIcon = () => (
+  const HeartIcon = ({ filled = false }) => (
     <Svg width={34} height={34} viewBox="0 0 34 34" fill="none">
       <Circle cx={17} cy={17} r={17} fill="white" />
       <G clipPath="url(#clip0_10455_54515)">
@@ -314,6 +403,7 @@ const ProductDetailsMain = ({ navigation, route }) => {
           stroke="black"
           strokeLinecap="round"
           strokeLinejoin="round"
+          fill={filled ? "black" : "none"}
         />
       </G>
       <Defs>
@@ -409,83 +499,86 @@ const ProductDetailsMain = ({ navigation, route }) => {
       // Check if we came from orders screen via "Buy It Again"
       if (route?.params?.order) {
         navigation.navigate('Orders');
+      } else if (route?.params?.previousScreen === 'ProductViewOne' && route?.params?.categoryName) {
+        // If coming from ProductViewOne (which came from Home), navigate back to Home with the correct category tab
+        console.log('🔙 Navigating back to Home with category:', route.params.categoryName);
+        navigation.navigate('Home', { returnToCategory: route.params.categoryName });
+      } else if (route?.params?.previousScreen === 'Search') {
+        // If coming from Search, navigate to ProductViewOne with the product's subcategory
+        const subcategoryId = currentItem?.subCategoryId?._id || 
+                             currentItem?.subCategoryId || 
+                             productFromRoute?.subCategoryId?._id || 
+                             productFromRoute?.subCategoryId;
+        const subcategoryName = currentItem?.subCategoryId?.name || 
+                               currentItem?.categoryName || 
+                               productFromRoute?.subCategoryId?.name || 
+                               productFromRoute?.categoryName || 
+                               'Products';
+        
+        console.log('🔙 Navigating to ProductViewOne from Search with:', {
+          subcategoryId,
+          subcategoryName
+        });
+        
+        if (subcategoryId) {
+          navigation.navigate('ProductViewOne', {
+            subcategoryId,
+            subcategoryName,
+            previousScreen: 'ProductDetailsMain'
+          });
+        } else {
+          // Fallback to Collection if no subcategory found
+          navigation.navigate('Collection');
+        }
+      } else if (route?.params?.previousScreen === 'Collection' && route?.params?.activeTab) {
+        // If coming from Collection screen with an active tab, navigate back with the tab info
+        navigation.navigate('Collection', { returnToTab: route.params.activeTab });
       } else {
         navigation.goBack();
       }
     }
   };
 
-  const handleProductSelection = (index) => {
-    if (index !== selectedProductIndex) {
-      // Fade out animation
-      Animated.timing(fadeAnim, {
-        toValue: 0.7,
-        duration: 150,
-        useNativeDriver: true,
-      }).start(() => {
-        // Update the product
-        setSelectedProductIndex(index);
-        setActiveImageIndex(0);
-        
-        // Reset to first image when changing product
-        if (imageSliderRef.current) {
-          imageSliderRef.current.scrollToIndex({ index: 0, animated: false });
-        }
-        
-        // Fade in animation
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 150,
-          useNativeDriver: true,
-        }).start();
-      });
-    }
-  };
-
-  const renderThumbnailImages = () => (
-    <View style={styles.thumbnailContainer}>
-      {productVariants.map((variant, index) => (
-        <TouchableOpacity
-          key={variant.id}
-          style={[
-            styles.thumbnailImage,
-            selectedProductIndex === index && styles.activeThumbnail
-          ]}
-          onPress={() => handleProductSelection(index)}
-          activeOpacity={0.7}
-        >
-          <View 
-            style={[
-              styles.thumbnailImageContent,
-              { backgroundColor: variant.thumbnailColor }
-            ]} 
-          />
-          {selectedProductIndex === index && (
-            <View style={styles.selectedIndicator} />
-          )}
-        </TouchableOpacity>
-      ))}
-      {/* Strike through effect (keeping original design element) */}
-      {/* <View style={styles.thumbnailStrike} /> */}
-    </View>
-  );
-
   const renderProductImages = () => {
-    const renderImageItem = ({ item, index }) => (
-      <View style={styles.imageSlide}>
-        {item.url ? (
-          <Image 
-            source={{ uri: item.url }}
-            style={styles.mainProductImage}
-            resizeMode="cover"
-          />
-        ) : (
-          <View style={[styles.mainProductImage, styles.placeholderImage]}>
-            <Text style={styles.placeholderText}>No Image</Text>
-          </View>
-        )}
-      </View>
-    );
+    const renderImageItem = ({ item, index }) => {
+      // Check if the item is a video based on mediaType or file extension
+      const isVideo = item.mediaType === 'video' || 
+                      item.type === 'video' || 
+                      (item.url && (
+                        item.url.includes('.mp4') || 
+                        item.url.includes('.mov') || 
+                        item.url.includes('.avi') ||
+                        item.url.includes('.m4v')
+                      ));
+
+      return (
+        <View style={styles.imageSlide}>
+          {item.url ? (
+            isVideo ? (
+              <Video
+                source={{ uri: item.url }}
+                style={styles.mainProductImage}
+                resizeMode="cover"
+                repeat={true}
+                muted={true}
+                paused={activeImageIndex !== index}
+                controls={false}
+              />
+            ) : (
+              <Image 
+                source={{ uri: item.url }}
+                style={styles.mainProductImage}
+                resizeMode="cover"
+              />
+            )
+          ) : (
+            <View style={[styles.mainProductImage, styles.placeholderImage]}>
+              <Text style={styles.placeholderText}>No Image</Text>
+            </View>
+          )}
+        </View>
+      );
+    };
 
     const onImageScroll = (event) => {
       const slideSize = width;
@@ -553,19 +646,9 @@ const ProductDetailsMain = ({ navigation, route }) => {
         </View>
 
         {/* Heart Icon */}
-        <TouchableOpacity style={styles.heartButton}>
+        <TouchableOpacity style={styles.heartButton} onPress={handleFavoriteToggle}>
           <View style={styles.heartButtonContainer}>
-            <HeartIcon />
-          </View>
-        </TouchableOpacity>
-
-        {/* Shopping Bag Icon */}
-        <TouchableOpacity 
-          style={styles.bagButton}
-          onPress={() => navigation.navigate('Bag', { previousScreen: 'ProductViewOne' })}
-        >
-          <View style={styles.bagButtonContainer}>
-            <ShoppingBagIcon />
+            <HeartIcon filled={isCurrentProductFavorited} />
           </View>
         </TouchableOpacity>
 
@@ -575,13 +658,62 @@ const ProductDetailsMain = ({ navigation, route }) => {
           onPress={() => {
             console.log('AI Try-On pressed');
             navigation?.navigate('TryOnProTips', { 
-              product: currentProduct,
+              product: currentItem,
               previousScreen: 'ProductDetailsMain' 
             });
           }}
         >
           <Text style={styles.aiTryOnButtonText}>Try On</Text>
         </TouchableOpacity>
+      </View>
+    );
+  };
+
+  // Render linked products section (below image, below Try On button)
+  const renderLinkedProducts = () => {
+    // Only show if there are multiple products (more than 1)
+    if (!linkedProducts || linkedProducts.length <= 1) {
+      return null;
+    }
+
+    return (
+      <View style={styles.linkedProductsSection}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.linkedProductsList}
+        >
+          {linkedProducts
+            .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+            .map((variant, index) => {
+              // Extract the actual item ID (handle both string and object cases)
+              const variantId = typeof variant.itemId === 'object' ? (variant.itemId._id || variant.itemId.id) : variant.itemId;
+              const isSelected = variantId === (currentItem?._id || currentItem?.id);
+              // Use combination of itemId and index to ensure unique keys
+              const uniqueKey = `${variantId}_${index}`;
+              
+              return (
+                <TouchableOpacity
+                  key={uniqueKey}
+                  style={[
+                    styles.linkedProductTile,
+                    isSelected && styles.linkedProductTileSelected,
+                  ]}
+                  onPress={() => handleLinkedProductSelect(variantId)}
+                  disabled={linkedProductsLoading}
+                >
+                  <Image
+                    source={{ uri: variant.image }}
+                    style={styles.linkedProductImage}
+                    resizeMode="cover"
+                  />
+                  {isSelected && (
+                    <View style={styles.linkedProductSelectedBadge} />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+        </ScrollView>
       </View>
     );
   };
@@ -611,23 +743,35 @@ const ProductDetailsMain = ({ navigation, route }) => {
         </View>
       </View>
 
+      {/* View Product Details and Share Button on same level */}
       <View style={styles.viewDetailsContainer}>
         <TouchableOpacity onPress={() => setShowProductDetails(!showProductDetails)}>
           <Text style={styles.viewDetailsText}>View Product Details</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
+          <ShareIcon />
+        </TouchableOpacity>
       </View>
 
-      {/* Share Button - positioned according to Figma */}
-      <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-        <ShareIcon />
-      </TouchableOpacity>
+      {/* Buy Now Button - Always visible, right below View Product Details */}
+      <View style={styles.buyNowContainer}>
+        <TouchableOpacity 
+          style={styles.buyNowButton}
+          onPress={() => setShowSizeModal(true)}
+        >
+          <Text style={styles.buyNowText}>Buy Now</Text>
+        </TouchableOpacity>
+      </View>
 
-      {/* Stock status based on API data */}
-      {currentItem && currentItem.sizes && currentItem.sizes.length > 0 && currentItem.sizes[0].quantity > 0 ? (
-        <Text style={styles.inStockText}>In Stock</Text>
-      ) : (
-        <Text style={styles.outOfStockText}>Out of Stock</Text>
-      )}
+      {/* Add to Cart Button - Below Buy Now */}
+      <View style={styles.addToCartContainer}>
+        <TouchableOpacity 
+          style={styles.addToCartButton}
+          onPress={() => setShowSizeModal(true)}
+        >
+          <Text style={styles.addToCartText}>Add to Cart</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -731,37 +875,87 @@ const ProductDetailsMain = ({ navigation, route }) => {
     );
   };
 
-  const renderRatingSection = () => (
-    <View style={styles.ratingSectionContainer}>
-      <Text style={styles.ratingSectionTitle}>Rating & Reviews</Text>
-      
-      <View style={styles.ratingScoresContainer}>
-        <View style={styles.leftRatingScore}>
-          <Text style={styles.ratingScoreMain}>4.5</Text>
-          <View style={styles.starsContainer}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <StarIcon key={star} filled={star <= 4} />
-            ))}
-          </View>
-          <TouchableOpacity onPress={() => {
-            const productToPass = currentItem || productFromRoute;
-            console.log('🚀 Navigating to reviews with product:', productToPass);
-            console.log('🚀 Product ID will be:', productToPass?._id || productToPass?.id);
-            navigation.navigate('ProductDetailsMainReview', {
-              product: productToPass
-            });
-          }}>
-            <Text style={styles.reviewsLink}>20 Reviews</Text>
-          </TouchableOpacity>
-        </View>
+  const renderRatingSection = () => {
+    // Get real-time ratings data from API
+    const averageRating = detailedRatings?.averageRating || 0;
+    const totalReviews = detailedRatings?.totalReviews || 0;
+    const recommendationPercentage = detailedRatings?.recommendationPercentage || 0;
+    
+    // Debug logging
+    console.log('📊 Rating Section Data:', {
+      detailedRatings,
+      averageRating,
+      totalReviews,
+      recommendationPercentage,
+      ratingsLoading
+    });
+    
+    // Calculate filled stars based on average rating
+    const filledStars = Math.round(averageRating);
+    
+    return (
+      <View style={styles.ratingSectionContainer}>
+        <Text style={styles.ratingSectionTitle}>Rating & Reviews</Text>
         
-        <View style={styles.rightRatingScore}>
-          <Text style={styles.recommendPercent}>91%</Text>
-          <Text style={styles.recommendText}>of customer recommend{'\n'}this product</Text>
-        </View>
+        {ratingsLoading ? (
+          <View style={styles.ratingsLoadingContainer}>
+            <ActivityIndicator size="small" color="#007AFF" />
+            <Text style={styles.ratingsLoadingText}>Loading ratings...</Text>
+          </View>
+        ) : totalReviews === 0 ? (
+          <View style={styles.ratingScoresContainer}>
+            <View style={styles.leftRatingScore}>
+              <Text style={styles.ratingScoreMain}>0.0</Text>
+              <View style={styles.starsContainer}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <StarIcon key={star} filled={false} />
+                ))}
+              </View>
+              <TouchableOpacity onPress={() => {
+                const productToPass = currentItem || productFromRoute;
+                navigation.navigate('ProductDetailsMainReview', {
+                  product: productToPass
+                });
+              }}>
+                <Text style={styles.reviewsLink}>0 Reviews</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.rightRatingScore}>
+              <Text style={styles.recommendPercent}>0%</Text>
+              <Text style={styles.recommendText}>of customer recommend{'\n'}this product</Text>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.ratingScoresContainer}>
+            <View style={styles.leftRatingScore}>
+              <Text style={styles.ratingScoreMain}>{averageRating.toFixed(1)}</Text>
+              <View style={styles.starsContainer}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <StarIcon key={star} filled={star <= filledStars} />
+                ))}
+              </View>
+              <TouchableOpacity onPress={() => {
+                const productToPass = currentItem || productFromRoute;
+                console.log('🚀 Navigating to reviews with product:', productToPass);
+                console.log('🚀 Product ID will be:', productToPass?._id || productToPass?.id);
+                navigation.navigate('ProductDetailsMainReview', {
+                  product: productToPass
+                });
+              }}>
+                <Text style={styles.reviewsLink}>{totalReviews} {totalReviews === 1 ? 'Review' : 'Reviews'}</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.rightRatingScore}>
+              <Text style={styles.recommendPercent}>{Math.round(recommendationPercentage)}%</Text>
+              <Text style={styles.recommendText}>of customer recommend{'\n'}this product</Text>
+            </View>
+          </View>
+        )}
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderSizeAndFitSection = () => (
     <TouchableOpacity 
@@ -821,15 +1015,6 @@ const ProductDetailsMain = ({ navigation, route }) => {
             'shipping',
             currentItem ? currentItem.shippingAndReturns : 'Shipping and return information not available.'
           )}
-
-          <View style={styles.buyNowContainer}>
-            <TouchableOpacity 
-              style={styles.buyNowButton}
-              onPress={() => setShowSizeModal(true)}
-            >
-              <Text style={styles.buyNowText}>Buy Now</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       )}
 
@@ -972,17 +1157,26 @@ const ProductDetailsMain = ({ navigation, route }) => {
           {/* Product Images */}
           {renderProductImages()}
 
+          {/* Linked Products / Color Variants - Shows below Try On button */}
+          {renderLinkedProducts()}
+
           {/* Star Rating */}
           {renderStarRating()}
-
-          {/* Thumbnail Images */}
-          {renderThumbnailImages()}
 
           {/* Product Info */}
           {renderProductInfo()}
 
           {/* Content Sections */}
           {renderContentSections()}
+
+          {/* Bundle Recommendations - Show bundles for this product */}
+          {currentItem && currentItem._id && (
+            <BundleRecommendations
+              productId={currentItem._id}
+              navigation={navigation}
+              addToBag={addToBag}
+            />
+          )}
 
           {/* Scrollable Product Sections - conditionally rendered */}
           {youMightAlsoLike.length > 0 && renderScrollableProductSection('You Might Also Like', youMightAlsoLike)}
@@ -1146,6 +1340,71 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
+  // Linked Products / Variants Section (below image, below Try On)
+  linkedProductsSection: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  linkedProductsList: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingVertical: 4,
+  },
+  linkedProductTile: {
+    width: 70,
+    height: 70,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+    overflow: 'hidden',
+    backgroundColor: '#F5F5F5',
+  },
+  linkedProductTileSelected: {
+    borderColor: '#000000',
+    borderWidth: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  linkedProductImage: {
+    width: '100%',
+    height: '100%',
+  },
+  linkedProductSelectedBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 16,
+    height: 16,
+    backgroundColor: '#000000',
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+
+  // Debug Container
+  debugContainer: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    padding: 8,
+    borderRadius: 4,
+  },
+  debugText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontFamily: 'Montserrat-Regular',
+  },
+
   // Star Rating
   starRatingContainer: {
     position: 'absolute',
@@ -1223,7 +1482,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 35,
     paddingBottom: 16,
-    height: 246,
   },
   productDescription: {
     marginBottom: 24,
@@ -1250,10 +1508,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
     gap: 8,
-    position: 'absolute',
-    top: 106,
-    left: 16,
-    width: 327,
   },
   originalPrice: {
     fontSize: 20,
@@ -1287,12 +1541,9 @@ const styles = StyleSheet.create({
   viewDetailsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    position: 'absolute',
-    top: 200,
-    left: 0,
-    right: 0,
-    transform: [{ translateY: -50 }],
+    justifyContent: 'space-between',
+    marginTop: 16,
+    marginBottom: 12,
   },
   viewDetailsText: {
     fontSize: 20,
@@ -1300,13 +1551,9 @@ const styles = StyleSheet.create({
     color: '#767676',
     fontFamily: 'Montserrat-Medium',
     textDecorationLine: 'underline',
-    textAlign: 'center',
     lineHeight: 24,
   },
   shareButton: {
-    position: 'absolute',
-    right: 16,
-    top: 187,
     padding: 0,
     width: 24,
     height: 24,
@@ -1335,6 +1582,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#E4E4E4',
     paddingHorizontal: 16,
     paddingVertical: 37,
+    backgroundColor: '#FFFFFF',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -1368,10 +1616,8 @@ const styles = StyleSheet.create({
 
   // Rating Bars
   ratingBarsContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     paddingVertical: 24,
-    borderTopWidth: 1,
-    borderTopColor: '#E4E4E4',
   },
   ratingCategory: {
     marginBottom: 42,
@@ -1428,11 +1674,30 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Regular',
     marginLeft: 8,
   },
+  noReviewsContainer: {
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  noReviewsText: {
+    fontSize: 16,
+    fontWeight: '400',
+    color: '#666666',
+    fontFamily: 'Montserrat-Regular',
+    marginBottom: 12,
+  },
+  beFirstReviewLink: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#007AFF',
+    fontFamily: 'Montserrat-Medium',
+    textDecorationLine: 'underline',
+  },
 
   // Rating Section
   ratingSectionContainer: {
     paddingHorizontal: 16,
     paddingVertical: 20,
+    backgroundColor: '#FFFFFF',
   },
   ratingSectionTitle: {
     fontSize: 20,
@@ -1495,7 +1760,6 @@ const styles = StyleSheet.create({
 
   // Content
   contentContainer: {
-    paddingHorizontal: 16,
     paddingVertical: 30,
   },
   contentTitle: {
@@ -1516,8 +1780,8 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   buyNowContainer: {
-    paddingVertical: 32,
-    paddingHorizontal: 16,
+    paddingTop: 32,
+    paddingBottom: 16,
   },
   buyNowButton: {
     backgroundColor: '#000000',
@@ -1531,6 +1795,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#FFFFFF',
+    fontFamily: 'Montserrat-Medium',
+    lineHeight: 19.2,
+  },
+  addToCartContainer: {
+    paddingBottom: 48,
+    paddingTop: 0,
+    marginBottom: 16,
+  },
+  addToCartButton: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 100,
+    paddingVertical: 16,
+    paddingHorizontal: 51,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#000000',
+  },
+  addToCartText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#000000',
     fontFamily: 'Montserrat-Medium',
     lineHeight: 19.2,
   },

@@ -944,6 +944,7 @@ const styles = StyleSheet.create({
     color: '#000000',
     backgroundColor: '#FFFFFF',
     fontFamily: 'Montserrat-Regular',
+    height: 50, // Fixed height for consistency across all fields
   },
   // Section Header Styles (for Other Details and Address)
   sectionHeader: {
@@ -971,6 +972,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    height: 50, // Fixed height to match textInput exactly
   },
   calendarIconContainer: {
     justifyContent: 'center',
@@ -1048,7 +1050,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     backgroundColor: '#FFFFFF',
-    minHeight: 50,
+    justifyContent: 'center', // Center content vertically
+    minHeight: 50, // Minimum height to match textInput
   },
   addressText: {
     fontSize: 14,

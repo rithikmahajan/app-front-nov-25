@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  Alert,
   PanResponder,
   Animated,
 } from 'react-native';
+import BagSizeSelectorSizeChart from './bagsizeselectorsizechart';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -152,18 +152,8 @@ const BagSizeSelectorModalOverlay = ({
   };
 
   const handleSizeChart = () => {
-    // Handle size chart navigation or modal
-    Alert.alert('Test', `Size Chart button pressed! onSizeChartPress is: ${typeof onSizeChartPress}`);
-    
-    // Show size chart within this modal
+    // Close this modal and show the size chart as a new modal
     setShowSizeChart(true);
-    
-    if (onSizeChartPress) {
-      Alert.alert('Test', 'Calling onSizeChartPress function...');
-      onSizeChartPress();
-    } else {
-      Alert.alert('Error', 'onSizeChartPress is not defined!');
-    }
   };
 
   if (!visible) return null;
@@ -196,48 +186,48 @@ const BagSizeSelectorModalOverlay = ({
             <View style={styles.dragHandle} />
           </View>
           
-          {!showSizeChart ? (
-            <View style={styles.contentContainer} {...contentPanResponder.panHandlers}>
-              {/* Size Options */}
-              <View style={styles.sizeGrid}>
-                {availableSizes.map((size) => (
-                  <TouchableOpacity
-                    key={size}
-                    style={[
-                      styles.sizeOption,
-                      selectedSize === size && styles.selectedSizeOption
-                    ]}
-                    onPress={() => handleSizeSelect(size)}
-                  >
-                    <Text style={[
-                      styles.sizeText,
-                      selectedSize === size && styles.selectedSizeText
-                    ]}>
-                      {size}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              {/* Size Chart Link */}
-              <TouchableOpacity 
-                style={styles.sizeChartContainer}
-                onPress={handleSizeChart}
-              >
-                <Text style={styles.sizeChartText}>Size Chart</Text>
-              </TouchableOpacity>
-
-              {/* Done Button */}
-              <TouchableOpacity style={styles.doneButton} onPress={handleDone}>
-                <Text style={styles.doneButtonText}>Done</Text>
-              </TouchableOpacity>
+          <View style={styles.contentContainer} {...contentPanResponder.panHandlers}>
+            {/* Size Options */}
+            <View style={styles.sizeGrid}>
+              {availableSizes.map((size) => (
+                <TouchableOpacity
+                  key={size}
+                  style={[
+                    styles.sizeOption,
+                    selectedSize === size && styles.selectedSizeOption
+                  ]}
+                  onPress={() => handleSizeSelect(size)}
+                >
+                  <Text style={[
+                    styles.sizeText,
+                    selectedSize === size && styles.selectedSizeText
+                  ]}>
+                    {size}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
-          ) : (
-            <View style={styles.contentContainer} {...contentPanResponder.panHandlers}>
-              {/* Size Chart Content */}
-              <Text style={styles.sizeChartTitle}>Size Chart</Text>
-            </View>
-          )}
+
+            {/* Size Chart Link */}
+            <TouchableOpacity 
+              style={styles.sizeChartContainer}
+              onPress={handleSizeChart}
+            >
+              <Text style={styles.sizeChartText}>Size Chart</Text>
+            </TouchableOpacity>
+
+            {/* Done Button */}
+            <TouchableOpacity style={styles.doneButton} onPress={handleDone}>
+              <Text style={styles.doneButtonText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+          
+          {/* Size Chart Modal */}
+          <BagSizeSelectorSizeChart 
+            visible={showSizeChart} 
+            onClose={() => setShowSizeChart(false)}
+            product={productDetails || item}
+          />
         </Animated.View>
       </View>
     </Modal>
@@ -279,32 +269,35 @@ const styles = StyleSheet.create({
   sizeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 16,
+    gap: 24,
     marginBottom: 40,
     justifyContent: 'center',
+    paddingHorizontal: 20,
   },
   sizeOption: {
-    width: (screenWidth - 48 - 32) / 3, // 3 columns with gaps
-    height: 48,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
+    width: (screenWidth - 48 - 72) / 3, // 3 columns with gaps
+    height: 60,
+    backgroundColor: 'transparent',
+    borderRadius: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'transparent',
+    borderWidth: 0,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
   selectedSizeOption: {
-    backgroundColor: '#2F2F2F',
-    borderColor: '#2F2F2F',
+    backgroundColor: 'transparent',
+    borderBottomColor: '#000000',
   },
   sizeText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#000000',
+    fontSize: 20,
+    fontWeight: '400',
+    color: '#999999',
     letterSpacing: -0.4,
   },
   selectedSizeText: {
-    color: '#FFFFFF',
+    color: '#000000',
+    fontWeight: '600',
   },
   sizeChartContainer: {
     alignSelf: 'flex-end',

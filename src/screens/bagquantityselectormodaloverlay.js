@@ -7,8 +7,8 @@ import {
   Modal,
   Dimensions,
   Animated,
-  ScrollView,
   PanResponder,
+  ScrollView,
 } from 'react-native';
 
 const { height: screenHeight } = Dimensions.get('window');
@@ -18,7 +18,7 @@ const BagQuantitySelectorModalOverlay = ({ visible, onClose, item, productDetail
   const [isRemoveSelected, setIsRemoveSelected] = useState(false);
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const scrollViewRef = useRef(null);
-  const [scrollY, setScrollY] = useState(0);
+  const ITEM_HEIGHT = 44; // Height of each item in the picker
 
   // Get available quantity for the current item's size from product details
   const getAvailableQuantity = () => {
@@ -32,13 +32,13 @@ const BagQuantitySelectorModalOverlay = ({ visible, onClose, item, productDetail
 
   const maxQuantity = getAvailableQuantity();
   const quantities = Array.from({ length: maxQuantity }, (_, i) => i + 1);
-  const options = ['Remove', ...quantities]; // Include Remove as first option
-  const ITEM_HEIGHT = 60;
 
   useEffect(() => {
     if (visible) {
-      setSelectedQuantity(item?.quantity || 1);
+      const initialQuantity = item?.quantity || 1;
+      setSelectedQuantity(initialQuantity);
       setIsRemoveSelected(false);
+      
       // Animate modal up
       Animated.spring(translateY, {
         toValue: 0,
@@ -46,6 +46,17 @@ const BagQuantitySelectorModalOverlay = ({ visible, onClose, item, productDetail
         tension: 100,
         friction: 8,
       }).start();
+      
+      // Scroll to the current quantity after a short delay
+      setTimeout(() => {
+        if (scrollViewRef.current) {
+          const index = initialQuantity; // index 0 is "Remove", so quantity 1 is at index 1
+          scrollViewRef.current.scrollTo({
+            y: index * ITEM_HEIGHT,
+            animated: false,
+          });
+        }
+      }, 100);
     } else {
       // Animate modal down
       Animated.spring(translateY, {
@@ -94,64 +105,6 @@ const BagQuantitySelectorModalOverlay = ({ visible, onClose, item, productDetail
     }),
   ).current;
 
-  // Pan responder for swipe to dismiss from scroll view
-  const scrollPanResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Only capture gesture if we're scrolling down and scroll view is at top
-        return gestureState.dy > 10 && scrollY <= 0;
-      },
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-        // Capture the gesture when dragging down from the top
-        return gestureState.dy > 10 && scrollY <= 0;
-      },
-      onPanResponderGrant: () => {
-        // Disable scroll when pan responder takes control
-        if (scrollViewRef.current) {
-          scrollViewRef.current.setNativeProps({ scrollEnabled: false });
-        }
-      },
-      onPanResponderMove: (evt, gestureState) => {
-        if (gestureState.dy > 0) {
-          translateY.setValue(gestureState.dy);
-        }
-      },
-      onPanResponderRelease: (evt, gestureState) => {
-        // Re-enable scroll
-        if (scrollViewRef.current) {
-          scrollViewRef.current.setNativeProps({ scrollEnabled: true });
-        }
-        
-        if (gestureState.dy > 100 || gestureState.vy > 0.5) {
-          handleClose();
-        } else {
-          Animated.spring(translateY, {
-            toValue: 0,
-            useNativeDriver: true,
-            tension: 100,
-            friction: 8,
-          }).start();
-        }
-      },
-      onPanResponderTerminate: () => {
-        // Re-enable scroll if gesture is terminated
-        if (scrollViewRef.current) {
-          scrollViewRef.current.setNativeProps({ scrollEnabled: true });
-        }
-      },
-    }),
-  ).current;
-
-  const handleQuantitySelect = (option) => {
-    if (option === 'Remove') {
-      setIsRemoveSelected(true);
-      setSelectedQuantity(null);
-    } else {
-      setSelectedQuantity(option);
-      setIsRemoveSelected(false);
-    }
-  };
-
   const handleDone = () => {
     if (isRemoveSelected) {
       // Handle remove item logic
@@ -160,30 +113,6 @@ const BagQuantitySelectorModalOverlay = ({ visible, onClose, item, productDetail
       onQuantityChange(item?.id, selectedQuantity);
     }
     handleClose();
-  };
-
-  const renderOption = (option) => {
-    const isRemove = option === 'Remove';
-    const isSelected = isRemove ? isRemoveSelected : (selectedQuantity === option && !isRemoveSelected);
-    
-    return (
-      <TouchableOpacity
-        key={option}
-        style={[
-          styles.quantityOption,
-          isSelected && styles.selectedQuantityOption
-        ]}
-        onPress={() => handleQuantitySelect(option)}
-      >
-        <Text style={[
-          styles.quantityText,
-          isSelected && (isRemove ? styles.selectedRemoveText : styles.selectedQuantityText),
-          isRemove && !isSelected && styles.removeText
-        ]}>
-          {option}
-        </Text>
-      </TouchableOpacity>
-    );
   };
 
   if (!visible) {
@@ -217,28 +146,52 @@ const BagQuantitySelectorModalOverlay = ({ visible, onClose, item, productDetail
             <View style={styles.handleBar} />
           </View>
           
-          {/* Quantity options */}
+          {/* Quantity options - iOS-style wheel picker */}
           <View style={styles.quantityContainer}>
+            {/* Selection indicator overlay */}
+            <View style={styles.selectionIndicator} pointerEvents="none">
+              <View style={styles.selectionLine} />
+              <View style={styles.selectionHighlight} />
+              <View style={styles.selectionLine} />
+            </View>
+            
             <ScrollView
               ref={scrollViewRef}
               style={styles.scrollView}
               contentContainerStyle={styles.scrollContent}
               showsVerticalScrollIndicator={false}
-              scrollEventThrottle={16}
-              bounces={true}
-              bouncesZoom={false}
-              onScroll={(event) => {
-                setScrollY(event.nativeEvent.contentOffset.y);
+              snapToInterval={ITEM_HEIGHT}
+              decelerationRate="fast"
+              onMomentumScrollEnd={(event) => {
+                const yOffset = event.nativeEvent.contentOffset.y;
+                const index = Math.round(yOffset / ITEM_HEIGHT);
+                
+                if (index === 0) {
+                  setIsRemoveSelected(true);
+                  setSelectedQuantity(null);
+                } else {
+                  setIsRemoveSelected(false);
+                  setSelectedQuantity(index);
+                }
               }}
-              {...scrollPanResponder.panHandlers}
             >
-              {/* Add some padding at top */}
-              <View style={styles.topPadding} />
+              {/* Top padding to center first item */}
+              <View style={{ height: ITEM_HEIGHT * 2 }} />
               
-              {options.map(renderOption)}
+              {/* Remove option */}
+              <View style={[styles.pickerItem, { height: ITEM_HEIGHT }]}>
+                <Text style={[styles.pickerItemText, styles.removeText]}>Remove</Text>
+              </View>
               
-              {/* Add some padding at bottom */}
-              <View style={styles.bottomPadding} />
+              {/* Quantity options */}
+              {quantities.map((qty) => (
+                <View key={qty} style={[styles.pickerItem, { height: ITEM_HEIGHT }]}>
+                  <Text style={styles.pickerItemText}>{qty}</Text>
+                </View>
+              ))}
+              
+              {/* Bottom padding to center last item */}
+              <View style={{ height: ITEM_HEIGHT * 2 }} />
             </ScrollView>
           </View>
           
@@ -282,51 +235,46 @@ const styles = StyleSheet.create({
   },
   quantityContainer: {
     flex: 1,
-    paddingHorizontal: 20,
+    justifyContent: 'center',
     marginBottom: 20,
+    position: 'relative',
+  },
+  selectionIndicator: {
+    position: 'absolute',
+    top: '50%',
+    left: 0,
+    right: 0,
+    height: 44,
+    marginTop: -22,
+    zIndex: 1,
+    justifyContent: 'space-between',
+  },
+  selectionLine: {
+    height: 0.5,
+    backgroundColor: '#C7C7CC',
+  },
+  selectionHighlight: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.03)',
   },
   scrollView: {
-    flex: 1,
+    height: 220,
   },
   scrollContent: {
     alignItems: 'center',
   },
-  topPadding: {
-    height: 60,
-  },
-  bottomPadding: {
-    height: 60,
-  },
-  quantityOption: {
+  pickerItem: {
     width: '100%',
-    height: 41,
-    backgroundColor: '#F6F6F6',
-    borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
   },
-  selectedQuantityOption: {
-    backgroundColor: '#F6F6F6',
-  },
-  quantityText: {
-    fontSize: 17,
-    fontWeight: '400',
-    color: '#BABABA',
-  },
-  selectedQuantityText: {
+  pickerItemText: {
+    fontSize: 20,
     color: '#000000',
-    fontWeight: '500',
+    fontWeight: '400',
   },
   removeText: {
-    fontSize: 20,
-    fontWeight: '400',
-    color: '#BABABA',
-  },
-  selectedRemoveText: {
     color: '#EA4335',
-    fontWeight: '400',
-    fontSize: 20,
   },
   doneButton: {
     backgroundColor: '#000000',

@@ -1,16 +1,26 @@
 import React from 'react';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { G, Path, Defs, ClipPath, Rect } from 'react-native-svg';
 
-const GlobalCartIcon = ({ size = 19, color = '#14142B' }) => (
-  <Svg width={size} height={size} viewBox="0 0 19 19" fill="none">
-    <Path 
-      d="M16.2561 5.42468L16.8918 18.326H2.87622L3.51294 5.42468H16.2561Z" 
-      stroke={color}
-    />
-    <Path 
-      d="M6.46033 8.03472L6.46033 4.39489C6.46033 3.48684 6.82105 2.61598 7.46314 1.97388C8.10523 1.33179 8.9761 0.971069 9.88415 0.971069C10.7922 0.971069 11.6631 1.33179 12.3052 1.97388C12.9473 2.61598 13.308 3.48684 13.308 4.39489V8.03472" 
-      stroke={color}
-    />
+const GlobalCartIcon = ({ size = 23, color = '#000000', filled = false }) => (
+  <Svg width={size} height={size} viewBox="0 0 23 23" fill="none">
+    <G clipPath="url(#clip0_646_9529)">
+      <Path 
+        d="M19.5403 6.71155L20.2952 22.0387H3.63501L4.38989 6.71155H19.5403Z" 
+        stroke={color}
+        strokeWidth="1.5"
+        fill={filled ? color : 'none'}
+      />
+      <Path 
+        d="M7.82037 9.72615L7.82037 5.32004C7.82037 4.22082 8.25704 3.16662 9.03431 2.38935C9.81158 1.61208 10.8658 1.17542 11.965 1.17542C13.0642 1.17542 14.1184 1.61208 14.8957 2.38935C15.673 3.16662 16.1096 4.22082 16.1096 5.32004V9.72615" 
+        stroke={color}
+        strokeWidth="1.5"
+      />
+    </G>
+    <Defs>
+      <ClipPath id="clip0_646_9529">
+        <Rect width="23" height="23" fill="white"/>
+      </ClipPath>
+    </Defs>
   </Svg>
 );
 

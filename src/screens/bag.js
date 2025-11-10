@@ -12,7 +12,6 @@ import {
   PanResponder,
   Image,
 } from 'react-native';
-import BottomNavigationBar from '../components/bottomnavigationbar';
 import BagQuantitySelectorModalOverlay from './bagquantityselectormodaloverlay';
 import BagSizeSelectorModalOverlay from './bagsizeselectormodaloverlay';
 import BagSizeSelectorSizeChart from './bagsizeselectorsizechart';
@@ -41,8 +40,7 @@ import {
   JCBIcon,
   MetroIcon,
   MaestroIcon,
-  CaretDownIcon,
-  BackIcon
+  CaretDownIcon
 } from '../assets/icons';
 
 // Helper function to get first image URL
@@ -148,8 +146,8 @@ const SwipeableBagItem = React.memo(({ item, index, onOpenQuantityModal, onOpenS
           </View>
           <View style={styles.productDetailsContainer}>
             <View style={styles.productInfo}>
-              <Text style={styles.productName}>{item.name}</Text>
-              <Text style={styles.productDescription}>{item.description}</Text>
+              {item.title && <Text style={styles.productTitle}>{item.title}</Text>}
+              <Text style={styles.productName}>{item.productName || item.name}</Text>
             </View>
           </View>
         </View>
@@ -175,10 +173,10 @@ const SwipeableBagItem = React.memo(({ item, index, onOpenQuantityModal, onOpenS
               const priceInfo = getItemPrice(item);
               if (priceInfo.type === 'sale' && priceInfo.originalPrice > 0) {
                 return (
-                  <>
+                  <View style={styles.priceRowContainer}>
                     <Text style={styles.originalPrice}>₹{priceInfo.originalPrice.toFixed(2)}</Text>
                     <Text style={styles.salePrice}>₹{priceInfo.price.toFixed(2)}</Text>
-                  </>
+                  </View>
                 );
               } else if (priceInfo.type === 'regular' || priceInfo.type === 'sale') {
                 return <Text style={styles.price}>₹{priceInfo.price.toFixed(2)}</Text>;
@@ -452,6 +450,18 @@ const BagScreen = ({ navigation, route }) => {
       // Check if user is authenticated (some promo codes might be user-specific)
       const isAuthenticated = yoraaAPI.isAuthenticated();
       console.log('🎟️ Fetching promo codes, user authenticated:', isAuthenticated);
+
+      // Only fetch promo codes if user is authenticated
+      if (!isAuthenticated) {
+        console.log('⚠️ User not authenticated, skipping promo codes fetch');
+        setPromoCodes({
+          available: [],
+          loading: false,
+          error: null,
+          selectedCode: null
+        });
+        return;
+      }
 
       const promoData = await yoraaAPI.getAvailablePromoCodes();
       
@@ -987,6 +997,8 @@ const BagScreen = ({ navigation, route }) => {
         hasUserToken: !!userToken,
         hasUserData: !!userData,
         userId: userId,
+        userEmail: userData?.email || userData?.emailAddress,
+        userPhone: userData?.phoneNumber || userData?.phNo,
         tokenLength: userToken ? userToken.length : 0
       });
       
@@ -1017,8 +1029,8 @@ const BagScreen = ({ navigation, route }) => {
       const formattedAddress = {
         firstName: selectedAddress.firstName || selectedAddress.name?.split(' ')[0] || userData?.firstName || 'Customer',
         lastName: selectedAddress.lastName || selectedAddress.name?.split(' ').slice(1).join(' ') || userData?.lastName || '',
-        email: selectedAddress.email || userData?.email || 'customer@yoraa.com',
-        phone: selectedAddress.phoneNumber || selectedAddress.phone || userData?.phoneNumber || '',
+        email: selectedAddress.email || userData?.email || userData?.emailAddress || '',
+        phone: selectedAddress.phoneNumber || selectedAddress.phone || userData?.phoneNumber || userData?.phNo || '',
         addressLine1: selectedAddress.address || selectedAddress.addressLine1 || '',
         addressLine2: selectedAddress.addressLine2 || '',
         city: selectedAddress.city || '',
@@ -1036,7 +1048,6 @@ const BagScreen = ({ navigation, route }) => {
         hasAllRequiredFields: !!(
           formattedAddress.firstName &&
           formattedAddress.lastName &&
-          formattedAddress.email &&
           formattedAddress.phone &&
           formattedAddress.addressLine1 &&
           formattedAddress.city &&
@@ -1045,6 +1056,35 @@ const BagScreen = ({ navigation, route }) => {
           formattedAddress.country
         )
       });
+      
+      // ⚠️ VALIDATION: Check if phone is present (email is optional)
+      if (!formattedAddress.phone) {
+        console.error('❌ Missing required phone number in address:', {
+          hasPhone: !!formattedAddress.phone,
+          userDataPhone: userData?.phoneNumber || userData?.phNo
+        });
+        
+        Alert.alert(
+          'Missing Phone Number',
+          'A phone number is required for delivery. Please update your address or profile with a valid phone number.',
+          [
+            {
+              text: 'Update Profile',
+              onPress: () => navigation.navigate('RewardsScreen')
+            },
+            {
+              text: 'Cancel',
+              style: 'cancel'
+            }
+          ]
+        );
+        return;
+      }
+      
+      // Note: Email is optional - many users in India sign up with just phone numbers
+      if (!formattedAddress.email) {
+        console.log('ℹ️ No email in address - proceeding with phone number only');
+      }
       
       // Process complete order using paymentService
       // Pass original bagItems - orderService will format them correctly
@@ -1251,9 +1291,6 @@ const BagScreen = ({ navigation, route }) => {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
-          <BackIcon color="#000000" size={24} />
-        </TouchableOpacity>
         <Text style={styles.headerTitle}>Bag</Text>
         <View style={styles.headerRight}>
           {/* Currency selector removed */}
@@ -1448,9 +1485,6 @@ const BagScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Bottom Navigation */}
-      <BottomNavigationBar activeTab="Home" />
-
       {/* Quantity Selector Modal */}
       <BagQuantitySelectorModalOverlay
         visible={modalStates.quantityModalVisible}
@@ -1496,18 +1530,12 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 12,
     backgroundColor: '#FFFFFF',
     height: 94, // 54px top padding + 24px content + 16px bottom
-  },
-  backButton: {
-    width: 68,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    paddingVertical: 8,
   },
   headerTitle: {
     fontSize: 16,
@@ -1516,6 +1544,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: -0.4,
     fontFamily: 'Montserrat',
+    flex: 1,
   },
   headerRight: {
     width: 68,
@@ -1565,6 +1594,15 @@ const styles = StyleSheet.create({
   },
   productInfo: {
     gap: 3,
+  },
+  productTitle: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: '#767676',
+    letterSpacing: -0.12,
+    lineHeight: 14.4,
+    fontFamily: 'Montserrat',
+    marginBottom: 2,
   },
   productName: {
     fontSize: 14,
@@ -1633,6 +1671,11 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     flexDirection: 'column',
     gap: 2,
+  },
+  priceRowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   price: {
     fontSize: 16,

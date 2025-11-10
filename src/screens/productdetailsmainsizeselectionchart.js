@@ -12,6 +12,7 @@ import {
   PanResponder,
   Image,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import apiService from '../services/apiService';
 import { useBag } from '../contexts/BagContext';
@@ -24,16 +25,18 @@ const SizeSelectionModal = ({
   product,
   activeSize,
   setActiveSize,
-  navigation
+  navigation,
+  actionType = 'addToCart' // 'addToCart' or 'buyNow'
 }) => {
   const { addToBag } = useBag();
   const [activeTab, setActiveTab] = useState('sizeChart'); // 'sizeChart' or 'howToMeasure'
-  const [selectedSize, setSelectedSize] = useState(activeSize || 'M');
+  const [selectedSize, setSelectedSize] = useState(null); // Start with no size selected
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [apiData, setApiData] = useState(null);
   const [sizeChartImage, setSizeChartImage] = useState(null);
   const [measurementUnit, setMeasurementUnit] = useState('inches'); // 'inches' or 'cm'
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   
   // Single animated value for transform to avoid native driver conflicts
   const translateY = useRef(new Animated.Value(height)).current;
@@ -105,11 +108,15 @@ const SizeSelectionModal = ({
         if (response.success && response.data?.items?.length > 0) {
           setApiData(response.data);
           
+          console.log('🔍 FULL API RESPONSE:', JSON.stringify(response.data, null, 2));
           console.log('🔍 All items in response:', response.data.items.map(item => ({
             id: item._id,
             productId: item.productId,
             itemId: item.itemId,
-            productName: item.productName
+            productName: item.productName,
+            hasSizes: !!item.sizes,
+            sizesCount: item.sizes?.length || 0,
+            firstSizeKeys: item.sizes?.[0] ? Object.keys(item.sizes[0]) : []
           })));
           
           console.log('🔍 Looking for product:', {
@@ -222,20 +229,78 @@ const SizeSelectionModal = ({
     }
 
     console.log('📏 Getting size data for product:', targetItem.productName);
+    console.log('📏 TARGET ITEM FULL OBJECT:', JSON.stringify(targetItem, null, 2));
+    console.log('📏 Target item has sizes?:', !!targetItem.sizes);
+    console.log('📏 Target item sizes length:', targetItem.sizes?.length);
+    console.log('📏 Target item sizeOptions?:', targetItem.sizeOptions);
+    console.log('📏 All keys in target item:', Object.keys(targetItem));
 
     // Get sizes from the specific target product only
     const allSizes = [];
     
-    if (targetItem.sizes && targetItem.sizes.length > 0) {
-      targetItem.sizes.forEach((sizeInfo) => {
+    // Check multiple possible locations for size data
+    const sizesArray = targetItem.sizes || targetItem.sizeOptions || targetItem.sizeVariants || [];
+    
+    console.log('📏 Using sizes array with length:', sizesArray.length);
+    
+    if (sizesArray && sizesArray.length > 0) {
+      sizesArray.forEach((sizeInfo) => {
+        console.log('===========================================');
+        console.log('📏 RAW SIZE OBJECT:', JSON.stringify(sizeInfo, null, 2));
+        console.log('📏 All available keys:', Object.keys(sizeInfo));
+        
+        // Helper function to safely get value
+        const getValue = (obj, keys) => {
+          for (const key of keys) {
+            const val = obj[key];
+            if (val !== undefined && val !== null && val !== '') {
+              return val;
+            }
+          }
+          return null;
+        };
+        
+        // Extract measurements with CORRECT backend field names
+        const chestCm = getValue(sizeInfo, ['chestCm', 'Chest (cm)', 'chest (cm)', 'chest_cm']);
+        const chestIn = getValue(sizeInfo, ['chestIn', 'Chest (in)', 'chest (in)', 'chest_in']);
+        const frontLengthCm = getValue(sizeInfo, ['frontLengthCm', 'Front Length (cm)', 'frontLength (cm)', 'length (cm)', 'Length (cm)']);
+        const frontLengthIn = getValue(sizeInfo, ['frontLengthIn', 'Front Length (in)', 'frontLength (in)', 'length (in)', 'Length (in)']);
+        const shoulderCm = getValue(sizeInfo, ['acrossShoulderCm', 'Shoulder (cm)', 'shoulder (cm)', 'shoulderCm', 'shoulder_cm']);
+        const shoulderIn = getValue(sizeInfo, ['acrossShoulderIn', 'Shoulder (in)', 'shoulder (in)', 'shoulderIn', 'shoulder_in']);
+        const waistCm = getValue(sizeInfo, ['fitWaistCm', 'Waist (cm)', 'waist (cm)', 'waistCm', 'waist_cm']);
+        const waistIn = getValue(sizeInfo, ['toFitWaistIn', 'Waist (in)', 'waist (in)', 'waistIn', 'waist_in']);
+        const inseamCm = getValue(sizeInfo, ['inseamLengthCm', 'Inseam (cm)', 'inseam (cm)', 'inseamCm', 'inseam_cm']);
+        const inseamIn = getValue(sizeInfo, ['inseamLengthIn', 'Inseam (in)', 'inseam (in)', 'inseamIn', 'inseam_in']);
+        
+        console.log('📏 Extracted measurements:', {
+          size: sizeInfo.size,
+          chest: `${chestCm}cm / ${chestIn}in`,
+          frontLength: `${frontLengthCm}cm / ${frontLengthIn}in`,
+          shoulder: `${shoulderCm}cm / ${shoulderIn}in`,
+          waist: `${waistCm}cm / ${waistIn}in`,
+          inseam: `${inseamCm}cm / ${inseamIn}in`
+        });
+        console.log('===========================================');
+        console.log('===========================================');
+        
         allSizes.push({
           size: sizeInfo.size,
-          chestIn: sizeInfo.chestIn || 0,
-          frontLengthIn: sizeInfo.frontLengthIn || 0,
-          acrossShoulderIn: sizeInfo.acrossShoulderIn || 0,
-          chestCm: sizeInfo.chestCm || 0,
-          frontLengthCm: sizeInfo.frontLengthCm || 0,
-          acrossShoulderCm: sizeInfo.acrossShoulderCm || 0,
+          // Chest measurements
+          chestIn: chestIn || 0,
+          chestCm: chestCm || 0,
+          // Front Length measurements
+          frontLengthIn: frontLengthIn || 0,
+          frontLengthCm: frontLengthCm || 0,
+          // Shoulder measurements
+          acrossShoulderIn: shoulderIn || 0,
+          acrossShoulderCm: shoulderCm || 0,
+          // Waist measurements
+          waistIn: waistIn || 0,
+          waistCm: waistCm || 0,
+          // Inseam measurements
+          inseamIn: inseamIn || 0,
+          inseamCm: inseamCm || 0,
+          // Price and stock
           regularPrice: sizeInfo.regularPrice || 0,
           salePrice: sizeInfo.salePrice || 0,
           quantity: sizeInfo.quantity || 0,
@@ -409,31 +474,108 @@ const SizeSelectionModal = ({
   const handleSizeSelect = (size) => {
     setSelectedSize(size);
     setActiveSize(size);
+    // Don't automatically trigger action - wait for confirm button
   };
 
-  const handleGoToBag = () => {
-    // Add the product to bag with selected size
-    if (product && selectedSize) {
-      const productWithSize = {
-        ...product,
-        size: selectedSize,
-        id: product.id || product._id
-      };
-      addToBag(productWithSize);
+  // New function to handle confirm button press
+  const handleConfirmSize = async () => {
+    if (!selectedSize) {
+      Alert.alert('Select Size', 'Please select a size before confirming');
+      return;
     }
-    
-    // Close modal and navigate to bag screen
-    handleClose();
-    if (navigation && navigation.navigate) {
-      navigation.navigate('Bag', { 
-        previousScreen: 'ProductViewOne',
-        productAdded: true 
-      });
+
+    if (actionType === 'addToCart') {
+      await handleAddToCartWithSize(selectedSize);
+    } else if (actionType === 'buyNow') {
+      await handleBuyNowWithSize(selectedSize);
+    }
+  };
+
+  const handleAddToCartWithSize = async (size) => {
+    if (!product) {
+      Alert.alert('Error', 'Product information not available');
+      return;
+    }
+
+    if (!size) {
+      Alert.alert('Select Size', 'Please select a size before proceeding');
+      return;
+    }
+
+    setIsAddingToCart(true);
+    try {
+      // Find the SKU for the selected size
+      let sku = null;
+      if (product.sizes && Array.isArray(product.sizes)) {
+        const sizeVariant = product.sizes.find(s => s.size === size);
+        sku = sizeVariant?.sku;
+      }
+
+      await addToBag(product, size, sku);
+      
+      // Close modal after adding to cart
+      handleClose();
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+      Alert.alert('Error', 'Failed to add item to cart. Please try again.');
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
+  const handleBuyNowWithSize = async (size) => {
+    if (!product) {
+      Alert.alert('Error', 'Product information not available');
+      return;
+    }
+
+    if (!size) {
+      Alert.alert('Select Size', 'Please select a size before proceeding');
+      return;
+    }
+
+    setIsAddingToCart(true);
+    try {
+      // Find the SKU for the selected size
+      let sku = null;
+      if (product.sizes && Array.isArray(product.sizes)) {
+        const sizeVariant = product.sizes.find(s => s.size === size);
+        sku = sizeVariant?.sku;
+      }
+
+      await addToBag(product, size, sku);
+      
+      // Close modal and navigate to bag for checkout
+      handleClose();
+      setTimeout(() => {
+        if (navigation && navigation.navigate) {
+          navigation.navigate('Bag', { 
+            previousScreen: 'ProductViewOne',
+            fromBuyNow: true,
+            checkoutItem: {
+              product,
+              size,
+              sku
+            }
+          });
+        }
+      }, 300); // Wait for modal close animation
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+      Alert.alert('Error', 'Failed to add item to cart. Please try again.');
+    } finally {
+      setIsAddingToCart(false);
     }
   };
 
   const renderSizeChart = () => {
     const sizeData = getSizeData();
+    
+    // Enhanced logging for debugging
+    console.log('🎯 renderSizeChart - Size data length:', sizeData.length);
+    console.log('🎯 renderSizeChart - Size data:', JSON.stringify(sizeData, null, 2));
+    console.log('🎯 renderSizeChart - Product:', JSON.stringify(product, null, 2));
+    console.log('🎯 renderSizeChart - API Data:', apiData);
     
     if (loading) {
       return (
@@ -467,7 +609,8 @@ const SizeSelectionModal = ({
       return (
         <View style={styles.tabContent}>
           <View style={styles.noDataContainer}>
-            <Text style={styles.noDataText}>No size data available</Text>
+            <Text style={styles.noDataText}>No size data available for this product</Text>
+            <Text style={styles.noDataSubText}>Please contact support to add size information</Text>
           </View>
         </View>
       );
@@ -475,72 +618,95 @@ const SizeSelectionModal = ({
 
     return (
       <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-        {/* Size selection instructions */}
+        {/* Size selection instructions with unit toggle */}
         <View style={styles.sizeSelectionHeader}>
-          <Text style={styles.sizeInstructions}>Select your size from the measurements below</Text>
-        </View>
-
-        {/* Unit Toggle */}
-        <View style={styles.unitToggleContainer}>
-          <TouchableOpacity
-            style={[styles.unitToggleButton, measurementUnit === 'inches' && styles.unitToggleButtonActive]}
-            onPress={() => setMeasurementUnit('inches')}
-          >
-            <Text style={[styles.unitToggleText, measurementUnit === 'inches' && styles.unitToggleTextActive]}>
-              Inches
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.unitToggleButton, measurementUnit === 'cm' && styles.unitToggleButtonActive]}
-            onPress={() => setMeasurementUnit('cm')}
-          >
-            <Text style={[styles.unitToggleText, measurementUnit === 'cm' && styles.unitToggleTextActive]}>
-              Centimeters
-            </Text>
-          </TouchableOpacity>
+          <Text style={styles.sizeInstructions}>Select size in</Text>
+          
+          {/* Unit Toggle */}
+          <View style={styles.unitToggleContainer}>
+            <TouchableOpacity
+              style={[styles.unitToggleButton, measurementUnit === 'inches' && styles.unitToggleButtonActive]}
+              onPress={() => setMeasurementUnit('inches')}
+            >
+              <Text style={[styles.unitToggleText, measurementUnit === 'inches' && styles.unitToggleTextActive]}>
+                in
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.unitToggleButton, measurementUnit === 'cm' && styles.unitToggleButtonActive]}
+              onPress={() => setMeasurementUnit('cm')}
+            >
+              <Text style={[styles.unitToggleText, measurementUnit === 'cm' && styles.unitToggleTextActive]}>
+                cm
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Excel-like Size Chart Table */}
         <View style={styles.tableContainer}>
           {/* Table Header */}
           <View style={styles.tableHeader}>
+            {/* Empty space for radio button */}
+            <View style={styles.radioButtonSpace} />
             <Text style={[styles.tableHeaderText, styles.sizeColumn]}>Size</Text>
             <Text style={[styles.tableHeaderText, styles.measurementColumn]}>
               Chest {measurementUnit === 'inches' ? '(in)' : '(cm)'}
             </Text>
             <Text style={[styles.tableHeaderText, styles.measurementColumn]}>
-              Front Length {measurementUnit === 'inches' ? '(in)' : '(cm)'}
+              Length {measurementUnit === 'inches' ? '(in)' : '(cm)'}
             </Text>
             <Text style={[styles.tableHeaderText, styles.measurementColumn]}>
-              Across Shoulder {measurementUnit === 'inches' ? '(in)' : '(cm)'}
+              Shoulder {measurementUnit === 'inches' ? '(in)' : '(cm)'}
+            </Text>
+            <Text style={[styles.tableHeaderText, styles.measurementColumn]}>
+              Waist {measurementUnit === 'inches' ? '(in)' : '(cm)'}
+            </Text>
+            <Text style={[styles.tableHeaderText, styles.measurementColumn]}>
+              Inseam {measurementUnit === 'inches' ? '(in)' : '(cm)'}
             </Text>
           </View>
 
           {/* Table Rows */}
-          {sizeData.map((item, index) => (
-            <TouchableOpacity
-              key={item.size}
-              style={[styles.tableRow, index === sizeData.length - 1 && styles.lastTableRow]}
-              onPress={() => handleSizeSelect(item.size)}
-            >
-              <View style={[
-                styles.radioButton,
-                selectedSize === item.size && styles.radioButtonSelected
-              ]}>
-                {selectedSize === item.size && <View style={styles.radioButtonInner} />}
-              </View>
-              <Text style={[styles.tableCellText, styles.sizeColumn]}>{item.size}</Text>
-              <Text style={[styles.tableCellText, styles.measurementColumn]}>
-                {measurementUnit === 'inches' ? item.chestIn : item.chestCm}
-              </Text>
-              <Text style={[styles.tableCellText, styles.measurementColumn]}>
-                {measurementUnit === 'inches' ? item.frontLengthIn : item.frontLengthCm}
-              </Text>
-              <Text style={[styles.tableCellText, styles.measurementColumn]}>
-                {measurementUnit === 'inches' ? item.acrossShoulderIn : item.acrossShoulderCm}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {sizeData.map((item, index) => {
+            // Get the measurement values
+            const chestValue = measurementUnit === 'inches' ? item.chestIn : item.chestCm;
+            const lengthValue = measurementUnit === 'inches' ? item.frontLengthIn : item.frontLengthCm;
+            const shoulderValue = measurementUnit === 'inches' ? item.acrossShoulderIn : item.acrossShoulderCm;
+            const waistValue = measurementUnit === 'inches' ? item.waistIn : item.waistCm;
+            const inseamValue = measurementUnit === 'inches' ? item.inseamIn : item.inseamCm;
+            
+            return (
+              <TouchableOpacity
+                key={item.size}
+                style={[styles.tableRow, index === sizeData.length - 1 && styles.lastTableRow]}
+                onPress={() => handleSizeSelect(item.size)}
+              >
+                <View style={[
+                  styles.radioButton,
+                  selectedSize === item.size && styles.radioButtonSelected
+                ]}>
+                  {selectedSize === item.size && <View style={styles.radioButtonInner} />}
+                </View>
+                <Text style={[styles.tableCellText, styles.sizeColumn]}>{item.size}</Text>
+                <Text style={[styles.tableCellText, styles.measurementColumn]}>
+                  {chestValue || '-'}
+                </Text>
+                <Text style={[styles.tableCellText, styles.measurementColumn]}>
+                  {lengthValue || '-'}
+                </Text>
+                <Text style={[styles.tableCellText, styles.measurementColumn]}>
+                  {shoulderValue || '-'}
+                </Text>
+                <Text style={[styles.tableCellText, styles.measurementColumn]}>
+                  {waistValue || '-'}
+                </Text>
+                <Text style={[styles.tableCellText, styles.measurementColumn]}>
+                  {inseamValue || '-'}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
         
         {/* Bottom spacing */}
@@ -565,13 +731,6 @@ const SizeSelectionModal = ({
       <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
         <View style={styles.measurementGuideContainer}>
           <Text style={styles.measurementGuideTitle}>How to Measure</Text>
-          
-          {/* Debug info to show which product's image is being displayed */}
-          {sizeChartImage?.productName && (
-            <Text style={styles.debugProductInfo}>
-              Showing image for: {sizeChartImage.productName}
-            </Text>
-          )}
           
           {sizeChartImage?.url ? (
             <View style={styles.imageContainer}>
@@ -705,16 +864,24 @@ const SizeSelectionModal = ({
               {activeTab === 'sizeChart' ? renderSizeChart() : renderHowToMeasure()}
             </ScrollView>
 
-            {/* Go to Bag Button */}
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity 
-                style={[styles.goToBagButton, isDragging && styles.buttonDisabled]} 
-                onPress={handleGoToBag}
-                disabled={isDragging}
-              >
-                <Text style={styles.goToBagText}>Go to Bag</Text>
-              </TouchableOpacity>
-            </View>
+            {/* Confirm Size Button - Only show when a size is selected and on Size Chart tab */}
+            {selectedSize && activeTab === 'sizeChart' && (
+              <View style={styles.confirmButtonContainer}>
+                <TouchableOpacity
+                  style={styles.confirmButton}
+                  onPress={handleConfirmSize}
+                  disabled={isAddingToCart}
+                >
+                  {isAddingToCart ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.confirmButtonText}>
+                      Confirm Size ({selectedSize})
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
           </Animated.View>
         </TouchableWithoutFeedback>
       </View>
@@ -807,40 +974,46 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sizeSelectionHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
-    paddingVertical: 20,
+    paddingVertical: 8,
     paddingHorizontal: 26,
+    height: 45,
   },
   sizeInstructions: {
     fontSize: 14,
     fontWeight: '400',
     color: '#000000',
     fontFamily: 'Montserrat-Regular',
-    textAlign: 'center',
+    flex: 1,
+    marginRight: 12,
   },
   unitToggleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
-    paddingHorizontal: 24,
-    justifyContent: 'center',
+    backgroundColor: '#EDEDED',
+    borderRadius: 50,
+    height: 30,
+    width: 80,
+    overflow: 'hidden',
+    flexShrink: 0,
   },
   unitToggleButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#CCCCCC',
-    marginHorizontal: 4,
-    backgroundColor: 'transparent',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 30,
+    borderRadius: 50,
   },
   unitToggleButtonActive: {
     backgroundColor: '#000000',
+    borderWidth: 1,
     borderColor: '#000000',
   },
   unitToggleText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '400',
     color: '#000000',
     fontFamily: 'Montserrat-Regular',
@@ -893,6 +1066,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
+  },
+  radioButtonSpace: {
+    width: 28, // 20px radio button + 8px marginRight
+    height: 20,
   },
   radioButtonSelected: {
     borderColor: '#000000',
@@ -968,6 +1145,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Regular',
     textAlign: 'center',
   },
+  noDataSubText: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#999999',
+    fontFamily: 'Montserrat-Regular',
+    textAlign: 'center',
+    marginTop: 8,
+  },
   // How to Measure tab styles
   measurementGuideContainer: {
     padding: 20,
@@ -1040,26 +1225,33 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  buttonContainer: {
-    paddingHorizontal: 24,
-    paddingVertical: 32,
+  tableBottomSpacing: {
+    height: 20,
   },
-  goToBagButton: {
+  // Confirm Button Styles
+  confirmButtonContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingBottom: 32,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E4E4E4',
+  },
+  confirmButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
     paddingVertical: 16,
+    paddingHorizontal: 51,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#000000',
+    justifyContent: 'center',
+    minHeight: 52,
   },
-  goToBagText: {
+  confirmButtonText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#FFFFFF',
     fontFamily: 'Montserrat-Medium',
-  },
-  tableBottomSpacing: {
-    height: 20,
+    lineHeight: 19.2,
   },
 });
 

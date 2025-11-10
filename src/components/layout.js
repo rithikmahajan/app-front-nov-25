@@ -15,6 +15,7 @@ import ShopScreen from '../screens/ShopScreen';
 import CollectionScreen from '../screens/CollectionScreen';
 import RewardsScreen from '../screens/RewardsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import FavouritesScreen from '../screens/favourites';
 
 // Try to import PreferenceSelector safely
 let PreferenceSelector;
@@ -36,8 +37,9 @@ import ProductDetailsMain from '../screens/productdetailsmain';
 // Sale screens will be loaded dynamically
 
 // Placeholder content components for each tab
-const HomeContent = ({ navigation }) => <HomeScreen navigation={navigation} />;
-const ShopContent = ({ navigation }) => <ShopScreen navigation={navigation} />;
+const HomeContent = ({ navigation, route }) => <HomeScreen navigation={navigation} route={route} />;
+const ShopContent = ({ navigation, route }) => <ShopScreen navigation={navigation} route={route} />;
+const FavouritesContent = ({ navigation }) => <FavouritesScreen navigation={navigation} />;
 const CollectionContent = ({ navigation }) => <CollectionScreen navigation={navigation} />;
 const RewardsContent = ({ navigation, route }) => <RewardsScreen navigation={navigation} route={route} />;
 const ProfileContent = ({ navigation }) => <ProfileScreen navigation={navigation} />;
@@ -70,7 +72,7 @@ const EnhancedLayout = () => {
         return;
       }
       
-      if (['Home', 'Shop', 'Collection', 'Rewards', 'Profile'].includes(screenName)) {
+      if (['Home', 'Shop', 'Favourites', 'Collection', 'Rewards', 'Profile'].includes(screenName)) {
         setActiveTab(screenName);
         setCurrentScreen(screenName);
       } else {
@@ -80,7 +82,7 @@ const EnhancedLayout = () => {
     },
     replace: (screenName, params) => {
       // Replace current screen with new screen (similar to navigate but more explicit)
-      if (['Home', 'Shop', 'Collection', 'Rewards', 'Profile'].includes(screenName)) {
+      if (['Home', 'Shop', 'Favourites', 'Collection', 'Rewards', 'Profile'].includes(screenName)) {
         setActiveTab(screenName);
         setCurrentScreen(screenName);
       } else {
@@ -92,7 +94,7 @@ const EnhancedLayout = () => {
       // Handle back navigation to previous screen
       if (routeParams?.previousScreen) {
         setCurrentScreen(routeParams.previousScreen);
-        if (['Home', 'Shop', 'Collection', 'Rewards', 'Profile'].includes(routeParams.previousScreen)) {
+        if (['Home', 'Shop', 'Favourites', 'Collection', 'Rewards', 'Profile'].includes(routeParams.previousScreen)) {
           setActiveTab(routeParams.previousScreen);
         }
       } else {
@@ -140,7 +142,7 @@ const EnhancedLayout = () => {
     try {
       switch (currentScreen) {
         case 'Home':
-          return <HomeContent navigation={navigation} />;
+          return <HomeContent navigation={navigation} route={{ params: routeParams }} />;
         case 'favourites':
           return renderScreen('FavouritesScreen', { navigation });
         case 'FavouritesContent':
@@ -154,7 +156,9 @@ const EnhancedLayout = () => {
         case 'FavouritesSizeChartReference':
           return renderScreen('FavouritesSizeChartReference', { navigation, route: { params: routeParams } });
         case 'Shop':
-          return <ShopContent navigation={navigation} />;
+          return <ShopContent navigation={navigation} route={{ params: routeParams }} />;
+        case 'Favourites':
+          return <FavouritesContent navigation={navigation} />;
         case 'Collection':
           return <CollectionContent navigation={navigation} />;
         case 'Filters':
@@ -248,9 +252,9 @@ const EnhancedLayout = () => {
         case 'ProductViewOne':
           return renderScreen('ProductViewOne', { navigation, route: { params: routeParams } });
         case 'ProductViewTwo':
-          return renderScreen('ProductViewTwo', { navigation });
+          return renderScreen('ProductViewTwo', { navigation, route: { params: routeParams } });
         case 'ProductViewThree':
-          return renderScreen('ProductViewThree', { navigation });
+          return renderScreen('ProductViewThree', { navigation, route: { params: routeParams } });
         case 'ProductDetailsMain':
           return <ProductDetailsMain navigation={navigation} route={{ params: routeParams }} />;
         case 'TryOnProTips':
@@ -307,7 +311,7 @@ const EnhancedLayout = () => {
     }
   };
 
-  const shouldShowBottomNav = ['Home', 'Shop', 'Collection', 'Rewards', 'Profile'].includes(currentScreen);
+  const shouldShowBottomNav = ['Home', 'Shop', 'Favourites', 'Collection', 'Rewards', 'Profile'].includes(currentScreen);
   const shouldShowHeader = ['Profile'].includes(currentScreen);
 
   const handleClosePreferenceModal = () => {
@@ -317,9 +321,9 @@ const EnhancedLayout = () => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      
       <SafeAreaView style={styles.safeContainer}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-        
         {/* Dynamic Header - Only show for main tabs except Collection and Home */}
         {shouldShowHeader && activeTab !== 'Home' && activeTab !== 'Profile' && (
           <View style={styles.header}>
