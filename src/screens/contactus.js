@@ -15,6 +15,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import auth from '@react-native-firebase/auth';
 import yoraaAPI from '../services/yoraaAPI';
 import chatService from '../services/chatService';
@@ -33,11 +34,12 @@ const BackArrowIcon = () => (
 
 // Send Icon Component
 const SendIcon = () => (
-  <View style={styles.sendIcon}>
-    <View style={styles.sendArrow} />
-    <View style={styles.sendArrowHead1} />
-    <View style={styles.sendArrowHead2} />
-  </View>
+  <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <Path 
+      d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" 
+      fill="#FFFFFF"
+    />
+  </Svg>
 );
 
 // Photo Icon Component
@@ -126,9 +128,38 @@ const ContactUsScreen = ({ navigation, visible = true }) => {
   const [chatError, setChatError] = useState(null);
   const [chatSession, setChatSession] = useState(null);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   
   // ScrollView ref for auto-scrolling to bottom
   const messagesScrollRef = useRef(null);
+  
+  // Animation for send button
+  const sendButtonScale = useRef(new Animated.Value(1)).current;
+  const loadingDotAnim = useRef(new Animated.Value(0)).current;
+
+  // Start loading animation when sending
+  useEffect(() => {
+    if (isSending) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(loadingDotAnim, {
+            toValue: 1,
+            duration: 600,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(loadingDotAnim, {
+            toValue: 0,
+            duration: 600,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      loadingDotAnim.setValue(0);
+    }
+  }, [isSending, loadingDotAnim]);
 
   useEffect(() => {
     if (visible && currentView === 'modal') {
@@ -473,17 +504,35 @@ Guest User`;
   const handleSendMessage = useCallback(async () => {
     const messageToSend = messageText.trim();
     
-    if (!messageToSend || !chatService.hasActiveSession()) {
+    if (!messageToSend || !chatService.hasActiveSession() || isSending) {
       return;
     }
 
     try {
+      setIsSending(true);
       setMessageText(''); // Clear input immediately for better UX
+      
+      // Animate button press
+      Animated.sequence([
+        Animated.timing(sendButtonScale, {
+          toValue: 0.9,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(sendButtonScale, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]).start();
       
       // Send message through chat service
       await chatService.sendMessage(messageToSend);
+      
+      setIsSending(false);
     } catch (error) {
       console.error('❌ Error sending message:', error);
+      setIsSending(false);
       Alert.alert(
         'Send Error',
         'Failed to send message. Please try again.',
@@ -492,7 +541,7 @@ Guest User`;
       // Restore message text if sending failed
       setMessageText(messageToSend);
     }
-  }, [messageText]);
+  }, [messageText, isSending, sendButtonScale]);
 
   const handlePhotoUpload = () => {
     Alert.alert(
@@ -692,20 +741,36 @@ Guest User`;
               multiline
               onSubmitEditing={handleSendMessage}
             />
-            <TouchableOpacity style={styles.photoButton} onPress={handlePhotoUpload}>
-              <PhotoIcon />
-            </TouchableOpacity>
           </View>
-          <TouchableOpacity 
-            style={[
-              styles.sendButton,
-              !messageText.trim() && styles.sendButtonDisabled
-            ]} 
-            onPress={handleSendMessage}
-            disabled={!messageText.trim()}
-          >
-            <SendIcon />
-          </TouchableOpacity>
+          <Animated.View style={{ transform: [{ scale: sendButtonScale }] }}>
+            <TouchableOpacity 
+              style={[
+                styles.sendButton,
+                !messageText.trim() && styles.sendButtonDisabled,
+                isSending && styles.sendButtonLoading,
+                messageText.trim() && !isSending && styles.sendButtonActive
+              ]} 
+              onPress={handleSendMessage}
+              disabled={!messageText.trim() || isSending}
+            >
+              {isSending ? (
+                <Animated.View style={[
+                  styles.loadingDot,
+                  {
+                    opacity: loadingDotAnim,
+                    transform: [{
+                      scale: loadingDotAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.5, 1]
+                      })
+                    }]
+                  }
+                ]} />
+              ) : (
+                <SendIcon />
+              )}
+            </TouchableOpacity>
+          </Animated.View>
         </View>
         <View style={styles.bottomIndicator} />
       </KeyboardAvoidingView>
@@ -842,18 +907,6 @@ Guest User`;
             <Text style={styles.supportHours}>
               We're here to help Monday to friday 10 AM - 4 PM IST
             </Text>
-
-            {/* Authentication Notice for Chat */}
-            {!isUserAuthenticated && (
-              <View style={styles.authNotice}>
-                <Text style={styles.authNoticeText}>
-                  💬 Live chat support is available for logged-in users only.
-                </Text>
-                <Text style={styles.authNoticeSubText}>
-                  Please sign in to access instant chat support, or contact us via email below.
-                </Text>
-              </View>
-            )}
 
             {/* Contact Customer Support Button */}
             <TouchableOpacity 
@@ -1188,22 +1241,34 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#353535',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#007AFF',
+    shadowColor: '#000000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   sendButtonDisabled: {
-    backgroundColor: '#C7C7CC',
-    shadowColor: '#C7C7CC',
-    shadowOpacity: 0.2,
+    backgroundColor: '#353535',
+    opacity: 0.6,
+  },
+  sendButtonLoading: {
+    backgroundColor: '#353535',
+    opacity: 1,
+  },
+  sendButtonActive: {
+    backgroundColor: '#1FE8B7',
+  },
+  loadingDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#FFFFFF',
   },
   bottomIndicator: {
     width: 134,
@@ -1265,40 +1330,6 @@ const styles = StyleSheet.create({
     top: 2,
     left: 6,
     transform: [{ rotate: '15deg' }],
-  },
-  sendIcon: {
-    width: 22,
-    height: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    transform: [{ translateX: 1 }], // Slight offset to center visually
-  },
-  sendArrow: {
-    width: 16,
-    height: 2,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 1,
-    transform: [{ rotate: '45deg' }],
-  },
-  sendArrowHead1: {
-    position: 'absolute',
-    width: 8,
-    height: 2,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 1,
-    transform: [{ rotate: '15deg' }],
-    top: 6,
-    right: 1,
-  },
-  sendArrowHead2: {
-    position: 'absolute',
-    width: 8,
-    height: 2,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 1,
-    transform: [{ rotate: '75deg' }],
-    top: 12,
-    right: 1,
   },
   photoIcon: {
     width: 20,

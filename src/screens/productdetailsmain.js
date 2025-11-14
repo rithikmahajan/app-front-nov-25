@@ -17,16 +17,17 @@ import {
   Alert,
 } from 'react-native';
 import Video from 'react-native-video';
-import Svg, { Circle, G, Path, Defs, ClipPath, Rect } from 'react-native-svg';
+import Svg, { G, Path, Defs, ClipPath, Rect } from 'react-native-svg';
 import { FontSizes, FontWeights, Spacing, BorderRadius } from '../constants';
-import BottomNavigationBar from '../components/bottomnavigationbar';
 import SizeSelectionModal from './productdetailsmainsizeselectionchart';
 import GlobalBackButton from '../components/GlobalBackButton';
 import BundleRecommendations from '../components/BundleRecommendations';
+import BottomNavigationBar from '../components/bottomnavigationbar';
 import { apiService } from '../services/apiService';
 import { yoraaAPI } from '../services/yoraaAPI';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useBag } from '../contexts/BagContext';
+import AnimatedHeartIcon from '../components/AnimatedHeartIcon';
 
 const { width } = Dimensions.get('window');
 
@@ -394,25 +395,6 @@ const ProductDetailsMain = ({ navigation, route }) => {
     </View>
   );
 
-  const HeartIcon = ({ filled = false }) => (
-    <Svg width={34} height={34} viewBox="0 0 34 34" fill="none">
-      <Circle cx={17} cy={17} r={17} fill="white" />
-      <G clipPath="url(#clip0_10455_54515)">
-        <Path
-          d="M17 24.5L23.9813 17.4188C24.7139 16.6861 25.1255 15.6924 25.1255 14.6563C25.1255 13.6201 24.7139 12.6264 23.9813 11.8938C23.2486 11.1611 22.2549 10.7495 21.2188 10.7495C20.1826 10.7495 19.1889 11.1611 18.4563 11.8938L17 13.25L15.5438 11.8938C14.8111 11.1611 13.8174 10.7495 12.7813 10.7495C11.7451 10.7495 10.7514 11.1611 10.0188 11.8938C9.28612 12.6264 8.87451 13.6201 8.87451 14.6563C8.87451 15.6924 9.28612 16.6861 10.0188 17.4188L17 24.5Z"
-          stroke="black"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill={filled ? "black" : "none"}
-        />
-      </G>
-      <Defs>
-        <ClipPath id="clip0_10455_54515">
-          <Rect width={20} height={20} fill="white" transform="translate(7 7)" />
-        </ClipPath>
-      </Defs>
-    </Svg>
-  );
 
   const ShoppingBagIcon = () => (
     <View style={styles.bagIcon}>
@@ -465,18 +447,15 @@ const ProductDetailsMain = ({ navigation, route }) => {
 
   const StarIcon = ({ filled = true }) => (
     <View style={styles.starIcon}>
-      <Svg width="18" height="18" viewBox="0 0 32 32" fill="none">
-        <G clipPath="url(#clip0)">
-          <Path
-            d="M15.1307 5.88797C15.2673 5.55946 15.7327 5.55945 15.8693 5.88797L17.3899 9.54398C17.4476 9.68248 17.5778 9.77711 17.7273 9.78909L21.6743 10.1055C22.0289 10.134 22.1728 10.5766 21.9025 10.808L18.8954 13.384C18.7815 13.4816 18.7317 13.6347 18.7665 13.7806L19.6852 17.6322C19.7678 17.9782 19.3913 18.2518 19.0877 18.0663L15.7085 16.0024C15.5805 15.9242 15.4195 15.9242 15.2915 16.0024L11.9123 18.0663C11.6087 18.2518 11.2322 17.9782 11.3148 17.6322L12.2335 13.7806C12.2683 13.6347 12.2185 13.4816 12.1046 13.384L9.09746 10.808C8.82724 10.5766 8.97105 10.134 9.32572 10.1055L13.2727 9.78909C13.4222 9.77711 13.5525 9.68248 13.6101 9.54398L15.1307 5.88797Z"
-            fill={filled ? "#FBBC05" : "#E5E5E5"}
-          />
-        </G>
-        <Defs>
-          <ClipPath id="clip0">
-            <Rect width="32" height="32" fill="white"/>
-          </ClipPath>
-        </Defs>
+      <Svg width="18" height="13" viewBox="0 0 45 32" fill="none">
+        <Path
+          d="M23.6558 11.1753C23.3551 11.1782 23.0611 11.0894 22.8151 10.9213C22.5691 10.7532 22.3835 10.5143 22.2846 10.2383L19.1039 0.936539C19.0027 0.662351 18.8169 0.425233 18.5719 0.2576C18.3268 0.0899667 18.0345 0 17.7348 0C17.4352 0 17.1429 0.0899667 16.8978 0.2576C16.6528 0.425233 16.4669 0.662351 16.3658 0.936539L13.1676 10.2213C13.0686 10.4973 12.883 10.7361 12.637 10.9042C12.391 11.0723 12.097 11.1612 11.7963 11.1582H1.43515C1.13706 11.1514 0.844419 11.2368 0.599511 11.4021C0.354603 11.5675 0.170101 11.8042 0.0726491 12.0782C-0.0226684 12.3514 -0.0242315 12.6473 0.0681953 12.9215C0.160622 13.1957 0.342048 13.4333 0.58523 13.5987L8.99684 19.3867C9.23736 19.5494 9.41755 19.783 9.51067 20.0531C9.60379 20.3231 9.60489 20.6152 9.5138 20.8859L6.30688 30.2388C6.23886 30.4443 6.22285 30.6627 6.26023 30.8755C6.2976 31.0883 6.38725 31.2892 6.52155 31.4611C6.65754 31.6341 6.83348 31.7736 7.03516 31.8683C7.23684 31.963 7.45859 32.0103 7.68253 32.0063C7.98633 32.0051 8.28209 31.9113 8.52807 31.7379L16.8783 25.9925C17.1281 25.8224 17.4256 25.7312 17.7305 25.7312C18.0353 25.7312 18.3329 25.8224 18.5826 25.9925L26.9328 31.7379C27.1788 31.9113 27.4746 32.0051 27.7784 32.0063C28.0023 32.0103 28.2241 31.963 28.4258 31.8683C28.6274 31.7736 28.8034 31.6341 28.9394 31.4611C29.0737 31.2892 29.1633 31.0883 29.2007 30.8755C29.2381 30.6627 29.2221 30.4443 29.154 30.2388L25.9471 20.8944C25.856 20.6237 25.8571 20.3317 25.9502 20.0616C26.0434 19.7916 26.2236 19.5579 26.4641 19.3952L34.8801 13.6285C35.1232 13.4631 35.3047 13.2255 35.3971 12.9513C35.4895 12.6772 35.488 12.3812 35.3926 12.108C35.2952 11.834 35.1107 11.5973 34.8658 11.4319C34.6209 11.2666 34.3282 11.1812 34.0301 11.1881L23.6558 11.1753Z"
+          fill={filled ? "#FBBC05" : "white"}
+          stroke={filled ? "none" : "black"}
+          strokeWidth={filled ? "0" : "0.5"}
+          fillRule="evenodd"
+          clipRule="evenodd"
+        />
       </Svg>
     </View>
   );
@@ -488,9 +467,29 @@ const ProductDetailsMain = ({ navigation, route }) => {
     }));
   };
 
-  const handleTabChange = (tabName) => {
-    if (navigation) {
-      navigation.navigate(tabName);
+  const handleTabChange = (tab) => {
+    // Navigate to the selected tab
+    switch(tab) {
+      case 'Home':
+        navigation.navigate('Home');
+        break;
+      case 'Collection':
+        navigation.navigate('Collection');
+        break;
+      case 'Shop':
+        navigation.navigate('Bag');
+        break;
+      case 'Favourites':
+        navigation.navigate('Favourites');
+        break;
+      case 'Rewards':
+        navigation.navigate('Rewards');
+        break;
+      case 'Profile':
+        navigation.navigate('Profile');
+        break;
+      default:
+        break;
     }
   };
 
@@ -646,30 +645,23 @@ const ProductDetailsMain = ({ navigation, route }) => {
         </View>
 
         {/* Heart Icon */}
-        <TouchableOpacity style={styles.heartButton} onPress={handleFavoriteToggle}>
-          <View style={styles.heartButtonContainer}>
-            <HeartIcon filled={isCurrentProductFavorited} />
-          </View>
-        </TouchableOpacity>
-
-        {/* AI Try-On Button */}
-        <TouchableOpacity 
-          style={styles.aiTryOnButton}
-          onPress={() => {
-            console.log('AI Try-On pressed');
-            navigation?.navigate('TryOnProTips', { 
-              product: currentItem,
-              previousScreen: 'ProductDetailsMain' 
-            });
-          }}
-        >
-          <Text style={styles.aiTryOnButtonText}>Try On</Text>
-        </TouchableOpacity>
+        <AnimatedHeartIcon
+          isFavorite={isCurrentProductFavorited}
+          onPress={handleFavoriteToggle}
+          size={21}
+          containerStyle={styles.heartButton}
+          style={styles.heartButtonContainer}
+          filledColor="#FF0000"
+          unfilledColor="#000000"
+          animationDuration={400}
+          scaleAnimation={true}
+          colorTransition={true}
+        />
       </View>
     );
   };
 
-  // Render linked products section (below image, below Try On button)
+  // Render linked products section (below image)
   const renderLinkedProducts = () => {
     // Only show if there are multiple products (more than 1)
     if (!linkedProducts || linkedProducts.length <= 1) {
@@ -1044,11 +1036,21 @@ const ProductDetailsMain = ({ navigation, route }) => {
           ) : (
             <View style={styles.productImagePlaceholder} />
           )}
-          <TouchableOpacity style={styles.favoriteButton}>
-            <View style={styles.favoriteButtonContainer}>
-              <HeartIcon />
-            </View>
-          </TouchableOpacity>
+          <AnimatedHeartIcon
+            isFavorite={isFavorite(item._id || item.id)}
+            onPress={async () => {
+              const productId = item._id || item.id;
+              await toggleFavorite(productId);
+            }}
+            size={18}
+            containerStyle={styles.favoriteButton}
+            style={styles.favoriteButtonContainer}
+            filledColor="#FF0000"
+            unfilledColor="#000000"
+            animationDuration={400}
+            scaleAnimation={true}
+            colorTransition={true}
+          />
           <TouchableOpacity 
             style={styles.cartButton}
             onPress={() => navigation.navigate('Bag', { previousScreen: 'ProductViewOne' })}
@@ -1153,15 +1155,18 @@ const ProductDetailsMain = ({ navigation, route }) => {
 
       {/* Main Content */}
       {!loading && !error && currentItem && (
-        <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          style={styles.scrollContainer} 
+          contentContainerStyle={styles.scrollContentContainer}
+          showsVerticalScrollIndicator={true}
+          bounces={true}
+          alwaysBounceVertical={true}
+        >
           {/* Product Images */}
           {renderProductImages()}
 
-          {/* Linked Products / Color Variants - Shows below Try On button */}
+          {/* Linked Products / Color Variants */}
           {renderLinkedProducts()}
-
-          {/* Star Rating */}
-          {renderStarRating()}
 
           {/* Product Info */}
           {renderProductInfo()}
@@ -1185,7 +1190,7 @@ const ProductDetailsMain = ({ navigation, route }) => {
         </ScrollView>
       )}
 
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation Bar */}
       <BottomNavigationBar 
         activeTab="Home" 
         onTabChange={handleTabChange}
@@ -1243,6 +1248,10 @@ const styles = StyleSheet.create({
 
   scrollContainer: {
     flex: 1,
+  },
+
+  scrollContentContainer: {
+    paddingBottom: 200,
   },
 
   // Product Images
@@ -1314,33 +1323,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  aiTryOnButton: {
-    position: 'absolute',
-    bottom: 20,
-    left: '50%',
-    transform: [{ translateX: -40 }], // Half of button width to center
-    backgroundColor: '#000000',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  aiTryOnButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Montserrat-SemiBold',
-    textAlign: 'center',
-  },
 
-  // Linked Products / Variants Section (below image, below Try On)
+  // Linked Products / Variants Section (below image)
   linkedProductsSection: {
     paddingHorizontal: 16,
     paddingVertical: 16,
@@ -1407,11 +1391,8 @@ const styles = StyleSheet.create({
 
   // Star Rating
   starRatingContainer: {
-    position: 'absolute',
-    top: 479,
-    left: width / 2 - 48,
-    width: 96,
-    height: 72,
+    width: '100%',
+    paddingVertical: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1578,8 +1559,6 @@ const styles = StyleSheet.create({
 
   // Expandable Sections
   expandableSectionContainer: {
-    borderTopWidth: 1,
-    borderTopColor: '#E4E4E4',
     paddingHorizontal: 16,
     paddingVertical: 37,
     backgroundColor: '#FFFFFF',
@@ -1697,7 +1676,9 @@ const styles = StyleSheet.create({
   ratingSectionContainer: {
     paddingHorizontal: 16,
     paddingVertical: 20,
+    paddingBottom: 40,
     backgroundColor: '#FFFFFF',
+    marginBottom: 30,
   },
   ratingSectionTitle: {
     fontSize: 20,
@@ -1819,6 +1800,24 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontFamily: 'Montserrat-Medium',
     lineHeight: 19.2,
+  },
+
+  scrollIndicatorLine: {
+    height: 4,
+    backgroundColor: '#E0E0E0',
+    marginTop: 24,
+    marginBottom: 8,
+    borderRadius: 2,
+  },
+
+  scrollHintText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#999999',
+    fontFamily: 'Montserrat-Medium',
+    textAlign: 'center',
+    marginBottom: 16,
+    letterSpacing: -0.2,
   },
 
   // Related Products

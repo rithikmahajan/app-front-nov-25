@@ -8,10 +8,10 @@ import {
 } from 'react-native';
 import BottomNavigationBar from './bottomnavigationbar';
 import { Colors, FontSizes, FontWeights, Spacing } from '../constants';
+import { useBag } from '../contexts/BagContext';
 
 // Import core screens individually to prevent cascade failures
 import HomeScreen from '../screens/HomeScreen';
-import ShopScreen from '../screens/ShopScreen';
 import CollectionScreen from '../screens/CollectionScreen';
 import RewardsScreen from '../screens/RewardsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -38,7 +38,6 @@ import ProductDetailsMain from '../screens/productdetailsmain';
 
 // Placeholder content components for each tab
 const HomeContent = ({ navigation, route }) => <HomeScreen navigation={navigation} route={route} />;
-const ShopContent = ({ navigation, route }) => <ShopScreen navigation={navigation} route={route} />;
 const FavouritesContent = ({ navigation }) => <FavouritesScreen navigation={navigation} />;
 const CollectionContent = ({ navigation }) => <CollectionScreen navigation={navigation} />;
 const RewardsContent = ({ navigation, route }) => <RewardsScreen navigation={navigation} route={route} />;
@@ -62,6 +61,9 @@ const EnhancedLayout = () => {
   const [headerTitle, setHeaderTitle] = useState('YORAA');
   const [routeParams, setRouteParams] = useState(null);
   const [showPreferenceModal, setShowPreferenceModal] = useState(false);
+  
+  // Use bag context to determine if bag is empty
+  const { bagItems } = useBag();
 
   // Navigation context for handling screen navigation
   const navigation = {
@@ -156,7 +158,7 @@ const EnhancedLayout = () => {
         case 'FavouritesSizeChartReference':
           return renderScreen('FavouritesSizeChartReference', { navigation, route: { params: routeParams } });
         case 'Shop':
-          return <ShopContent navigation={navigation} route={{ params: routeParams }} />;
+          return <BagScreen navigation={navigation} route={{ params: routeParams }} />;
         case 'Favourites':
           return <FavouritesContent navigation={navigation} />;
         case 'Collection':
@@ -311,7 +313,7 @@ const EnhancedLayout = () => {
     }
   };
 
-  const shouldShowBottomNav = ['Home', 'Shop', 'Favourites', 'Collection', 'Rewards', 'Profile'].includes(currentScreen);
+  const shouldShowBottomNav = ['Home', 'Shop', 'Favourites', 'favourites', 'Collection', 'Rewards', 'Profile', 'Bag', 'bagemptyscreen', 'FavouritesContent', 'FavouritesContentEditView'].includes(currentScreen);
   const shouldShowHeader = ['Profile'].includes(currentScreen);
 
   const handleClosePreferenceModal = () => {

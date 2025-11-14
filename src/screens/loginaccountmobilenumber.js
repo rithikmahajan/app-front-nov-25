@@ -256,6 +256,7 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [translateY] = useState(new Animated.Value(0));
   const [isLoading, setIsLoading] = useState(false);
+  const [isSocialLoading, setIsSocialLoading] = useState(false);
 
   const handleCountrySelect = (country) => {
     setSelectedCountry(country);
@@ -439,7 +440,7 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
         return;
       }
 
-      setIsLoading(true);
+      setIsSocialLoading(true);
       
       try {
         console.log('\n🔄 STEP 1: Initiating Apple Sign In');
@@ -515,7 +516,7 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
         
         Alert.alert('Error', error.message || 'Apple Sign In failed. Please try again.');
       } finally {
-        setIsLoading(false);
+        setIsSocialLoading(false);
         console.log('╚═══════════════════════════════════════════════════════════════╝\n');
       }
     } else if (provider === 'google') {
@@ -529,7 +530,7 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
         return;
       }
 
-      setIsLoading(true);
+      setIsSocialLoading(true);
       
       try {
         console.log('\n🔄 STEP 1: Starting Google Sign In');
@@ -634,7 +635,7 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
         console.log('📱 Showing Alert:', errorMessage);
         Alert.alert('Google Sign In Error', errorMessage);
       } finally {
-        setIsLoading(false);
+        setIsSocialLoading(false);
         console.log('╚═══════════════════════════════════════════════════════════════╝\n');
       }
     }
@@ -767,17 +768,17 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
         {/* Social Login Options */}
         <View style={styles.socialContainer}>
           <TouchableOpacity 
-            style={[styles.socialButton, isLoading && styles.socialButtonDisabled]}
+            style={[styles.socialButton, isSocialLoading && styles.socialButtonDisabled]}
             onPress={() => handleSocialLogin('apple')}
-            disabled={isLoading}
+            disabled={isSocialLoading}
           >
             <AppleIcon width={42} height={42} color="#332218" />
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={[styles.socialButton, isLoading && styles.socialButtonDisabled]}
+            style={[styles.socialButton, isSocialLoading && styles.socialButtonDisabled]}
             onPress={() => handleSocialLogin('google')}
-            disabled={isLoading}
+            disabled={isSocialLoading}
           >
             <GoogleIcon width={42} height={42} />
           </TouchableOpacity>

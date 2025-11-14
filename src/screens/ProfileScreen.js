@@ -92,12 +92,6 @@ const ProfileScreen = React.memo(({ navigation }) => {
     }
   }, [navigation]);
 
-  const handleInbox = useCallback(() => {
-    if (navigation?.navigate) {
-      navigation.navigate('Inbox', { previousScreen: 'Profile' });
-    }
-  }, [navigation]);
-
   const handleFAQ = useCallback(() => {
     if (navigation?.navigate) {
       navigation.navigate('FAQ', { previousScreen: 'Profile' });
@@ -314,7 +308,7 @@ const ProfileScreen = React.memo(({ navigation }) => {
           ) : (
             <Text style={styles.clientName} accessibilityRole="header">{userName}</Text>
           )}
-          {isAuthenticated && (
+          {isAuthenticated ? (
             <TouchableOpacity 
               style={styles.editProfileButton} 
               onPress={handleEditProfile}
@@ -323,6 +317,16 @@ const ProfileScreen = React.memo(({ navigation }) => {
               accessibilityHint="Navigate to edit profile screen"
             >
               <Text style={styles.editProfileText}>Edit Profile</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity 
+              style={styles.signInButton} 
+              onPress={() => navigation?.navigate('LoginAccountMobileNumber')}
+              accessibilityRole="button"
+              accessibilityLabel="Sign in"
+              accessibilityHint="Navigate to login screen"
+            >
+              <Text style={styles.signInButtonText}>Sign In</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -368,20 +372,6 @@ const ProfileScreen = React.memo(({ navigation }) => {
         </View>
 
         {/* Menu Items */}
-        <TouchableOpacity 
-          style={styles.menuItem} 
-          onPress={handleInbox}
-          accessibilityRole="button"
-          accessibilityLabel="Inbox - View message"
-          accessibilityHint="Navigate to your message inbox"
-        >
-          <View style={styles.menuItemContent}>
-            <Text style={styles.menuItemTitle}>Inbox</Text>
-            <Text style={styles.menuItemSubtitle}>View message</Text>
-          </View>
-          <ArrowIcon />
-        </TouchableOpacity>
-
         <TouchableOpacity 
           style={styles.menuItem} 
           onPress={handleFAQ}
@@ -527,6 +517,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#000000',
+    fontFamily: 'Montserrat-Medium',
+  },
+  signInButton: {
+    backgroundColor: '#000000',
+    paddingVertical: 16,
+    paddingHorizontal: 51,
+    borderRadius: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 180,
+  },
+  signInButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
   },
 

@@ -25,6 +25,7 @@ const LoginAccountEmail = ({ navigation, route }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSocialLoading, setIsSocialLoading] = useState(false);
 
   const handleEmailLogin = async () => {
     // Basic validation
@@ -132,7 +133,7 @@ const LoginAccountEmail = ({ navigation, route }) => {
         return;
       }
 
-      setIsLoading(true);
+      setIsSocialLoading(true);
       
       try {
         console.log('🍎 Starting Apple Sign In...');
@@ -211,7 +212,7 @@ const LoginAccountEmail = ({ navigation, route }) => {
         // Backend now automatically links accounts - no need to handle 409 conflicts
         Alert.alert('Error', error.message || 'Apple Sign In failed. Please try again.');
       } finally {
-        setIsLoading(false);
+        setIsSocialLoading(false);
       }
     } else if (provider === 'google') {
       // Check if Google Sign-in is available before proceeding
@@ -223,7 +224,7 @@ const LoginAccountEmail = ({ navigation, route }) => {
         return;
       }
 
-      setIsLoading(true);
+      setIsSocialLoading(true);
       
       try {
         console.log('Starting Google Sign In for', Platform.OS);
@@ -309,7 +310,7 @@ const LoginAccountEmail = ({ navigation, route }) => {
         
         Alert.alert('Google Sign In Error', errorMessage);
       } finally {
-        setIsLoading(false);
+        setIsSocialLoading(false);
       }
     }
   };
@@ -443,16 +444,16 @@ const LoginAccountEmail = ({ navigation, route }) => {
         {/* Social Login Buttons */}
         <View style={styles.socialButtonsContainer}>
           <TouchableOpacity 
-            style={[styles.socialButton, isLoading && styles.socialButtonDisabled]} 
+            style={[styles.socialButton, isSocialLoading && styles.socialButtonDisabled]} 
             onPress={handleAppleLogin}
-            disabled={isLoading}
+            disabled={isSocialLoading}
           >
             <AppleIcon width={42} height={42} color="#332218" />
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.socialButton, isLoading && styles.socialButtonDisabled]} 
+            style={[styles.socialButton, isSocialLoading && styles.socialButtonDisabled]} 
             onPress={handleGoogleLogin}
-            disabled={isLoading}
+            disabled={isSocialLoading}
           >
             <GoogleIcon width={42} height={42} />
           </TouchableOpacity>

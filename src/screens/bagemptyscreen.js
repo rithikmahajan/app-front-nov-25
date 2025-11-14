@@ -7,7 +7,6 @@ import {
   SafeAreaView,
 } from 'react-native';
 import BagIconSvg from '../assets/icons/BagIconSvg';
-import BottomNavigationBar from '../components/bottomnavigationbar';
 import { useBag } from '../contexts/BagContext';
 
 const BagEmptyScreen = React.memo(({ navigation }) => {
@@ -26,11 +25,6 @@ const BagEmptyScreen = React.memo(({ navigation }) => {
 
   const handleViewBag = useCallback(() => {
     navigation.navigate('BagContent');
-  }, [navigation]);
-
-  const handleTabChange = useCallback((tabName) => {
-    console.log('Tab changed to:', tabName);
-    navigation.navigate(tabName);
   }, [navigation]);
 
   // If there are items in bag, show a different UI that leads to content
@@ -71,14 +65,6 @@ const BagEmptyScreen = React.memo(({ navigation }) => {
           >
             <Text style={styles.buttonText}>View Bag</Text>
           </TouchableOpacity>
-        </View>
-
-        {/* Bottom Navigation Bar */}
-        <View style={styles.bottomNavContainer}>
-          <BottomNavigationBar 
-            activeTab="Shop" 
-            onTabChange={handleTabChange}
-          />
         </View>
       </SafeAreaView>
     );
@@ -123,14 +109,6 @@ const BagEmptyScreen = React.memo(({ navigation }) => {
         >
           <Text style={styles.buttonText}>Shop Now</Text>
         </TouchableOpacity>
-      </View>
-
-      {/* Bottom Navigation Bar */}
-      <View style={styles.bottomNavContainer}>
-        <BottomNavigationBar 
-          activeTab="Shop" 
-          onTabChange={handleTabChange}
-        />
       </View>
     </SafeAreaView>
   );
@@ -227,7 +205,7 @@ const styles = StyleSheet.create({
   // Button Styles
   buttonContainer: {
     paddingHorizontal: 24,
-    paddingBottom: 100, // Increased to account for bottom navigation bar
+    paddingBottom: 34,
   },
 
   shopNowButton: {

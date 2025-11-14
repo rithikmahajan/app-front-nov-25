@@ -16,6 +16,7 @@ import {
   Platform,
   AppState,
   Alert,
+  DevSettings,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -109,6 +110,50 @@ function App() {
     };
 
     clearCacheForProduction();
+  }, []);
+
+  // 🛠️ Enable Developer Tools in Debug Mode
+  useEffect(() => {
+    if (__DEV__) {
+      console.log('🛠️ Development mode enabled');
+      console.log('📱 Shake device or press Cmd+D (iOS) / Cmd+M (Android) to open dev menu');
+      
+      // Add developer menu options
+      if (DevSettings && DevSettings.addMenuItem) {
+        // Option 1: Open React DevTools
+        DevSettings.addMenuItem('Open React DevTools', () => {
+          console.log('🔧 Opening React DevTools...');
+          if (global.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
+            console.log('✅ React DevTools hook is available');
+          } else {
+            console.warn('⚠️ React DevTools not connected. Make sure the standalone app is running.');
+          }
+        });
+
+        // Option 2: Reload JS Bundle
+        DevSettings.addMenuItem('Reload App', () => {
+          console.log('🔄 Reloading JS Bundle...');
+          DevSettings.reload();
+        });
+
+        // Option 3: Toggle Inspector
+        DevSettings.addMenuItem('Toggle Element Inspector', () => {
+          console.log('🔍 Toggling Element Inspector...');
+          DevSettings.toggleElementInspector?.();
+        });
+
+        // Option 4: Show Dev Menu
+        DevSettings.addMenuItem('Show Dev Menu', () => {
+          console.log('📱 Opening Dev Menu...');
+          DevSettings.reload();
+        });
+      }
+
+      // Log Metro connection status
+      console.log('🌐 Metro bundler should be running on http://localhost:8081');
+      console.log('✅ Fast Refresh is enabled');
+      console.log('🔥 Hot Module Replacement is active');
+    }
   }, []);
 
   // Initialize native modules safely

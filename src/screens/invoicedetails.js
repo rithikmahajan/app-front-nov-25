@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,13 @@ import {
   Platform,
   Alert,
   Share,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import GlobalBackButton from '../components/GlobalBackButton';
+import auth from '@react-native-firebase/auth';
+import { apiService } from '../services/apiService';
 
 // User Icon Component
 const UserIcon = () => (
@@ -28,13 +33,102 @@ const BagIcon = () => (
 
 // Share Icon Component
 const ShareIcon = () => (
-  <View style={styles.shareIconContainer}>
-    <Text style={styles.shareIconText}>↗</Text>
-  </View>
+  <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <Path 
+      d="M14.2857 5.14283L12.0251 2.85712L9.71425 5.14283M12 2.85712V13.1428M8.57139 7.42854H7.42854C6.82233 7.42854 6.24095 7.66936 5.81229 8.09802C5.38364 8.52667 5.14282 9.10805 5.14282 9.71426V17.7143C5.14282 18.3205 5.38364 18.9018 5.81229 19.3305C6.24095 19.7592 6.82233 20 7.42854 20H16.5714C17.1776 20 17.759 19.7592 18.1876 19.3305C18.6163 18.9018 18.8571 18.3205 18.8571 17.7143V9.71426C18.8571 9.10805 18.6163 8.52667 18.1876 8.09802C17.759 7.66936 17.1776 7.42854 16.5714 7.42854H15.4285" 
+      stroke="#767676" 
+      strokeWidth="1.5" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    />
+  </Svg>
 );
 
 const InvoiceDetails = ({ navigation, route }) => {
   const { invoice } = route.params || {};
+  const order = invoice?.fullOrderData || {};
+  
+  // State for enriched product data
+  const [enrichedItems, setEnrichedItems] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  
+  // Get user info from Firebase or order data
+  const currentUser = auth().currentUser;
+  const userEmail = currentUser?.email || order.user_email || 'N/A';
+  const userPhone = currentUser?.phoneNumber || order.user_phone || 'N/A';
+  const userName = currentUser?.displayName || order.user_name || 'Customer';
+
+  // Fetch full product details for items without images
+  useEffect(() => {
+    const enrichOrderItems = async () => {
+      if (!order.items || order.items.length === 0) {
+        console.log('No items to enrich');
+        return;
+      }
+
+      setLoadingProducts(true);
+      
+      try {
+        console.log('🖼️ Enriching order items with product images...');
+        
+        const enrichedPromises = order.items.map(async (item) => {
+          // Check if item already has image
+          const hasImage = item.images?.[0]?.url || item.images?.[0] || item.image || item.thumbnail;
+          
+          if (hasImage) {
+            console.log(`✅ Item ${item.id || item._id} already has image`);
+            return item;
+          }
+
+          // If no image, fetch full product details
+          const productId = item.product_id || item.productId || item.id || item._id;
+          
+          if (!productId) {
+            console.warn('⚠️ No product ID found for item:', item);
+            return item;
+          }
+
+          try {
+            console.log(`📦 Fetching product details for ID: ${productId}`);
+            const productResponse = await apiService.getItemById(productId);
+            
+            if (productResponse.success && productResponse.data) {
+              const productData = productResponse.data;
+              console.log(`✅ Got product data with images:`, productData.images?.length || 0);
+              
+              // Merge product images into item
+              return {
+                ...item,
+                images: productData.images || [],
+                image: productData.images?.[0]?.url || productData.images?.[0] || item.image,
+                thumbnail: productData.images?.[0]?.url || productData.images?.[0],
+              };
+            }
+          } catch (err) {
+            console.error(`❌ Failed to fetch product ${productId}:`, err.message);
+          }
+          
+          return item;
+        });
+
+        const enriched = await Promise.all(enrichedPromises);
+        setEnrichedItems(enriched);
+        console.log('✅ Order items enriched with product images');
+        
+      } catch (error) {
+        console.error('❌ Error enriching order items:', error);
+        // Fallback to original items
+        setEnrichedItems(order.items);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    enrichOrderItems();
+  }, [order.items]);
+
+  // Use enriched items if available, otherwise use original
+  const displayItems = enrichedItems.length > 0 ? enrichedItems : (order.items || []);
 
   const handleBack = () => {
     console.log('InvoiceDetails: handleBack called');
@@ -51,7 +145,7 @@ const InvoiceDetails = ({ navigation, route }) => {
     try {
       Alert.alert(
         'Download Started',
-        `Invoice ${invoice?.orderNumber} is being downloaded to your device.`,
+        `Invoice for Order #${invoice?.orderNumber || 'N/A'} is being downloaded to your device.`,
         [{ text: 'OK' }]
       );
     } catch (error) {
@@ -65,11 +159,15 @@ const InvoiceDetails = ({ navigation, route }) => {
 
   const handleShareInvoice = async () => {
     try {
+      const orderDate = invoice?.date || 'N/A';
+      const amount = invoice?.amount || 'N/A';
+      const orderNum = invoice?.orderNumber || 'N/A';
+      
       await Share.share({
-        message: `Invoice ${invoice?.orderNumber} - Order ${invoice?.statusText}\nDate: ${invoice?.date}\nAmount: ${invoice?.amount}`,
-        title: `Invoice ${invoice?.orderNumber}`,
+        message: `Invoice #${orderNum}\nOrder ${invoice?.statusText || 'Status'}\nDate: ${orderDate}\nAmount: ${amount}`,
+        title: `Invoice #${orderNum}`,
         ...(Platform.OS === 'ios' && {
-          url: `https://yoraa.app/invoice/${invoice?.orderNumber}`,
+          url: `https://yoraa.app/invoice/${orderNum}`,
         }),
       });
     } catch (error) {
@@ -126,7 +224,9 @@ const InvoiceDetails = ({ navigation, route }) => {
       >
         {/* Order ID and Status */}
         <View style={styles.orderHeader}>
-          <Text style={styles.orderIdText}>Orders ID: #{invoice?.orderNumber?.slice(-4) || '6743'}</Text>
+          <Text style={styles.orderIdText}>
+            Orders ID: #{invoice?.orderNumber?.slice(-4) || order._id?.slice(-4) || '1234'}
+          </Text>
           <View style={[styles.statusBadge, { backgroundColor: getStatusColor(invoice?.status) }]}>
             <Text style={styles.statusBadgeText}>
               {getStatusText(invoice?.status)}
@@ -137,25 +237,72 @@ const InvoiceDetails = ({ navigation, route }) => {
         {/* Date */}
         <View style={styles.dateContainer}>
           <Text style={styles.dateLabel}>Dated:</Text>
-          <Text style={styles.dateValue}>feb 16,2025</Text>
+          <Text style={styles.dateValue}>{invoice?.date || 'N/A'}</Text>
         </View>
 
         {/* Product Image Section */}
         <View style={styles.productImageSection}>
-          <View style={styles.productImageGrid}>
-            {[1, 2, 3, 4, 5, 6].map((item) => (
-              <View key={item} style={styles.productImageItem}>
-                <Text style={styles.productImagePlaceholder}>👕</Text>
+          {loadingProducts ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#000000" />
+              <Text style={styles.loadingText}>Loading product images...</Text>
+            </View>
+          ) : displayItems && displayItems.length > 0 ? (
+            <>
+              <View style={styles.productImageGrid}>
+                {displayItems.slice(0, 6).map((item, index) => {
+                  // Get product image from various possible sources
+                  const productImage = 
+                    item.images?.[0]?.url ||  // First image URL from images array
+                    item.images?.[0] ||        // First image as string
+                    item.image ||              // Direct image property
+                    item.thumbnail ||          // Thumbnail property
+                    item.product?.images?.[0]?.url ||  // Product object images
+                    item.product?.image ||     // Product object image
+                    item.productId?.images?.[0]?.url || // productId object with images
+                    item.productId?.image ||   // productId object image
+                    null;
+
+                  console.log(`Product ${index} (${item.name || item.product_name || 'Unknown'}):`, {
+                    productImage,
+                    hasImages: !!item.images,
+                    imagesLength: item.images?.length,
+                    fullItem: item
+                  });
+
+                  // Use larger size for single product
+                  const isSingleProduct = displayItems.length === 1;
+
+                  return (
+                    <View key={`product-${index}-${item.id || item._id}`} style={[
+                      styles.productImageItem,
+                      isSingleProduct && styles.productImageItemSingle
+                    ]}>
+                      <Image 
+                        source={{ uri: productImage }} 
+                        style={styles.productImageThumb}
+                        resizeMode="contain"
+                        onError={(e) => {
+                          console.error(`Failed to load image for product ${index}:`, e.nativeEvent.error);
+                        }}
+                        onLoad={() => {
+                          console.log(`✅ Successfully loaded image for product ${index}`);
+                        }}
+                      />
+                    </View>
+                  );
+                })}
               </View>
-            ))}
-          </View>
-          <View style={styles.imageIndicators}>
-            <View style={[styles.indicator, styles.activeIndicator]} />
-            <View style={styles.indicator} />
-            <View style={styles.indicator} />
-            <View style={styles.indicator} />
-            <View style={styles.indicator} />
-          </View>
+              <View style={styles.imageIndicators}>
+                <View style={[styles.indicator, styles.activeIndicator]} />
+                {displayItems.length > 1 && (
+                  Array(Math.min(displayItems.length - 1, 4)).fill(0).map((_, i) => (
+                    <View key={`indicator-${i}`} style={styles.indicator} />
+                  ))
+                )}
+              </View>
+            </>
+          ) : null}
         </View>
 
         {/* Download and Share Section */}
@@ -184,9 +331,20 @@ const InvoiceDetails = ({ navigation, route }) => {
             </View>
             <View style={styles.infoContent}>
               <Text style={styles.infoTitle}>Order Info</Text>
-              <Text style={styles.infoDetail}>Shipping: Next express</Text>
-              <Text style={styles.infoDetail}>Payment Method: Paypal</Text>
-              <Text style={styles.infoDetail}>Status: Pending</Text>
+              <Text style={styles.infoDetail}>
+                Shipping: {order.shipping_method || order.shipping_status || 'Standard'}
+              </Text>
+              <Text style={styles.infoDetail}>
+                Payment Method: {order.payment_method || 'Razorpay'}
+              </Text>
+              <Text style={styles.infoDetail}>
+                Status: {order.payment_status || 'Pending'}
+              </Text>
+              {order.total_price && (
+                <Text style={styles.infoDetail}>
+                  Total Amount: ${order.total_price}
+                </Text>
+              )}
             </View>
           </View>
         </View>
@@ -199,45 +357,56 @@ const InvoiceDetails = ({ navigation, route }) => {
             </View>
             <View style={styles.infoContent}>
               <Text style={styles.infoTitle}>Customer</Text>
-              <Text style={styles.infoDetail}>Full Name: Shristi Singh</Text>
-              <Text style={styles.infoDetail}>Email: shristi@gmail.com</Text>
-              <Text style={styles.infoDetail}>Phone: +91 904 1212</Text>
+              <Text style={styles.infoDetail}>Full Name: {userName}</Text>
+              <Text style={styles.infoDetail}>Email: {userEmail}</Text>
+              <Text style={styles.infoDetail}>Phone: {userPhone}</Text>
             </View>
           </View>
         </View>
 
         {/* Billing Address Section */}
-        <View style={styles.infoSection}>
-          <View style={styles.infoRow}>
-            <View style={styles.infoIcon}>
-              <BagIcon />
-            </View>
-            <View style={styles.infoContent}>
-              <Text style={styles.infoTitle}>Billed to</Text>
-              <Text style={styles.infoDetail}>
-                Address: Dharam Colony, Palam Vihar, Gurgaon, Haryana
-              </Text>
+        {order.address && (
+          <View style={styles.infoSection}>
+            <View style={styles.infoRow}>
+              <View style={styles.infoIcon}>
+                <BagIcon />
+              </View>
+              <View style={styles.infoContent}>
+                <Text style={styles.infoTitle}>Billed to</Text>
+                <Text style={styles.infoDetail}>
+                  Address: {order.address.street || ''}, {order.address.city || ''}, {order.address.state || ''} {order.address.pincode || order.address.postal_code || ''}
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
+        )}
 
         {/* Delivery Address Section */}
-        <View style={styles.deliverySection}>
-          <Text style={styles.infoTitle}>Delivered to</Text>
-          <Text style={styles.infoDetail}>
-            Address: Dharam Colony, Palam Vihar, Gurgaon, Haryana
-          </Text>
-        </View>
+        {order.address && (
+          <View style={styles.deliverySection}>
+            <Text style={styles.infoTitle}>Delivered to</Text>
+            <Text style={styles.infoDetail}>
+              Address: {order.address.street || ''}, {order.address.city || ''}, {order.address.state || ''} {order.address.pincode || order.address.postal_code || ''}
+            </Text>
+          </View>
+        )}
 
         {/* Payment Info Section */}
         <View style={styles.paymentSection}>
           <Text style={styles.sectionTitle}>payment info</Text>
           <View style={styles.paymentRow}>
             <View style={styles.cardIcon} />
-            <Text style={styles.paymentDetail}>Master Card **** **** 6557</Text>
+            <Text style={styles.paymentDetail}>
+              {order.payment_method || 'Card'} **** **** {order.razorpay_order_id?.slice(-4) || '****'}
+            </Text>
           </View>
-          <Text style={styles.paymentDetail}>Business name: Shristi Singh</Text>
-          <Text style={styles.paymentDetail}>Phone: +91 904 231 1212</Text>
+          {order.razorpay_order_id && (
+            <Text style={styles.paymentDetail}>
+              Transaction ID: {order.razorpay_order_id}
+            </Text>
+          )}
+          <Text style={styles.paymentDetail}>Business name: {userName}</Text>
+          <Text style={styles.paymentDetail}>Phone: {userPhone}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -333,19 +502,31 @@ const styles = StyleSheet.create({
   // Product Image Styles
   productImageSection: {
     marginBottom: 30,
-    backgroundColor: '#EEE',
+    backgroundColor: '#FFFFFF',
     borderRadius: 0,
-    padding: 0,
+    padding: 20,
     height: 465,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: '#666',
+    fontFamily: 'Montserrat-Regular',
   },
   productImageGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    marginBottom: 20,
-    paddingHorizontal: 20,
+    alignItems: 'center',
+    flex: 1,
+    width: '100%',
   },
   productImageItem: {
     width: 80,
@@ -355,9 +536,45 @@ const styles = StyleSheet.create({
     margin: 5,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  productImageItemSingle: {
+    width: '90%',
+    height: '95%',
+    maxWidth: 400,
+    maxHeight: 420,
+    margin: 0,
+    backgroundColor: 'transparent',
   },
   productImagePlaceholder: {
     fontSize: 24,
+  },
+  productImageThumb: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+  },
+  noImageContainer: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#E8E8E8',
+  },
+  noImageText: {
+    fontSize: 10,
+    color: '#999',
+    fontFamily: 'Montserrat-Regular',
+  },
+  noProductsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noProductsText: {
+    fontSize: 14,
+    color: '#999',
+    fontFamily: 'Montserrat-Regular',
   },
   imageIndicators: {
     flexDirection: 'row',

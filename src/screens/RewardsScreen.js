@@ -344,18 +344,6 @@ const RewardsScreen = ({ navigation, route }) => {
 
       {/* Static content below */}
       <View style={styles.staticContent}>
-        {/* Sign in button - Only show for non-authenticated users */}
-        {!isUserAuthenticated && (
-          <View style={styles.authButtons}>
-            <TouchableOpacity 
-              style={styles.signInButton}
-              onPress={() => navigation && navigation.navigate('LoginAccountMobileNumber', { fromCheckout: route?.params?.fromCheckout })}
-            >
-              <Text style={styles.signInButtonText}>Sign In</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
         {/* Language and Region */}
         <View style={styles.preferencesSection}>
           <Text style={styles.sectionTitle}>Language and region</Text>
@@ -809,33 +797,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
     fontFamily: 'Montserrat-Bold',
-  },
-
-  // Auth Buttons
-  authButtons: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginHorizontal: 20,
-    marginTop: 15,
-    marginBottom: 30,
-    paddingHorizontal: 0,
-    alignItems: 'center',
-  },
-  signInButton: {
-    backgroundColor: '#000000',
-    paddingVertical: 16,
-    paddingHorizontal: 51,
-    borderRadius: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 51,
-    minWidth: 180,
-  },
-  signInButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '500',
-    fontFamily: 'Montserrat-Medium',
   },
 
   // Preferences Sections

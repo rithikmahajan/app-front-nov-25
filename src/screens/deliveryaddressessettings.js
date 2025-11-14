@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,16 +12,12 @@ import {
   ActivityIndicator,
   Alert,
   PanResponder,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { useAddress } from '../contexts/AddressContext';
-
-// Dropdown Arrow Icon Component
-const DropdownArrowIcon = () => (
-  <View style={styles.dropdownArrow}>
-    <View style={styles.dropdownLine1} />
-    <View style={styles.dropdownLine2} />
-  </View>
-);
+import GlobalBackButton from '../components/GlobalBackButton';
+import ChevronDownIcon from '../assets/icons/ChevronDownIcon';
 
 // Checkbox Component
 const Checkbox = ({ checked, onPress }) => (
@@ -161,6 +157,10 @@ const DeliveryAddressesSettings = ({ navigation }) => {
   const slideAnim = React.useRef(new Animated.Value(300)).current;
   const formSlideAnim = React.useRef(new Animated.Value(300)).current;
 
+  // Modal visibility states
+  const [showStateDropdown, setShowStateDropdown] = useState(false);
+  const [showCountryCodeDropdown, setShowCountryCodeDropdown] = useState(false);
+
   // Use AddressContext for real-time data
   const { addresses, loading, loadAddresses, addAddress, updateAddress, deleteAddress } = useAddress();
   const [selectedAddressForEdit, setSelectedAddressForEdit] = useState(null);
@@ -176,8 +176,294 @@ const DeliveryAddressesSettings = ({ navigation }) => {
     pin: '',
     country: 'India',
     email: '',
-    phone: '+91'
+    countryCode: '+91',
+    phone: ''
   });
+
+  // Memoized static options to prevent recreation on each render
+  const stateOptions = useMemo(() => [
+    'Andhra Pradesh',
+    'Arunachal Pradesh',
+    'Assam',
+    'Bihar',
+    'Chhattisgarh',
+    'Goa',
+    'Gujarat',
+    'Haryana',
+    'Himachal Pradesh',
+    'Jharkhand',
+    'Karnataka',
+    'Kerala',
+    'Madhya Pradesh',
+    'Maharashtra',
+    'Manipur',
+    'Meghalaya',
+    'Mizoram',
+    'Nagaland',
+    'Odisha',
+    'Punjab',
+    'Rajasthan',
+    'Sikkim',
+    'Tamil Nadu',
+    'Telangana',
+    'Tripura',
+    'Uttar Pradesh',
+    'Uttarakhand',
+    'West Bengal',
+    'Andaman and Nicobar Islands',
+    'Chandigarh',
+    'Dadra and Nagar Haveli and Daman and Diu',
+    'Delhi',
+    'Jammu and Kashmir',
+    'Ladakh',
+    'Lakshadweep',
+    'Puducherry',
+  ], []);
+  
+  const countryCodeOptions = useMemo(() => [
+    { code: '+93', country: 'Afghanistan', flag: '🇦🇫' },
+    { code: '+355', country: 'Albania', flag: '🇦🇱' },
+    { code: '+213', country: 'Algeria', flag: '🇩🇿' },
+    { code: '+1684', country: 'American Samoa', flag: '🇦🇸' },
+    { code: '+376', country: 'Andorra', flag: '🇦🇩' },
+    { code: '+244', country: 'Angola', flag: '🇦🇴' },
+    { code: '+1264', country: 'Anguilla', flag: '🇦🇮' },
+    { code: '+1268', country: 'Antigua and Barbuda', flag: '🇦🇬' },
+    { code: '+54', country: 'Argentina', flag: '🇦🇷' },
+    { code: '+374', country: 'Armenia', flag: '🇦🇲' },
+    { code: '+297', country: 'Aruba', flag: '🇦🇼' },
+    { code: '+61', country: 'Australia', flag: '🇦🇺' },
+    { code: '+43', country: 'Austria', flag: '🇦🇹' },
+    { code: '+994', country: 'Azerbaijan', flag: '🇦🇿' },
+    { code: '+1242', country: 'Bahamas', flag: '🇧🇸' },
+    { code: '+973', country: 'Bahrain', flag: '🇧🇭' },
+    { code: '+880', country: 'Bangladesh', flag: '🇧🇩' },
+    { code: '+1246', country: 'Barbados', flag: '🇧🇧' },
+    { code: '+375', country: 'Belarus', flag: '🇧🇾' },
+    { code: '+32', country: 'Belgium', flag: '🇧🇪' },
+    { code: '+501', country: 'Belize', flag: '🇧🇿' },
+    { code: '+229', country: 'Benin', flag: '🇧🇯' },
+    { code: '+1441', country: 'Bermuda', flag: '🇧🇲' },
+    { code: '+975', country: 'Bhutan', flag: '🇧🇹' },
+    { code: '+591', country: 'Bolivia', flag: '🇧🇴' },
+    { code: '+387', country: 'Bosnia and Herzegovina', flag: '🇧🇦' },
+    { code: '+267', country: 'Botswana', flag: '🇧🇼' },
+    { code: '+55', country: 'Brazil', flag: '🇧🇷' },
+    { code: '+673', country: 'Brunei', flag: '🇧🇳' },
+    { code: '+359', country: 'Bulgaria', flag: '🇧🇬' },
+    { code: '+226', country: 'Burkina Faso', flag: '🇧🇫' },
+    { code: '+257', country: 'Burundi', flag: '🇧🇮' },
+    { code: '+855', country: 'Cambodia', flag: '🇰🇭' },
+    { code: '+237', country: 'Cameroon', flag: '🇨🇲' },
+    { code: '+1', country: 'Canada', flag: '🇨🇦' },
+    { code: '+238', country: 'Cape Verde', flag: '🇨🇻' },
+    { code: '+1345', country: 'Cayman Islands', flag: '🇰🇾' },
+    { code: '+236', country: 'Central African Republic', flag: '🇨🇫' },
+    { code: '+235', country: 'Chad', flag: '🇹🇩' },
+    { code: '+56', country: 'Chile', flag: '🇨🇱' },
+    { code: '+86', country: 'China', flag: '🇨🇳' },
+    { code: '+57', country: 'Colombia', flag: '🇨🇴' },
+    { code: '+269', country: 'Comoros', flag: '🇰🇲' },
+    { code: '+242', country: 'Congo', flag: '🇨🇬' },
+    { code: '+243', country: 'Congo, Democratic Republic', flag: '🇨🇩' },
+    { code: '+682', country: 'Cook Islands', flag: '🇨🇰' },
+    { code: '+506', country: 'Costa Rica', flag: '🇨🇷' },
+    { code: '+225', country: "Cote d'Ivoire", flag: '🇨🇮' },
+    { code: '+385', country: 'Croatia', flag: '🇭🇷' },
+    { code: '+53', country: 'Cuba', flag: '🇨🇺' },
+    { code: '+357', country: 'Cyprus', flag: '🇨🇾' },
+    { code: '+420', country: 'Czech Republic', flag: '🇨🇿' },
+    { code: '+45', country: 'Denmark', flag: '🇩🇰' },
+    { code: '+253', country: 'Djibouti', flag: '🇩🇯' },
+    { code: '+1767', country: 'Dominica', flag: '🇩🇲' },
+    { code: '+1809', country: 'Dominican Republic', flag: '🇩🇴' },
+    { code: '+593', country: 'Ecuador', flag: '🇪🇨' },
+    { code: '+20', country: 'Egypt', flag: '🇪🇬' },
+    { code: '+503', country: 'El Salvador', flag: '🇸🇻' },
+    { code: '+240', country: 'Equatorial Guinea', flag: '🇬🇶' },
+    { code: '+291', country: 'Eritrea', flag: '�🇷' },
+    { code: '+372', country: 'Estonia', flag: '🇪🇪' },
+    { code: '+251', country: 'Ethiopia', flag: '🇪🇹' },
+    { code: '+679', country: 'Fiji', flag: '🇫🇯' },
+    { code: '+358', country: 'Finland', flag: '🇫🇮' },
+    { code: '+33', country: 'France', flag: '🇫🇷' },
+    { code: '+594', country: 'French Guiana', flag: '🇬🇫' },
+    { code: '+689', country: 'French Polynesia', flag: '🇵🇫' },
+    { code: '+241', country: 'Gabon', flag: '🇬🇦' },
+    { code: '+220', country: 'Gambia', flag: '🇬🇲' },
+    { code: '+995', country: 'Georgia', flag: '🇬🇪' },
+    { code: '+49', country: 'Germany', flag: '🇩🇪' },
+    { code: '+233', country: 'Ghana', flag: '🇬🇭' },
+    { code: '+350', country: 'Gibraltar', flag: '🇬🇮' },
+    { code: '+30', country: 'Greece', flag: '🇬🇷' },
+    { code: '+299', country: 'Greenland', flag: '🇬🇱' },
+    { code: '+1473', country: 'Grenada', flag: '🇬🇩' },
+    { code: '+590', country: 'Guadeloupe', flag: '🇬🇵' },
+    { code: '+1671', country: 'Guam', flag: '🇬�🇺' },
+    { code: '+502', country: 'Guatemala', flag: '🇬🇹' },
+    { code: '+224', country: 'Guinea', flag: '🇬🇳' },
+    { code: '+245', country: 'Guinea-Bissau', flag: '🇬🇼' },
+    { code: '+592', country: 'Guyana', flag: '🇬�' },
+    { code: '+509', country: 'Haiti', flag: '🇭🇹' },
+    { code: '+504', country: 'Honduras', flag: '🇭🇳' },
+    { code: '+852', country: 'Hong Kong', flag: '🇭🇰' },
+    { code: '+36', country: 'Hungary', flag: '🇭🇺' },
+    { code: '+354', country: 'Iceland', flag: '🇮�🇸' },
+    { code: '+91', country: 'India', flag: '🇮🇳' },
+    { code: '+62', country: 'Indonesia', flag: '🇮🇩' },
+    { code: '+98', country: 'Iran', flag: '🇮🇷' },
+    { code: '+964', country: 'Iraq', flag: '🇮🇶' },
+    { code: '+353', country: 'Ireland', flag: '🇮🇪' },
+    { code: '+972', country: 'Israel', flag: '🇮🇱' },
+    { code: '+39', country: 'Italy', flag: '🇮🇹' },
+    { code: '+1876', country: 'Jamaica', flag: '🇯🇲' },
+    { code: '+81', country: 'Japan', flag: '🇯🇵' },
+    { code: '+962', country: 'Jordan', flag: '🇯🇴' },
+    { code: '+7', country: 'Kazakhstan', flag: '🇰🇿' },
+    { code: '+254', country: 'Kenya', flag: '🇰🇪' },
+    { code: '+686', country: 'Kiribati', flag: '🇰🇮' },
+    { code: '+850', country: 'Korea, North', flag: '🇰🇵' },
+    { code: '+82', country: 'Korea, South', flag: '🇰🇷' },
+    { code: '+965', country: 'Kuwait', flag: '🇰🇼' },
+    { code: '+996', country: 'Kyrgyzstan', flag: '🇰🇬' },
+    { code: '+856', country: 'Laos', flag: '🇱🇦' },
+    { code: '+371', country: 'Latvia', flag: '🇱🇻' },
+    { code: '+961', country: 'Lebanon', flag: '🇱🇧' },
+    { code: '+266', country: 'Lesotho', flag: '🇱🇸' },
+    { code: '+231', country: 'Liberia', flag: '🇱🇷' },
+    { code: '+218', country: 'Libya', flag: '🇱🇾' },
+    { code: '+423', country: 'Liechtenstein', flag: '🇱🇮' },
+    { code: '+370', country: 'Lithuania', flag: '🇱🇹' },
+    { code: '+352', country: 'Luxembourg', flag: '🇱🇺' },
+    { code: '+853', country: 'Macau', flag: '🇲🇴' },
+    { code: '+389', country: 'Macedonia', flag: '🇲🇰' },
+    { code: '+261', country: 'Madagascar', flag: '🇲🇬' },
+    { code: '+265', country: 'Malawi', flag: '🇲🇼' },
+    { code: '+60', country: 'Malaysia', flag: '🇲🇾' },
+    { code: '+960', country: 'Maldives', flag: '🇲🇻' },
+    { code: '+223', country: 'Mali', flag: '🇲🇱' },
+    { code: '+356', country: 'Malta', flag: '🇲🇹' },
+    { code: '+692', country: 'Marshall Islands', flag: '🇲🇭' },
+    { code: '+596', country: 'Martinique', flag: '🇲🇶' },
+    { code: '+222', country: 'Mauritania', flag: '🇲🇷' },
+    { code: '+230', country: 'Mauritius', flag: '🇲🇺' },
+    { code: '+262', country: 'Mayotte', flag: '🇾🇹' },
+    { code: '+52', country: 'Mexico', flag: '🇲🇽' },
+    { code: '+691', country: 'Micronesia', flag: '🇫🇲' },
+    { code: '+373', country: 'Moldova', flag: '🇲🇩' },
+    { code: '+377', country: 'Monaco', flag: '🇲🇨' },
+    { code: '+976', country: 'Mongolia', flag: '🇲🇳' },
+    { code: '+382', country: 'Montenegro', flag: '🇲🇪' },
+    { code: '+1664', country: 'Montserrat', flag: '🇲🇸' },
+    { code: '+212', country: 'Morocco', flag: '🇲🇦' },
+    { code: '+258', country: 'Mozambique', flag: '🇲🇿' },
+    { code: '+95', country: 'Myanmar', flag: '🇲🇲' },
+    { code: '+264', country: 'Namibia', flag: '🇳🇦' },
+    { code: '+674', country: 'Nauru', flag: '🇳🇷' },
+    { code: '+977', country: 'Nepal', flag: '🇳🇵' },
+    { code: '+31', country: 'Netherlands', flag: '🇳🇱' },
+    { code: '+687', country: 'New Caledonia', flag: '🇳�' },
+    { code: '+64', country: 'New Zealand', flag: '🇳🇿' },
+    { code: '+505', country: 'Nicaragua', flag: '🇳�🇮' },
+    { code: '+227', country: 'Niger', flag: '🇳🇪' },
+    { code: '+234', country: 'Nigeria', flag: '🇳🇬' },
+    { code: '+683', country: 'Niue', flag: '🇳🇺' },
+    { code: '+672', country: 'Norfolk Island', flag: '🇳🇫' },
+    { code: '+1670', country: 'Northern Mariana Islands', flag: '�🇵' },
+    { code: '+47', country: 'Norway', flag: '�🇳🇴' },
+    { code: '+968', country: 'Oman', flag: '🇴🇲' },
+    { code: '+92', country: 'Pakistan', flag: '🇵🇰' },
+    { code: '+680', country: 'Palau', flag: '🇵🇼' },
+    { code: '+970', country: 'Palestine', flag: '🇵🇸' },
+    { code: '+507', country: 'Panama', flag: '🇵🇦' },
+    { code: '+675', country: 'Papua New Guinea', flag: '🇵🇬' },
+    { code: '+595', country: 'Paraguay', flag: '🇵🇾' },
+    { code: '+51', country: 'Peru', flag: '🇵🇪' },
+    { code: '+63', country: 'Philippines', flag: '🇵🇭' },
+    { code: '+48', country: 'Poland', flag: '🇵🇱' },
+    { code: '+351', country: 'Portugal', flag: '🇵🇹' },
+    { code: '+1787', country: 'Puerto Rico', flag: '🇵🇷' },
+    { code: '+974', country: 'Qatar', flag: '🇶🇦' },
+    { code: '+262', country: 'Reunion', flag: '🇷🇪' },
+    { code: '+40', country: 'Romania', flag: '🇷🇴' },
+    { code: '+7', country: 'Russia', flag: '🇷🇺' },
+    { code: '+250', country: 'Rwanda', flag: '🇷🇼' },
+    { code: '+1869', country: 'Saint Kitts and Nevis', flag: '�🇳' },
+    { code: '+1758', country: 'Saint Lucia', flag: '🇱�🇨' },
+    { code: '+508', country: 'Saint Pierre and Miquelon', flag: '🇵�' },
+    { code: '+1784', country: 'Saint Vincent and the Grenadines', flag: '🇻🇨' },
+    { code: '+685', country: 'Samoa', flag: '🇼🇸' },
+    { code: '+378', country: 'San Marino', flag: '🇸🇲' },
+    { code: '+239', country: 'Sao Tome and Principe', flag: '🇸🇹' },
+    { code: '+966', country: 'Saudi Arabia', flag: '🇸🇦' },
+    { code: '+221', country: 'Senegal', flag: '🇸�🇳' },
+    { code: '+381', country: 'Serbia', flag: '🇷🇸' },
+    { code: '+248', country: 'Seychelles', flag: '🇸🇨' },
+    { code: '+232', country: 'Sierra Leone', flag: '🇸🇱' },
+    { code: '+65', country: 'Singapore', flag: '🇸🇬' },
+    { code: '+421', country: 'Slovakia', flag: '🇸🇰' },
+    { code: '+386', country: 'Slovenia', flag: '🇸🇮' },
+    { code: '+677', country: 'Solomon Islands', flag: '🇸🇧' },
+    { code: '+252', country: 'Somalia', flag: '🇸🇴' },
+    { code: '+27', country: 'South Africa', flag: '🇿🇦' },
+    { code: '+34', country: 'Spain', flag: '🇪🇸' },
+    { code: '+94', country: 'Sri Lanka', flag: '🇱🇰' },
+    { code: '+249', country: 'Sudan', flag: '🇸🇩' },
+    { code: '+597', country: 'Suriname', flag: '🇸🇷' },
+    { code: '+268', country: 'Swaziland', flag: '🇸🇿' },
+    { code: '+46', country: 'Sweden', flag: '🇸🇪' },
+    { code: '+41', country: 'Switzerland', flag: '🇨🇭' },
+    { code: '+963', country: 'Syria', flag: '🇸🇾' },
+    { code: '+886', country: 'Taiwan', flag: '🇹🇼' },
+    { code: '+992', country: 'Tajikistan', flag: '🇹🇯' },
+    { code: '+255', country: 'Tanzania', flag: '🇹🇿' },
+    { code: '+66', country: 'Thailand', flag: '🇹🇭' },
+    { code: '+670', country: 'Timor-Leste', flag: '🇹🇱' },
+    { code: '+228', country: 'Togo', flag: '🇹🇬' },
+    { code: '+690', country: 'Tokelau', flag: '🇹🇰' },
+    { code: '+676', country: 'Tonga', flag: '🇹🇴' },
+    { code: '+1868', country: 'Trinidad and Tobago', flag: '🇹🇹' },
+    { code: '+216', country: 'Tunisia', flag: '🇹🇳' },
+    { code: '+90', country: 'Turkey', flag: '🇹🇷' },
+    { code: '+993', country: 'Turkmenistan', flag: '🇹🇲' },
+    { code: '+1649', country: 'Turks and Caicos Islands', flag: '🇹🇨' },
+    { code: '+688', country: 'Tuvalu', flag: '🇹🇻' },
+    { code: '+256', country: 'Uganda', flag: '🇺🇬' },
+    { code: '+380', country: 'Ukraine', flag: '🇺🇦' },
+    { code: '+971', country: 'United Arab Emirates', flag: '🇦🇪' },
+    { code: '+44', country: 'United Kingdom', flag: '🇬🇧' },
+    { code: '+1', country: 'United States', flag: '🇺🇸' },
+    { code: '+598', country: 'Uruguay', flag: '🇺🇾' },
+    { code: '+998', country: 'Uzbekistan', flag: '🇺🇿' },
+    { code: '+678', country: 'Vanuatu', flag: '🇻🇺' },
+    { code: '+39', country: 'Vatican City', flag: '🇻🇦' },
+    { code: '+58', country: 'Venezuela', flag: '🇻🇪' },
+    { code: '+84', country: 'Vietnam', flag: '🇻🇳' },
+    { code: '+1284', country: 'Virgin Islands, British', flag: '🇻🇬' },
+    { code: '+1340', country: 'Virgin Islands, U.S.', flag: '�🇮' },
+    { code: '+681', country: 'Wallis and Futuna', flag: '🇼🇫' },
+    { code: '+212', country: 'Western Sahara', flag: '🇪🇭' },
+    { code: '+967', country: 'Yemen', flag: '🇾🇪' },
+    { code: '+260', country: 'Zambia', flag: '🇿🇲' },
+    { code: '+263', country: 'Zimbabwe', flag: '🇿🇼' },
+  ], []);
+
+  // Handler functions
+  const handleStateSelect = useCallback((state) => {
+    setFormData(prev => ({
+      ...prev,
+      state: state
+    }));
+    setShowStateDropdown(false);
+  }, []);
+
+  const handleCountryCodeSelect = useCallback((option) => {
+    setFormData(prev => ({
+      ...prev,
+      countryCode: option.code
+    }));
+    setShowCountryCodeDropdown(false);
+  }, []);
 
   // Load addresses on mount
   useEffect(() => {
@@ -231,7 +517,8 @@ const DeliveryAddressesSettings = ({ navigation }) => {
       pin: address.pin || address.zipCode || '',
       country: address.country || 'India',
       email: address.email || '',
-      phone: address.phone || '+91'
+      countryCode: address.phone?.substring(0, 3) || '+91',
+      phone: address.phone?.substring(3) || ''
     });
     setCurrentView('form');
     formSlideAnim.setValue(300);
@@ -255,7 +542,8 @@ const DeliveryAddressesSettings = ({ navigation }) => {
       pin: '',
       country: 'India',
       email: '',
-      phone: '+91'
+      countryCode: '+91',
+      phone: ''
     });
     setCurrentView('form');
     formSlideAnim.setValue(300);
@@ -280,7 +568,7 @@ const DeliveryAddressesSettings = ({ navigation }) => {
         zipCode: formData.pin,
         country: formData.country,
         email: formData.email,
-        phone: formData.phone,
+        phone: formData.countryCode + formData.phone,
         isDefault: isDefaultAddress
       };
 
@@ -363,7 +651,10 @@ const DeliveryAddressesSettings = ({ navigation }) => {
     >
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerSpacer} />
+        <GlobalBackButton 
+          onPress={handleBack}
+          style={styles.backButton}
+        />
         <Text style={styles.headerTitle}>Saved Delivery Address</Text>
         <View style={styles.headerSpacer} />
       </View>
@@ -411,7 +702,10 @@ const DeliveryAddressesSettings = ({ navigation }) => {
     >
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerSpacer} />
+        <GlobalBackButton 
+          onPress={handleBack}
+          style={styles.backButton}
+        />
         <Text style={styles.headerTitle}>
           {selectedAddressForEdit ? 'Edit Address' : 'Add Address'}
         </Text>
@@ -476,10 +770,17 @@ const DeliveryAddressesSettings = ({ navigation }) => {
 
         {/* State Dropdown */}
         <View style={styles.inputContainer}>
-          <View style={styles.dropdownContainer}>
-            <Text style={styles.dropdownText}>{formData.state}</Text>
-            <DropdownArrowIcon />
-          </View>
+          <TouchableOpacity 
+            style={styles.dropdownContainer}
+            onPress={() => setShowStateDropdown(true)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.dropdownContent}>
+              <Text style={styles.dropdownLabel}>State</Text>
+              <Text style={styles.dropdownValue}>{formData.state || 'Select State'}</Text>
+            </View>
+            <ChevronDownIcon color="#000000" size={18} />
+          </TouchableOpacity>
         </View>
 
         {/* PIN */}
@@ -521,16 +822,26 @@ const DeliveryAddressesSettings = ({ navigation }) => {
         {/* Phone with Country Code */}
         <View style={styles.inputContainer}>
           <View style={styles.phoneContainer}>
-            <View style={styles.countryCodeContainer}>
-              <IndiaFlag />
-              <Text style={styles.countryCodeText}>+91</Text>
-              <DropdownArrowIcon />
-            </View>
+            <TouchableOpacity 
+              style={styles.countryCodeContainer}
+              onPress={() => setShowCountryCodeDropdown(true)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.phoneCodeContent}>
+                <Text style={styles.phoneLabel}>Phone</Text>
+                <View style={styles.phoneCodeRow}>
+                  <IndiaFlag />
+                  <Text style={styles.countryCodeText}>{formData.countryCode}</Text>
+                  <ChevronDownIcon color="#000000" size={18} />
+                </View>
+              </View>
+            </TouchableOpacity>
+            <View style={styles.phoneDivider} />
             <TextInput
               style={styles.phoneInput}
-              placeholder="Phone number"
-              value={formData.phone.replace('+91', '')}
-              onChangeText={(text) => updateFormData('phone', '+91' + text)}
+              placeholder="1234567890"
+              value={formData.phone}
+              onChangeText={(text) => updateFormData('phone', text)}
               placeholderTextColor="#999999"
               keyboardType="phone-pad"
             />
@@ -559,6 +870,82 @@ const DeliveryAddressesSettings = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       {currentView === 'list' ? renderListView() : renderFormView()}
+      
+      {/* State Selection Modal */}
+      <Modal
+        visible={showStateDropdown}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowStateDropdown(false)}
+      >
+        <SafeAreaView style={styles.selectorModalContainer}>
+          <View style={styles.swipeIndicator} />
+          
+          <View style={styles.selectorModalHeader}>
+            <Text style={styles.selectorModalTitle}>Select State</Text>
+            <TouchableOpacity
+              onPress={() => setShowStateDropdown(false)}
+              style={styles.selectorModalCloseButton}
+            >
+              <Text style={styles.selectorModalCloseText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <FlatList
+            data={stateOptions}
+            keyExtractor={(item, index) => `state-${item}-${index}`}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.selectorItem}
+                onPress={() => handleStateSelect(item)}
+              >
+                <Text style={styles.selectorItemText}>{item}</Text>
+              </TouchableOpacity>
+            )}
+            showsVerticalScrollIndicator={true}
+            contentContainerStyle={styles.selectorModalList}
+          />
+        </SafeAreaView>
+      </Modal>
+
+      {/* Country Code Selection Modal */}
+      <Modal
+        visible={showCountryCodeDropdown}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowCountryCodeDropdown(false)}
+      >
+        <SafeAreaView style={styles.selectorModalContainer}>
+          <View style={styles.swipeIndicator} />
+          
+          <View style={styles.selectorModalHeader}>
+            <Text style={styles.selectorModalTitle}>Select Country</Text>
+            <TouchableOpacity
+              onPress={() => setShowCountryCodeDropdown(false)}
+              style={styles.selectorModalCloseButton}
+            >
+              <Text style={styles.selectorModalCloseText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <FlatList
+            data={countryCodeOptions}
+            keyExtractor={(item, index) => `country-${item.code}-${index}`}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.selectorItem}
+                onPress={() => handleCountryCodeSelect(item)}
+              >
+                <Text style={styles.selectorItemText}>
+                  {item.flag} {item.country} ({item.code})
+                </Text>
+              </TouchableOpacity>
+            )}
+            showsVerticalScrollIndicator={true}
+            contentContainerStyle={styles.selectorModalList}
+          />
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -586,8 +973,9 @@ const styles = StyleSheet.create({
     marginLeft: -8,
   },
   headerTitle: {
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: 20,
+    fontFamily: 'Montserrat-Medium',
+    letterSpacing: -0.5,
     color: '#000000',
   },
   headerSpacer: {
@@ -670,7 +1058,7 @@ const styles = StyleSheet.create({
   // Add Address Button
   addAddressButton: {
     backgroundColor: '#000000',
-    borderRadius: 25,
+    borderRadius: 100,
     paddingVertical: 16,
     marginHorizontal: 20,
     marginTop: 30,
@@ -678,27 +1066,32 @@ const styles = StyleSheet.create({
   },
   addAddressButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Montserrat-Medium',
+    letterSpacing: -0.35,
     color: '#FFFFFF',
   },
 
   // Form Styles
   formContainer: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
+    paddingTop: 20,
   },
   inputContainer: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   textInput: {
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    fontSize: 16,
+    borderColor: '#979797',
+    borderRadius: 12,
+    paddingHorizontal: 19,
+    paddingVertical: 15,
+    fontSize: 14,
+    fontFamily: 'Montserrat-Regular',
+    letterSpacing: -0.35,
     color: '#000000',
     backgroundColor: '#FFFFFF',
+    height: 47,
   },
 
   // Dropdown Styles
@@ -707,11 +1100,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    borderColor: '#979797',
+    borderRadius: 12,
+    paddingHorizontal: 19,
+    paddingVertical: 10,
     backgroundColor: '#FFFFFF',
+    height: 47,
+  },
+  dropdownContent: {
+    flex: 1,
+  },
+  dropdownLabel: {
+    fontSize: 12,
+    fontFamily: 'Montserrat-Regular',
+    letterSpacing: -0.3,
+    color: '#000000',
+    marginBottom: 2,
+  },
+  dropdownValue: {
+    fontSize: 14,
+    fontFamily: 'Montserrat-Medium',
+    letterSpacing: -0.35,
+    color: '#000000',
   },
   dropdownText: {
     fontSize: 16,
@@ -744,30 +1154,50 @@ const styles = StyleSheet.create({
   phoneContainer: {
     flexDirection: 'row',
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 25,
+    borderColor: '#979797',
+    borderRadius: 12,
     backgroundColor: '#FFFFFF',
+    height: 47,
     overflow: 'hidden',
   },
   countryCodeContainer: {
+    paddingHorizontal: 19,
+    paddingVertical: 6,
+    justifyContent: 'center',
+  },
+  phoneCodeContent: {
+    flexDirection: 'column',
+  },
+  phoneLabel: {
+    fontSize: 12,
+    fontFamily: 'Montserrat-Regular',
+    letterSpacing: -0.3,
+    color: '#000000',
+    marginBottom: 2,
+  },
+  phoneCodeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRightWidth: 1,
-    borderRightColor: '#E0E0E0',
   },
   countryCodeText: {
-    fontSize: 16,
+    fontSize: 14,
+    fontFamily: 'Montserrat-Medium',
+    letterSpacing: -0.35,
     color: '#000000',
-    marginLeft: 8,
-    marginRight: 8,
+    marginLeft: 6,
+    marginRight: 6,
+  },
+  phoneDivider: {
+    width: 1,
+    backgroundColor: '#979797',
+    marginVertical: 8,
   },
   phoneInput: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
+    paddingHorizontal: 19,
+    fontSize: 14,
+    fontFamily: 'Montserrat-Regular',
+    letterSpacing: -0.35,
     color: '#000000',
   },
 
@@ -826,21 +1256,24 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '45deg' }],
   },
   checkboxLabel: {
-    fontSize: 16,
+    fontSize: 14,
+    fontFamily: 'Montserrat-Regular',
+    letterSpacing: -0.35,
     color: '#666666',
   },
 
   // Update Button
   updateButton: {
     backgroundColor: '#000000',
-    borderRadius: 25,
+    borderRadius: 100,
     paddingVertical: 16,
     alignItems: 'center',
     marginBottom: 40,
   },
   updateButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Montserrat-Medium',
+    letterSpacing: -0.35,
     color: '#FFFFFF',
   },
   
@@ -893,6 +1326,60 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+
+  // Selector Modal Styles
+  selectorModalContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  swipeIndicator: {
+    width: 36,
+    height: 5,
+    backgroundColor: '#C7C7CC',
+    borderRadius: 3,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  selectorModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#E5E5E5',
+  },
+  selectorModalTitle: {
+    fontSize: 17,
+    fontFamily: 'Montserrat-Medium',
+    letterSpacing: -0.41,
+    color: '#000000',
+  },
+  selectorModalCloseButton: {
+    padding: 4,
+  },
+  selectorModalCloseText: {
+    fontSize: 17,
+    fontFamily: 'Montserrat-Regular',
+    letterSpacing: -0.41,
+    color: '#007AFF',
+  },
+  selectorModalList: {
+    paddingVertical: 8,
+  },
+  selectorItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#E5E5E5',
+  },
+  selectorItemText: {
+    fontSize: 17,
+    fontFamily: 'Montserrat-Regular',
+    letterSpacing: -0.41,
+    color: '#000000',
   },
 });
 

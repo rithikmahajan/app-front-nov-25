@@ -51,7 +51,15 @@ const ProductDetailsMainReview = ({ navigation, route }) => {
 
   const handleTabChange = (tabName) => {
     if (navigation) {
-      navigation.navigate(tabName);
+      // Map tab names to screen names
+      switch(tabName) {
+        case 'Shop':
+          navigation.navigate('Bag');
+          break;
+        default:
+          navigation.navigate(tabName);
+          break;
+      }
     }
   };
 

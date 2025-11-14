@@ -197,22 +197,6 @@ const BundleRecommendations = ({ productId, navigation, addToBag }) => {
     );
   }
 
-  // Development mode: Show a message when no bundles are found
-  // Remove this block in production
-  if (__DEV__ && (!bundles || bundles.length === 0)) {
-    return (
-      <View style={styles.debugContainer}>
-        <Text style={styles.debugTitle}>🎁 Bundle Recommendations (Dev Mode)</Text>
-        <Text style={styles.debugText}>
-          No bundles configured for this product yet.
-        </Text>
-        <Text style={styles.debugSubtext}>
-          To test: Create a bundle in admin panel with product ID: {productId?.substring(0, 8)}...
-        </Text>
-      </View>
-    );
-  }
-
   if (error || !bundles || bundles.length === 0) {
     return null; // Don't show anything if no bundles or error
   }

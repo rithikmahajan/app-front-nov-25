@@ -1546,7 +1546,36 @@ class YoraaAPIService {
       
       if (response && response.success) {
         console.log('✅ Available promo codes fetched successfully:', response.data);
-        return response.data;
+        
+        // Filter out invite-friend codes - only return regular promo codes
+        let promoCodes = Array.isArray(response.data) ? response.data : [];
+        
+        // Mark all codes as regular promo codes and filter by type
+        promoCodes = promoCodes
+          .map(code => ({
+            ...code,
+            codeType: code.codeType || 'promo' // Mark as regular promo if not specified
+          }))
+          .filter(code => {
+            // Exclude invite-friend codes
+            const isInviteCode = code.codeType === 'invite' || 
+                                code.type === 'invite' || 
+                                code.isInviteCode === true;
+            
+            if (isInviteCode) {
+              console.log(`🚫 Filtering out invite code from promo list: ${code.code}`);
+            }
+            
+            return !isInviteCode;
+          });
+        
+        console.log(`✅ Filtered ${promoCodes.length} regular promo codes (excluded invite codes)`);
+        
+        return {
+          success: true,
+          data: promoCodes,
+          message: 'Promo codes retrieved successfully'
+        };
       } else {
         throw new Error(response.message || 'Failed to fetch promo codes');
       }
@@ -1567,7 +1596,8 @@ class YoraaAPIService {
               discountType: 'percentage',
               discountValue: 10,
               validUntil: '2024-12-31',
-              minOrderValue: 50
+              minOrderValue: 50,
+              codeType: 'promo' // Mark as regular promo code
             },
             {
               id: 'mock_2', 
@@ -1577,7 +1607,8 @@ class YoraaAPIService {
               discountType: 'percentage',
               discountValue: 20,
               validUntil: '2024-12-31',
-              minOrderValue: 100
+              minOrderValue: 100,
+              codeType: 'promo' // Mark as regular promo code
             }
           ],
           message: 'Using mock data - implement /api/promoCode/user/available endpoint'
@@ -1590,6 +1621,193 @@ class YoraaAPIService {
 
   async getAppSettings() {
     return await this.makeRequest('/api/settings');
+  }
+
+  // Invite Friend / Referral Code Methods
+  async getInviteFriendCodes() {
+    try {
+      console.log('🎁 Fetching invite friend codes from backend');
+      
+      // Check authentication first
+      if (!this.isAuthenticated()) {
+        console.log('⚠️ User not authenticated, cannot fetch invite codes');
+        return {
+          success: false,
+          data: [],
+          message: 'Authentication required for invite codes'
+        };
+      }
+      
+      try {
+        // PRIORITY: Try the working backend endpoint first!
+        // Backend has /api/invite-friend/admin/all with 3 active codes ready
+        const endpoints = [
+          { url: '/api/invite-friend/admin/all', params: { status: 'active' } },  // Backend endpoint with INVITE2024, REFERRAL15, FRIENDBONUS
+          { url: '/api/invite-friend/active', params: null },                     // Alternative endpoint
+          { url: '/api/invite-friend/public', params: null },                     // Public endpoint
+          { url: '/api/invite-friend/user/available', params: null },             // User-specific endpoint
+          { url: '/api/promoCode/user/available', params: null },                 // Fallback to promo codes
+        ];
+        
+        for (const endpoint of endpoints) {
+          try {
+            console.log(`🔍 Trying endpoint: ${endpoint.url}${endpoint.params ? '?status=active' : ''}`);
+            
+            // Build URL with params
+            let url = endpoint.url;
+            if (endpoint.params) {
+              const queryString = Object.keys(endpoint.params)
+                .map(key => `${key}=${endpoint.params[key]}`)
+                .join('&');
+              url = `${url}?${queryString}`;
+            }
+            
+            const response = await this.makeRequest(url, 'GET', null, true);
+            
+            console.log(`📦 Response from ${endpoint.url}:`, JSON.stringify(response, null, 2));
+            
+            if (response && response.success) {
+              // Backend returns: { success: true, data: { inviteCodes: [...] } }
+              let codes = response.data?.inviteCodes || response.data || response.inviteCodes || [];
+              
+              console.log(`🔍 Extracted codes:`, Array.isArray(codes) ? `Array(${codes.length})` : typeof codes);
+              
+              // Handle different response formats
+              if (!Array.isArray(codes)) {
+                codes = [codes];
+              }
+              
+              // Filter and format codes
+              const validCodes = codes
+                .filter(code => {
+                  if (!code || !code.code) {
+                    console.log('⚠️ Skipping invalid code:', code);
+                    return false;
+                  }
+                  // Accept codes with status 'active' or no status field
+                  if (code.status && code.status !== 'active') {
+                    console.log(`⚠️ Skipping non-active code: ${code.code} (status: ${code.status})`);
+                    return false;
+                  }
+                  return true;
+                })
+                .map(code => ({
+                  id: code._id || code.id || code.code,
+                  code: code.code,
+                  description: code.description || `Get ${code.discountType === 'flat' ? '₹' : ''}${code.discountValue}${code.discountType === 'percentage' ? '%' : ''} off`,
+                  discountType: code.discountType || 'flat',
+                  discountValue: code.discountValue || 10,
+                  maxRedemptions: code.maxRedemptions || 100,
+                  redemptionCount: code.redemptionCount || 0,
+                  status: code.status || 'active',
+                  expiryDate: code.expiryDate || code.endDate,
+                  minOrderValue: code.minOrderValue || 0,
+                  terms: code.terms || 'Share with friends and family',
+                  isVisible: code.isVisible !== false,
+                  // Mark this as invite-friend type code
+                  codeType: 'invite'
+                }));
+              
+              if (validCodes.length > 0) {
+                console.log(`✅ Found ${validCodes.length} active invite codes from ${endpoint.url}:`);
+                validCodes.forEach(code => {
+                  console.log(`   - ${code.code} (${code.discountValue}${code.discountType === 'percentage' ? '%' : '₹'} off)`);
+                });
+                
+                return {
+                  success: true,
+                  data: validCodes,
+                  message: 'Invite codes fetched successfully'
+                };
+              } else {
+                console.log(`⚠️ Response successful but no valid codes found from ${endpoint.url}`);
+              }
+            } else {
+              console.log(`❌ Response not successful from ${endpoint.url}:`, response);
+            }
+          } catch (error) {
+            console.log(`❌ Endpoint ${endpoint.url} failed:`, error.message);
+            if (error.response) {
+              console.log(`   Status: ${error.response.status}`);
+              console.log(`   Data:`, error.response.data);
+            }
+            continue; // Try next endpoint
+          }
+        }
+        
+        // If all endpoints fail, return empty with helpful message
+        console.log('⚠️ No invite codes found from any endpoint');
+        return {
+          success: true,
+          data: [],
+          message: 'No invite codes available at the moment'
+        };
+        
+      } catch (error) {
+        console.error('❌ Error fetching invite codes:', error);
+        return {
+          success: true,
+          data: [],
+          message: 'Unable to load invite codes'
+        };
+      }
+    } catch (error) {
+      console.error('❌ Error in getInviteFriendCodes:', error);
+      return {
+        success: false,
+        data: [],
+        message: error.message || 'Failed to fetch invite codes'
+      };
+    }
+  }
+
+  async validateInviteCode(code) {
+    try {
+      console.log('🔍 Validating invite code:', code);
+      
+      const response = await this.makeRequest(`/api/invite-friend/validate/${code}`, 'GET', null, false);
+      
+      if (response && response.success && response.valid) {
+        console.log('✅ Invite code is valid:', response.data);
+        return response;
+      }
+      
+      console.log('❌ Invite code is invalid');
+      return {
+        success: false,
+        valid: false,
+        message: 'Invalid invite code'
+      };
+    } catch (error) {
+      console.error('❌ Error validating invite code:', error);
+      return {
+        success: false,
+        valid: false,
+        message: error.message || 'Failed to validate code'
+      };
+    }
+  }
+
+  async redeemInviteCode(code) {
+    try {
+      console.log('🎉 Redeeming invite code:', code);
+      
+      if (!this.isAuthenticated()) {
+        throw new Error('Authentication required to redeem code');
+      }
+      
+      const response = await this.makeRequest('/api/invite-friend/redeem', 'POST', { code }, true);
+      
+      if (response && response.success) {
+        console.log('✅ Invite code redeemed successfully');
+        return response;
+      }
+      
+      throw new Error(response?.message || 'Failed to redeem code');
+    } catch (error) {
+      console.error('❌ Error redeeming invite code:', error);
+      throw error;
+    }
   }
 
   // Error handling helper

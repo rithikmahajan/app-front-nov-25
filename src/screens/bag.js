@@ -12,6 +12,7 @@ import {
   PanResponder,
   Image,
 } from 'react-native';
+import { Svg, Path, G, Defs, ClipPath, Rect, Line } from 'react-native-svg';
 import BagQuantitySelectorModalOverlay from './bagquantityselectormodaloverlay';
 import BagSizeSelectorModalOverlay from './bagsizeselectormodaloverlay';
 import BagSizeSelectorSizeChart from './bagsizeselectorsizechart';
@@ -191,6 +192,38 @@ const SwipeableBagItem = React.memo(({ item, index, onOpenQuantityModal, onOpenS
   );
 });
 
+// VoucherShape Component - SVG voucher with dashed border
+const VoucherShape = ({ children }) => {
+  return (
+    <View style={styles.voucherShapeContainer}>
+      <Svg 
+        width={345} 
+        height={137} 
+        viewBox="0 0 345 137" 
+        style={styles.voucherSvg}
+      >
+        <Defs>
+          <ClipPath id="voucher-clip">
+            <Path d="M345 59.8004C345 65.323 339.929 70.7402 337.67 75.7795C336.644 78.069 336.041 80.861 336.041 83.874C336.041 91.5257 339.928 97.751 344.77 97.9434V97.9434C344.898 97.9461 345 98.0507 345 98.1788V127C345 132.523 340.523 137 335 137H10C4.47716 137 0 132.523 0 127V107.948C0 102.425 5.07117 97.008 7.33064 91.9685C8.35715 89.679 8.95996 86.8871 8.95996 83.874C8.95995 80.861 8.35713 78.069 7.33063 75.7795C5.07116 70.74 0 65.3227 0 59.7998V10C0 4.47715 4.47715 0 10 0H335C340.523 0 345 4.47715 345 10V59.8004Z" />
+          </ClipPath>
+        </Defs>
+        <G clipPath="url(#voucher-clip)">
+          <Rect width={345} height={137} fill="#F6F6F6" />
+        </G>
+        <Path 
+          d="M345 59.8004C345 65.323 339.929 70.7402 337.67 75.7795C336.644 78.069 336.041 80.861 336.041 83.874C336.041 91.5257 339.928 97.751 344.77 97.9434V97.9434C344.898 97.9461 345 98.0507 345 98.1788V127C345 132.523 340.523 137 335 137H10C4.47716 137 0 132.523 0 127V107.948C0 102.425 5.07117 97.008 7.33064 91.9685C8.35715 89.679 8.95996 86.8871 8.95996 83.874C8.95995 80.861 8.35713 78.069 7.33063 75.7795C5.07116 70.74 0 65.3227 0 59.7998V10C0 4.47715 4.47715 0 10 0H335C340.523 0 345 4.47715 345 10V59.8004Z" 
+          fill="#F6F6F6" 
+          stroke="#000000" 
+          strokeWidth={1}
+          strokeDasharray="8 8"
+          strokeLinecap="round"
+        />
+      </Svg>
+      {children}
+    </View>
+  );
+};
+
 // PromoCodeItem Component - Individual promo code card
 const PromoCodeItem = React.memo(({ promoCode, onApplyPromo, isSelected }) => {
   const handleApplyPress = useCallback(() => {
@@ -223,28 +256,34 @@ const PromoCodeItem = React.memo(({ promoCode, onApplyPromo, isSelected }) => {
   };
 
   return (
-    <View style={styles.voucherContainer}>
-      <View style={[styles.voucherCard, isSelected && styles.voucherCardSelected]}>
-        {/* Main voucher background with perforated edges */}
-        <View style={styles.voucherShape}>
-          {/* Voucher content */}
-          <View style={styles.voucherContent}>
-            <Text style={styles.voucherTitle}>{getDiscountDisplay()}</Text>
-            <Text style={styles.voucherCode}>{promoCode.code}</Text>
-            <Text style={styles.voucherDate}>
-              {promoCode.description || `Min. order ₹${promoCode.minOrderValue || 0}`}
-            </Text>
-            {promoCode.validUntil && (
-              <Text style={styles.voucherExpiry}>
-                Valid until {formatDate(promoCode.validUntil)}
-              </Text>
-            )}
+    <View style={styles.voucherWrapper}>
+      <VoucherShape>
+        <View style={styles.voucherContent}>
+          <Text style={styles.voucherTitle}>{getDiscountDisplay()}</Text>
+          
+          <Text style={styles.voucherCode}>{promoCode.code}</Text>
+          
+          <View style={styles.dashedLineContainer}>
+            <Svg width={316} height={1} viewBox="0 0 316 1" style={styles.dashedLineSvg}>
+              <Line
+                x1="0.5"
+                y1="0.5"
+                x2="315.5"
+                y2="0.5"
+                stroke="#000000"
+                strokeWidth={1}
+                strokeDasharray="8 8"
+                strokeLinecap="round"
+              />
+            </Svg>
           </View>
           
-          {/* Dashed divider line */}
-          <View style={styles.voucherDivider} />
+          {promoCode.validUntil && (
+            <Text style={styles.voucherDate}>
+              {formatDate(promoCode.validUntil)}
+            </Text>
+          )}
           
-          {/* Apply button */}
           <TouchableOpacity 
             style={[
               styles.voucherApplyButton,
@@ -261,12 +300,7 @@ const PromoCodeItem = React.memo(({ promoCode, onApplyPromo, isSelected }) => {
             </Text>
           </TouchableOpacity>
         </View>
-        
-        {/* Left semicircle cutout */}
-        <View style={styles.voucherLeftCutout} />
-        {/* Right semicircle cutout */}
-        <View style={styles.voucherRightCutout} />
-      </View>
+      </VoucherShape>
     </View>
   );
 });
@@ -317,7 +351,7 @@ const PromoCodeSection = React.memo(({ promoCodes, onApplyPromo, onRetryFetch })
 
 const BagScreen = ({ navigation, route }) => {
   // Use BagContext instead of local state
-  const { bagItems, removeFromBag, updateQuantity, updateSize, getTotalPrice, clearBag, loadBagFromAPI, validateAndCleanCart } = useBag();
+  const { bagItems, removeFromBag, updateQuantity, updateSize, getTotalPrice, clearBag, loadBagFromAPI, validateAndCleanCart, initialized } = useBag();
   const { selectedAddress, selectAddress } = useAddress();
   
   // Currency context for location-based pricing
@@ -474,6 +508,19 @@ const BagScreen = ({ navigation, route }) => {
         availableCodes = promoData;
       }
       
+      // IMPORTANT: Filter out invite-friend codes - only show regular promo codes in cart
+      availableCodes = availableCodes.filter(code => {
+        const isInviteCode = code.codeType === 'invite' || 
+                            code.type === 'invite' || 
+                            code.isInviteCode === true;
+        
+        if (isInviteCode) {
+          console.log(`🚫 Cart: Excluding invite-friend code: ${code.code}`);
+        }
+        
+        return !isInviteCode; // Only return regular promo codes
+      });
+      
       setPromoCodes({
         available: availableCodes,
         loading: false,
@@ -481,7 +528,7 @@ const BagScreen = ({ navigation, route }) => {
         selectedCode: null
       });
       
-      console.log('✅ Promo codes fetched:', availableCodes.length, 'codes available');
+      console.log('✅ Cart: Loaded', availableCodes.length, 'regular promo codes (invite codes excluded)');
     } catch (error) {
       console.error('❌ Error fetching promo codes:', error);
       
@@ -707,14 +754,27 @@ const BagScreen = ({ navigation, route }) => {
     }
   }, [navigation]);
 
-  // Redirect to empty bag screen if no items (only when coming from home screen)
+  // Redirect to empty bag screen if no items (only when explicitly coming from another screen)
   useEffect(() => {
-    if (bagItems.length === 0 && 
-        route?.params?.previousScreen !== 'BagContent' && 
-        !route?.params?.forceShowContent) {
-      navigation.navigate('bagemptyscreen');
-    }
-  }, [bagItems.length, navigation, route?.params?.previousScreen, route?.params?.forceShowContent]);
+    // Add a small delay to allow bag context to fully load
+    const timer = setTimeout(() => {
+      // Always redirect to empty screen when bag is empty and initialized
+      // Unless explicitly forced to show content or coming from BagContent
+      const shouldRedirectToEmpty = bagItems.length === 0 && 
+          route?.params?.previousScreen !== 'BagContent' && 
+          !route?.params?.forceShowContent &&
+          initialized; // Only redirect if bag context is fully initialized
+          
+      if (shouldRedirectToEmpty) {
+        console.log('🔄 Redirecting to empty bag screen');
+        navigation.navigate('bagemptyscreen');
+      } else {
+        console.log('🛍️ Staying on bag screen - items:', bagItems.length, 'initialized:', initialized, 'previousScreen:', route?.params?.previousScreen);
+      }
+    }, 100); // Small delay to allow async bag loading
+    
+    return () => clearTimeout(timer);
+  }, [bagItems.length, navigation, route?.params?.previousScreen, route?.params?.forceShowContent, initialized]);
 
 
 
@@ -1285,6 +1345,21 @@ const BagScreen = ({ navigation, route }) => {
     }
   }, []);
 
+  // Remove promo code handler
+  const handleRemovePromo = useCallback(() => {
+    const removedCode = promoCodes.selectedCode?.code;
+    
+    setPromoCodes(prev => ({
+      ...prev,
+      selectedCode: null
+    }));
+    
+    Alert.alert(
+      'Promo Code Removed',
+      `${removedCode} has been removed from your order.`
+    );
+  }, [promoCodes.selectedCode]);
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -1409,17 +1484,38 @@ const BagScreen = ({ navigation, route }) => {
               style={styles.promoToggleContainer}
               onPress={togglePromoCode}
             >
-              <Text style={styles.promoToggleText}>
-                {promoCodes.selectedCode 
-                  ? `Applied: ${promoCodes.selectedCode.code}` 
-                  : promoCodes.available.length > 0 
-                    ? `${promoCodes.available.length} Promo Code${promoCodes.available.length !== 1 ? 's' : ''} Available`
-                    : 'Have a Promo Code?'
-                }
-              </Text>
-              <Text style={styles.promoToggleIcon}>
-                {modalStates.promoCodeExpanded ? '−' : '+'}
-              </Text>
+              <View style={styles.promoToggleLeft}>
+                <Text style={styles.promoToggleText}>
+                  {promoCodes.selectedCode 
+                    ? `Applied: ${promoCodes.selectedCode.code}` 
+                    : promoCodes.available.length > 0 
+                      ? `${promoCodes.available.length} Promo Code${promoCodes.available.length !== 1 ? 's' : ''} Available`
+                      : 'Have a Promo Code?'
+                  }
+                </Text>
+                {promoCodes.selectedCode && (
+                  <Text style={styles.promoSavingsText}>
+                    Saving ₹{Math.round(bagCalculations.promoDiscount)}
+                  </Text>
+                )}
+              </View>
+              <View style={styles.promoToggleRight}>
+                {promoCodes.selectedCode && (
+                  <TouchableOpacity 
+                    style={styles.removePromoButton}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      handleRemovePromo();
+                    }}
+                    accessibilityLabel="Remove promo code"
+                  >
+                    <Text style={styles.removePromoText}>Remove</Text>
+                  </TouchableOpacity>
+                )}
+                <Text style={styles.promoToggleIcon}>
+                  {modalStates.promoCodeExpanded ? '−' : '+'}
+                </Text>
+              </View>
             </TouchableOpacity>
 
             {modalStates.promoCodeExpanded && (
@@ -1514,9 +1610,6 @@ const BagScreen = ({ navigation, route }) => {
         onClose={handleCloseSizeChart}
       />
 
-
-
-
     </View>
   );
 };
@@ -1532,10 +1625,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 54, // Increased top padding to match Figma
     paddingBottom: 12,
     backgroundColor: '#FFFFFF',
-    height: 94, // 54px top padding + 24px content + 16px bottom
   },
   headerTitle: {
     fontSize: 16,
@@ -1544,7 +1636,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: -0.4,
     fontFamily: 'Montserrat',
-    flex: 1,
+    position: 'absolute',
+    left: 0,
+    right: 0,
   },
   headerRight: {
     width: 68,
@@ -1559,7 +1653,7 @@ const styles = StyleSheet.create({
     paddingTop: 0, // Remove padding to start right after header
   },
   productContainer: {
-    paddingHorizontal: 16, // Changed from 24 to 16 to match Figma
+    paddingHorizontal: 24, // Adjusted to match Figma left positioning
     paddingTop: 24,
     paddingBottom: 0,
   },
@@ -1567,22 +1661,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 16,
     alignItems: 'flex-start',
-    marginBottom: 16, // Added spacing between product and actions
+    marginBottom: 8, // Reduced spacing for tighter layout
   },
   productImageContainer: {
     flex: 1,
   },
   productImagePlaceholder: {
     height: 154,
-    backgroundColor: '#EEEEEE',
-    borderRadius: 8,
+    backgroundColor: '#F0F0F0', // Lighter background for placeholder
+    borderRadius: 0, // Remove border radius to match Figma
     justifyContent: 'center',
     alignItems: 'center',
   },
   productImage: {
     height: 154,
     width: '100%',
-    borderRadius: 8,
+    borderRadius: 0, // Remove border radius to match Figma
   },
   imagePlaceholderText: {
     color: '#999999',
@@ -1596,13 +1690,13 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   productTitle: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '400',
     color: '#767676',
-    letterSpacing: -0.12,
-    lineHeight: 14.4,
+    letterSpacing: -0.14,
+    lineHeight: 16.8,
     fontFamily: 'Montserrat',
-    marginBottom: 2,
+    marginBottom: 0,
   },
   productName: {
     fontSize: 14,
@@ -1637,13 +1731,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     height: 24,
-    paddingHorizontal: 16, // Match the product container padding
+    paddingHorizontal: 24, // Match the product container padding
     marginBottom: 0, // Remove bottom margin
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4, // Match Figma gap
+    gap: 16, // Increased gap to match Figma
   },
   quantityText: {
     fontSize: 16,
@@ -1658,7 +1752,7 @@ const styles = StyleSheet.create({
   sizeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4, // Match Figma gap
+    gap: 16, // Increased gap to match Figma
   },
   sizeText: {
     fontSize: 16,
@@ -1706,7 +1800,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
     gap: 8,
-    marginTop: 16, // Add spacing after products
+    marginTop: 0, // Remove extra spacing
   },
   deliveryTitle: {
     fontSize: 16,
@@ -1857,16 +1951,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    paddingVertical: 12, // Reduced padding
+    paddingVertical: 24, // Increased to match Figma
     borderTopWidth: 1,
     borderTopColor: '#E4E4E4',
     height: 64, // Fixed height to match Figma
+  },
+  promoToggleLeft: {
+    flex: 1,
+  },
+  promoToggleRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   promoToggleText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.4,
+    fontFamily: 'Montserrat',
+  },
+  promoSavingsText: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: '#34C759',
+    marginTop: 4,
+    fontFamily: 'Montserrat',
+  },
+  removePromoButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#FF3B30',
+    backgroundColor: '#FFFFFF',
+  },
+  removePromoText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#FF3B30',
     fontFamily: 'Montserrat',
   },
   promoToggleIcon: {
@@ -1876,134 +1999,108 @@ const styles = StyleSheet.create({
     height: 14,
   },
   // Replace the old promo code styles with voucher styles
-  voucherContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 0,
-    marginTop: 0,
+  voucherWrapper: {
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 16, // Added horizontal padding
   },
-  voucherCard: {
+  voucherShapeContainer: {
+    width: 345, // Updated to match Figma
     height: 137,
-    alignSelf: 'center',
     position: 'relative',
-    marginHorizontal: 8,
-    maxWidth: 345,
-    width: '100%',
   },
-  voucherShape: {
-    backgroundColor: '#F6F6F6',
-    height: 137,
-    borderRadius: 10,
-    position: 'relative',
-    overflow: 'hidden',
-    marginHorizontal: 10, // Space for the cutouts
+  voucherSvg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
   },
   voucherContent: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-  },
-  voucherTitle: {
-    fontSize: 25,
-    fontWeight: '600',
-    color: '#1F2937', // Neutral-800 equivalent
-    lineHeight: 25,
-    fontFamily: 'Montserrat',
-    position: 'absolute',
-    left: 24,
-    top: 14,
+    width: 345, // Updated to match Figma
+    height: 137,
+    position: 'relative',
   },
   voucherCode: {
     fontSize: 12,
     fontWeight: '400',
-    color: '#6C6C6C', // Neutral-80
-    fontFamily: 'Montserrat',
+    color: '#6C6C6C',
+    fontFamily: 'Montserrat-Regular',
+    textAlign: 'left',
+    lineHeight: 14.4,
     position: 'absolute',
     left: 24,
     top: 49,
   },
+  voucherTitle: {
+    fontSize: 25,
+    fontWeight: '600',
+    color: '#3E3E3E',
+    fontFamily: 'Montserrat-SemiBold',
+    textTransform: 'uppercase',
+    lineHeight: 30,
+    position: 'absolute',
+    left: 24,
+    top: 14,
+  },
+  dashedLineContainer: {
+    position: 'absolute',
+    width: 316, // Updated to match Figma
+    height: 1,
+    left: 15,
+    top: 85,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dashedLineSvg: {
+    transform: [{ rotate: '359.798deg' }],
+  },
   voucherDate: {
     fontSize: 10,
-    fontWeight: '400',
-    color: '#6C6C6C', // Neutral-80
-    fontFamily: 'Montserrat',
+    fontWeight: 'normal',
+    color: '#6C6C6C',
+    fontFamily: 'Montserrat-Regular',
+    textAlign: 'left',
+    lineHeight: 12,
     position: 'absolute',
-    right: 52,
+    right: 24, // Changed from left to right for date positioning
     top: 16,
+    width: 110,
   },
-  voucherDivider: {
+  voucherExpiry: {
+    fontSize: 10,
+    fontWeight: 'normal',
+    color: '#6C6C6C',
+    fontFamily: 'Montserrat-Regular',
+    textAlign: 'left',
     position: 'absolute',
-    left: 0.5,
-    right: 0.5,
-    top: 84, // Half of 137 height + 16.5 offset
-    height: 1,
-    backgroundColor: 'transparent',
-    borderTopWidth: 1,
-    borderTopColor: '#000000',
-    borderStyle: 'dashed',
+    left: 24,
+    bottom: 10,
   },
   voucherApplyButton: {
     position: 'absolute',
-    bottom: 28,
-    alignSelf: 'center',
     left: '50%',
-    transform: [{ translateX: -23.5 }],
+    transform: [{ translateX: -23.5 }], // Half of "Apply" text width
+    top: 100, // Adjusted for better vertical centering in bottom section
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    backgroundColor: 'transparent',
   },
   voucherApplyText: {
+    color: '#7F7F7F',
     fontSize: 16,
     fontWeight: '500',
-    color: '#7F7F7F', // Neutral-70
-    fontFamily: 'Montserrat',
+    fontFamily: 'Montserrat-Medium',
     textAlign: 'center',
-  },
-  voucherLeftCutout: {
-    position: 'absolute',
-    left: -10,
-    top: '50%',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#FFFFFF',
-    marginTop: -10,
-    zIndex: 10,
-  },
-  voucherRightCutout: {
-    position: 'absolute',
-    right: -10,
-    top: '50%',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#FFFFFF',
-    marginTop: -10,
-    zIndex: 10,
-  },
-  // New promo code styles
-  voucherCardSelected: {
-    transform: [{ scale: 0.98 }],
-    opacity: 0.8,
-  },
-  voucherExpiry: {
-    fontSize: 9,
-    fontWeight: '400',
-    color: '#999999',
-    fontFamily: 'Montserrat',
-    position: 'absolute',
-    right: 52,
-    top: 35,
+    lineHeight: 19.2,
   },
   voucherApplyButtonSelected: {
-    opacity: 0.7,
+    backgroundColor: 'transparent',
   },
   voucherApplyTextSelected: {
-    color: '#4CAF50',
-    fontWeight: '600',
+    color: '#34C759', // Green color for selected state
   },
   promoCodesContainer: {
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
   },
   promoLoadingContainer: {
     paddingHorizontal: 24,
@@ -2061,10 +2158,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   priceBreakdownContainer: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingHorizontal: 25, // Adjusted to match Figma positioning
+    paddingTop: 4,
+    paddingBottom: 16,
     gap: 10,
-    marginTop: 8, // Add spacing after voucher
+    marginTop: 0, // Remove spacing
   },
   priceRow: {
     flexDirection: 'row',
@@ -2107,9 +2205,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat',
   },
   paymentIconsContainer: {
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    marginBottom: 16, // Add spacing before checkout
+    paddingHorizontal: 26, // Match Figma positioning
+    paddingVertical: 12,
+    marginBottom: 0, // Remove bottom margin
   },
   paymentIconsRow: {
     flexDirection: 'row',
@@ -2126,13 +2224,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat',
   },
   bottomSpacing: {
-    height: 80, // Reduced spacing
+    height: 20, // Reduced spacing to bring checkout button closer
   },
   checkoutContainer: {
     paddingHorizontal: 22,
     paddingVertical: 16,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 0, // Remove any border
+    paddingBottom: 32, // Added bottom padding for safe area
   },
   checkoutButton: {
     backgroundColor: '#000000',
@@ -2195,13 +2294,14 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
     backgroundColor: '#FFFFFF',
+    marginBottom: 8, // Add spacing between items
   },
   deleteButtonContainer: {
     position: 'absolute',
     right: 0,
     top: 0,
     bottom: 0,
-    width: 100,
+    width: 99, // Match Figma width
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#D1A1A1', // Pink background as shown in Figma

@@ -11,12 +11,14 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
+  FlatList,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import auth from '@react-native-firebase/auth';
 import GlobalBackButton from '../components/GlobalBackButton';
 import yoraaAPI from '../services/yoraaAPI';
 import authManager from '../services/authManager';
+import ChevronDownIcon from '../assets/icons/ChevronDownIcon';
 
 const EditProfile = ({ navigation }) => {
   // Loading and user state
@@ -55,7 +57,42 @@ const EditProfile = ({ navigation }) => {
 
   // Memoized static options to prevent recreation on each render
   const stateOptions = useMemo(() => [
-    'Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad'
+    'Andhra Pradesh',
+    'Arunachal Pradesh',
+    'Assam',
+    'Bihar',
+    'Chhattisgarh',
+    'Goa',
+    'Gujarat',
+    'Haryana',
+    'Himachal Pradesh',
+    'Jharkhand',
+    'Karnataka',
+    'Kerala',
+    'Madhya Pradesh',
+    'Maharashtra',
+    'Manipur',
+    'Meghalaya',
+    'Mizoram',
+    'Nagaland',
+    'Odisha',
+    'Punjab',
+    'Rajasthan',
+    'Sikkim',
+    'Tamil Nadu',
+    'Telangana',
+    'Tripura',
+    'Uttar Pradesh',
+    'Uttarakhand',
+    'West Bengal',
+    'Andaman and Nicobar Islands',
+    'Chandigarh',
+    'Dadra and Nagar Haveli and Daman and Diu',
+    'Delhi',
+    'Jammu and Kashmir',
+    'Ladakh',
+    'Lakshadweep',
+    'Puducherry',
   ], []);
   
   const countryCodeOptions = useMemo(() => [
@@ -481,58 +518,58 @@ const EditProfile = ({ navigation }) => {
               />
             </View>
           </View>
-        </View>
 
-        {/* Other Details Section Header */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Other Details</Text>
-          <TouchableOpacity onPress={handleAddOtherDetails}>
-            <Text style={styles.addButton}>+ Add</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Date of Birth Field - Same structure as Name/Email/Phone */}
-        <View style={styles.inputContainer}>
-          <View style={styles.inputWrapper}>
-            <Text style={styles.floatingLabel}>Date of Birth</Text>
-            <TouchableOpacity 
-              style={styles.datePickerInput}
-              onPress={handleDatePickerPress}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.genderInputText}>
-                {formData.dateOfBirth.toLocaleDateString('en-US', {
-                  month: '2-digit',
-                  day: '2-digit',
-                  year: 'numeric'
-                })}
-              </Text>
-              <View style={styles.calendarIconContainer}>
-                <Text style={styles.calendarIcon}>📅</Text>
-              </View>
+          {/* Other Details Section Header */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Other Details</Text>
+            <TouchableOpacity onPress={handleAddOtherDetails}>
+              <Text style={styles.addButton}>+ Add</Text>
             </TouchableOpacity>
           </View>
-        </View>
 
-        {/* Address Section Header */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Address</Text>
-          <TouchableOpacity onPress={handleAddAddress}>
-            <Text style={styles.addButton}>+ Add</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Address Field - Same structure as Name/Email/Phone */}
-        {addressAdded && (
+          {/* Date of Birth Field - Same structure as Name/Email/Phone */}
           <View style={styles.inputContainer}>
             <View style={styles.inputWrapper}>
-              <Text style={styles.floatingLabel}>Address</Text>
-              <View style={styles.addressDisplayContainer}>
-                <Text style={styles.addressText}>{getFormattedAddress}</Text>
-              </View>
+              <Text style={styles.floatingLabel}>Date of Birth</Text>
+              <TouchableOpacity 
+                style={styles.datePickerInput}
+                onPress={handleDatePickerPress}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.genderInputText}>
+                  {formData.dateOfBirth.toLocaleDateString('en-US', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric'
+                  })}
+                </Text>
+                <View style={styles.calendarIconContainer}>
+                  <Text style={styles.calendarIcon}>📅</Text>
+                </View>
+              </TouchableOpacity>
             </View>
           </View>
-        )}
+
+          {/* Address Section Header */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Address</Text>
+            <TouchableOpacity onPress={handleAddAddress}>
+              <Text style={styles.addButton}>+ Add</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Address Field - Same structure as Name/Email/Phone */}
+          {addressAdded && (
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.floatingLabel}>Address</Text>
+                <View style={styles.addressDisplayContainer}>
+                  <Text style={styles.addressText}>{getFormattedAddress}</Text>
+                </View>
+              </View>
+            </View>
+          )}
+        </View>
 
         {/* Additional Sections - Keep old structure temporarily for backward compatibility */}
         <View style={styles.additionalContainer}>
@@ -606,12 +643,13 @@ const EditProfile = ({ navigation }) => {
         <SafeAreaView style={styles.modalContainer}>
           {/* Address Modal Header */}
           <View style={styles.modalHeader}>
-            <GlobalBackButton 
-              onPress={handleCloseAddressModal}
-              style={styles.backButton}
-            />
+            <View style={styles.backButtonContainer}>
+              <GlobalBackButton 
+                onPress={handleCloseAddressModal}
+                style={styles.backButton}
+              />
+            </View>
             <Text style={styles.modalTitle}>Address</Text>
-            <View style={styles.placeholder} />
           </View>
 
           <ScrollView style={styles.modalScrollContainer} showsVerticalScrollIndicator={false}>
@@ -670,30 +708,14 @@ const EditProfile = ({ navigation }) => {
               <View style={styles.inputContainer}>
                 <TouchableOpacity 
                   style={styles.dropdownContainer}
-                  onPress={() => setShowStateDropdown(!showStateDropdown)}
+                  onPress={() => setShowStateDropdown(true)}
                 >
-                  <Text style={styles.dropdownText}>{formData.state}</Text>
-                  <Text style={styles.dropdownArrow}>▼</Text>
-                </TouchableOpacity>
-                
-                {showStateDropdown && (
-                  <View style={styles.dropdownOptions}>
-                    {stateOptions.map((option) => (
-                      <TouchableOpacity
-                        key={option}
-                        style={styles.dropdownOption}
-                        onPress={() => handleStateSelect(option)}
-                      >
-                        <Text style={[
-                          styles.dropdownOptionText,
-                          formData.state === option && styles.selectedOption
-                        ]}>
-                          {option}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
+                  <Text style={styles.dropdownLabel}>State</Text>
+                  <View style={styles.dropdownValueContainer}>
+                    <Text style={styles.dropdownText}>{formData.state}</Text>
+                    <ChevronDownIcon size={18} color="#000000" />
                   </View>
-                )}
+                </TouchableOpacity>
               </View>
 
               {/* PIN */}
@@ -722,41 +744,30 @@ const EditProfile = ({ navigation }) => {
                 <View style={styles.phoneContainer}>
                   <TouchableOpacity 
                     style={styles.countryCodeContainer}
-                    onPress={() => setShowCountryCodeDropdown(!showCountryCodeDropdown)}
+                    onPress={() => setShowCountryCodeDropdown(true)}
                   >
-                    <Text style={styles.countryCodeText}>
-                      {countryCodeOptions.find(c => c.code === formData.countryCode)?.flag} {formData.countryCode}
-                    </Text>
-                    <Text style={styles.dropdownArrow}>▼</Text>
+                    <Text style={styles.countryCodeLabel}>Phone</Text>
+                    <View style={styles.countryCodeValueContainer}>
+                      <Text>
+                        {countryCodeOptions.find(c => c.code === formData.countryCode)?.flag}
+                      </Text>
+                      <Text style={styles.countryCodeText}>
+                        {formData.countryCode}
+                      </Text>
+                      <ChevronDownIcon size={18} color="#000000" />
+                    </View>
                   </TouchableOpacity>
+                  
+                  <View style={styles.phoneDivider} />
                   
                   <TextInput
                     style={styles.phoneInput}
                     value={formData.phoneNumber}
                     onChangeText={(value) => handleInputChange('phoneNumber', value)}
-                    placeholder="Phone"
+                    placeholder="1234567890"
                     keyboardType="phone-pad"
                   />
                 </View>
-                
-                {showCountryCodeDropdown && (
-                  <View style={styles.countryCodeDropdown}>
-                    {countryCodeOptions.map((option) => (
-                      <TouchableOpacity
-                        key={option.code}
-                        style={styles.dropdownOption}
-                        onPress={() => handleCountryCodeSelect(option)}
-                      >
-                        <Text style={[
-                          styles.dropdownOptionText,
-                          formData.countryCode === option.code && styles.selectedOption
-                        ]}>
-                          {option.flag} {option.code} {option.country}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
               </View>
             </View>
 
@@ -771,6 +782,82 @@ const EditProfile = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         </SafeAreaView>
+        
+        {/* State Selection Modal - Nested inside Address Modal */}
+        <Modal
+          visible={showStateDropdown}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setShowStateDropdown(false)}
+        >
+          <SafeAreaView style={styles.selectorModalContainer}>
+            <View style={styles.swipeIndicator} />
+            
+            <View style={styles.selectorModalHeader}>
+              <Text style={styles.selectorModalTitle}>Select State</Text>
+              <TouchableOpacity
+                onPress={() => setShowStateDropdown(false)}
+                style={styles.selectorModalCloseButton}
+              >
+                <Text style={styles.selectorModalCloseText}>Done</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <FlatList
+              data={stateOptions}
+              keyExtractor={(item, index) => `state-${item}-${index}`}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.selectorItem}
+                  onPress={() => handleStateSelect(item)}
+                >
+                  <Text style={styles.selectorItemText}>{item}</Text>
+                </TouchableOpacity>
+              )}
+              showsVerticalScrollIndicator={true}
+              contentContainerStyle={styles.selectorModalList}
+            />
+          </SafeAreaView>
+        </Modal>
+
+        {/* Country Code Selection Modal - Nested inside Address Modal */}
+        <Modal
+          visible={showCountryCodeDropdown}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setShowCountryCodeDropdown(false)}
+        >
+          <SafeAreaView style={styles.selectorModalContainer}>
+            <View style={styles.swipeIndicator} />
+            
+            <View style={styles.selectorModalHeader}>
+              <Text style={styles.selectorModalTitle}>Select Country</Text>
+              <TouchableOpacity
+                onPress={() => setShowCountryCodeDropdown(false)}
+                style={styles.selectorModalCloseButton}
+              >
+                <Text style={styles.selectorModalCloseText}>Done</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <FlatList
+              data={countryCodeOptions}
+              keyExtractor={(item, index) => `country-${item.code}-${index}`}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.selectorItem}
+                  onPress={() => handleCountryCodeSelect(item)}
+                >
+                  <Text style={styles.selectorItemText}>
+                    {item.flag} {item.country} ({item.code})
+                  </Text>
+                </TouchableOpacity>
+              )}
+              showsVerticalScrollIndicator={true}
+              contentContainerStyle={styles.selectorModalList}
+            />
+          </SafeAreaView>
+        </Modal>
       </Modal>
 
       {/* Success Modal */}
@@ -917,7 +1004,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 12,
   },
   inputWrapper: {
     position: 'relative',
@@ -935,23 +1022,28 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Medium',
   },
   textInput: {
-    borderWidth: 1.5,
-    borderColor: '#000000',
+    borderWidth: 1,
+    borderColor: '#979797',
     borderRadius: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: 19,
     paddingVertical: 15,
     fontSize: 14,
     color: '#000000',
     backgroundColor: '#FFFFFF',
     fontFamily: 'Montserrat-Regular',
-    height: 50, // Fixed height for consistency across all fields
+    height: 47,
+    letterSpacing: -0.35,
+  },
+  textInputFocused: {
+    borderWidth: 2,
+    borderColor: '#000000',
   },
   // Section Header Styles (for Other Details and Address)
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 0, // Remove padding since it's now inside formContainer
     marginTop: 30,
     marginBottom: 20,
   },
@@ -967,7 +1059,7 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     borderRadius: 12,
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingVertical: 0, // Remove vertical padding to rely on height
     backgroundColor: '#FFFFFF',
     flexDirection: 'row',
     alignItems: 'center',
@@ -1001,8 +1093,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Regular',
   },
   dropdownArrow: {
-    fontSize: 12,
-    color: '#666666',
+    fontSize: 14,
+    color: '#000000',
   },
   genderDropdown: {
     position: 'absolute',
@@ -1025,14 +1117,15 @@ const styles = StyleSheet.create({
   },
   dropdownOption: {
     paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
+    paddingHorizontal: 19,
+    borderBottomWidth: 0.5,
     borderBottomColor: '#F0F0F0',
   },
   dropdownOptionText: {
     fontSize: 14,
     color: '#000000',
     fontFamily: 'Montserrat-Regular',
+    letterSpacing: -0.35,
   },
   selectedOption: {
     fontWeight: '600',
@@ -1048,10 +1141,10 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
     borderRadius: 12,
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingVertical: 0, // Remove vertical padding to rely on height
     backgroundColor: '#FFFFFF',
     justifyContent: 'center', // Center content vertically
-    minHeight: 50, // Minimum height to match textInput
+    height: 50, // Fixed height to match textInput exactly
   },
   addressText: {
     fontSize: 14,
@@ -1136,29 +1229,44 @@ const styles = StyleSheet.create({
     color: '#000000',
   },
   dropdownContainer: {
-    borderWidth: 2,
-    borderColor: '#000000',
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    borderWidth: 1,
+    borderColor: '#979797',
+    borderRadius: 12,
+    paddingHorizontal: 19,
+    paddingTop: 7,
+    paddingBottom: 7,
+    flexDirection: 'column',
+    backgroundColor: '#FFFFFF',
+    height: 47,
+    justifyContent: 'center',
+  },
+  dropdownLabel: {
+    fontSize: 12,
+    color: '#000000',
+    fontFamily: 'Montserrat-Regular',
+    letterSpacing: -0.3,
+    marginBottom: 2,
+  },
+  dropdownValueContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
   },
   dropdownText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#000000',
+    fontFamily: 'Montserrat-Medium',
+    letterSpacing: -0.35,
   },
   dropdownOptions: {
     position: 'absolute',
-    top: 70,
+    top: 50,
     left: 0,
     right: 0,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: '#000000',
-    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#979797',
+    borderRadius: 12,
     zIndex: 1000,
     elevation: 5,
     shadowColor: '#000',
@@ -1177,65 +1285,96 @@ const styles = StyleSheet.create({
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 54,
+    paddingBottom: 12,
+    backgroundColor: '#FFFFFF',
+    position: 'relative',
+  },
+  backButtonContainer: {
+    position: 'absolute',
+    left: 16,
+    top: 54,
+    zIndex: 10,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '500',
     color: '#000000',
+    fontFamily: 'Montserrat-Medium',
+    letterSpacing: -0.5,
   },
   modalScrollContainer: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
   },
   modalFormContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingHorizontal: 24,
+    paddingTop: 33,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
   },
   phoneContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#979797',
+    borderRadius: 12,
+    height: 47,
+    paddingLeft: 19,
+    backgroundColor: '#FFFFFF',
   },
   countryCodeContainer: {
-    borderWidth: 2,
-    borderColor: '#000000',
-    borderRadius: 25,
-    paddingHorizontal: 15,
-    paddingVertical: 15,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    paddingRight: 15,
+    minWidth: 60,
+  },
+  countryCodeLabel: {
+    fontSize: 12,
+    color: '#000000',
+    fontFamily: 'Montserrat-Regular',
+    letterSpacing: -0.3,
+    marginBottom: 2,
+  },
+  countryCodeValueContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    marginRight: 10,
-    minWidth: 100,
+    gap: 4,
   },
   countryCodeText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#000000',
-    marginRight: 5,
+    fontFamily: 'Montserrat-Medium',
+    letterSpacing: -0.35,
+    marginLeft: 5,
+  },
+  phoneDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: '#979797',
+    marginRight: 15,
   },
   phoneInput: {
     flex: 1,
-    borderWidth: 2,
-    borderColor: '#000000',
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    fontSize: 16,
+    fontSize: 14,
     color: '#000000',
-    backgroundColor: '#FFFFFF',
+    fontFamily: 'Montserrat-Regular',
+    letterSpacing: -0.35,
+    paddingVertical: 0,
+    height: '100%',
   },
   countryCodeDropdown: {
     position: 'absolute',
-    top: 70,
+    top: 50,
     left: 0,
     right: 0,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: '#000000',
-    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#979797',
+    borderRadius: 12,
     zIndex: 1000,
     elevation: 5,
     shadowColor: '#000',
@@ -1248,14 +1387,12 @@ const styles = StyleSheet.create({
     maxHeight: 200,
   },
   modalSpacer: {
-    height: 100,
+    height: 60,
   },
   modalButtonContainer: {
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingVertical: 30,
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
   },
   // Success Modal Styles
   successModalOverlay: {
@@ -1396,12 +1533,15 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#000000',
   },
   saveButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
+    letterSpacing: 0,
   },
   saveButtonDisabled: {
     opacity: 0.6,
@@ -1599,6 +1739,62 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#000000',
     fontFamily: 'Montserrat-Regular',
+  },
+  
+  // Selector Modal Styles (State & Country Code)
+  selectorModalContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  swipeIndicator: {
+    width: 40,
+    height: 5,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 3,
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  selectorModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  selectorModalTitle: {
+    fontSize: 18,
+    fontFamily: 'Montserrat-SemiBold',
+    fontWeight: '600',
+    color: '#000000',
+  },
+  selectorModalCloseButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  selectorModalCloseText: {
+    fontSize: 16,
+    fontFamily: 'Montserrat-SemiBold',
+    fontWeight: '600',
+    color: '#007AFF',
+  },
+  selectorModalList: {
+    paddingBottom: 20,
+  },
+  selectorItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  selectorItemText: {
+    fontSize: 16,
+    fontFamily: 'Montserrat-Regular',
+    color: '#000000',
   },
 });
 
