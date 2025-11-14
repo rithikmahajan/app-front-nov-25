@@ -71,33 +71,50 @@ const OrdersScreen = ({ navigation, route }) => {
       
       if (response.success && response.data) {
         // Transform API data to match our component structure
-        const transformedOrders = response.data.map(order => ({
-          id: order._id || order.id,
-          status: order.order_status,
-          statusColor: getStatusColor(order.order_status),
-          productName: order.items?.[0]?.name || order.items?.[0]?.description || 'Product Name',
-          productDescription: order.items?.[0]?.description || 'Product Description',
-          size: order.item_quantities?.[0]?.sku || 'Size Info',
-          image: order.items?.[0]?.image || 'https://images.unsplash.com/photo-1556906781-9a412961c28c?w=400&h=400&fit=crop',
-          actions: getCustomerActions(order),
-          orderDate: order.created_at,
-          totalAmount: order.total_price,
-          paymentStatus: order.payment_status,
-          shippingStatus: order.shipping_status,
-          razorpayOrderId: order.razorpay_order_id,
-          address: order.address,
-          // ✅ CRITICAL FIX: Ensure AWB code is extracted from API response
-          awbCode: order.awb_code || order.awbCode || order.tracking_number,
-          awb_code: order.awb_code || order.awbCode || order.tracking_number,
-          shipmentId: order.shipment_id || order.shiprocket_order_id,
-          items: order.items || [],
-          item_quantities: order.item_quantities || []
-        }));
+        const transformedOrders = response.data.map(order => {
+          // Get the first item
+          const firstItem = order.items?.[0];
+          
+          // Extract image URL with proper fallback handling
+          let imageUrl = null;
+          if (firstItem) {
+            // Try multiple image formats
+            imageUrl = firstItem.images?.[0]?.url ||  // Image object with url property
+                      firstItem.images?.[0] ||         // Direct image URL in array
+                      firstItem.image ||               // Direct image property
+                      firstItem.thumbnail;             // Thumbnail property
+          }
+          
+          return {
+            id: order._id || order.id,
+            status: order.order_status,
+            statusColor: getStatusColor(order.order_status),
+            productName: firstItem?.name || firstItem?.description || 'Product Name',
+            productDescription: firstItem?.description || 'Product Description',
+            size: order.item_quantities?.[0]?.sku || 'Size Info',
+            image: imageUrl, // No fallback - show only actual product images
+            actions: getCustomerActions(order),
+            orderDate: order.created_at,
+            totalAmount: order.total_price,
+            paymentStatus: order.payment_status,
+            shippingStatus: order.shipping_status,
+            razorpayOrderId: order.razorpay_order_id,
+            address: order.address,
+            // ✅ CRITICAL FIX: Ensure AWB code is extracted from API response
+            awbCode: order.awb_code || order.awbCode || order.tracking_number,
+            awb_code: order.awb_code || order.awbCode || order.tracking_number,
+            shipmentId: order.shipment_id || order.shiprocket_order_id,
+            items: order.items || [],
+            item_quantities: order.item_quantities || []
+          };
+        });
         
         console.log('✅ Orders fetched and transformed:', {
           count: transformedOrders.length,
           firstOrderHasAWB: !!transformedOrders[0]?.awbCode,
-          sampleAWB: transformedOrders[0]?.awbCode
+          sampleAWB: transformedOrders[0]?.awbCode,
+          firstOrderImage: transformedOrders[0]?.image,
+          firstOrderHasActualImage: transformedOrders[0]?.image && !transformedOrders[0]?.image?.includes('unsplash.com')
         });
         
         setOrders(transformedOrders);
@@ -170,7 +187,13 @@ const OrdersScreen = ({ navigation, route }) => {
   const OrderCard = useCallback(({ order, onTrack, onCancelOrder, navigation: nav }) => (
   <View style={styles.orderContainer}>
     <View style={styles.productContainer}>
-      <Image source={{ uri: order.image }} style={styles.productImage} />
+      {order.image ? (
+        <Image source={{ uri: order.image }} style={styles.productImage} />
+      ) : (
+        <View style={[styles.productImage, styles.placeholderImage]}>
+          <Text style={styles.placeholderText}>No Image</Text>
+        </View>
+      )}
       <View style={styles.productDetails}>
         {/* Order status */}
         <View style={styles.statusContainer}>
@@ -624,6 +647,16 @@ const styles = StyleSheet.create({
     color: '#767676',
     textAlign: 'center',
     lineHeight: 20,
+    fontFamily: 'Montserrat-Regular',
+  },
+  placeholderImage: {
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    fontSize: 12,
+    color: '#999999',
     fontFamily: 'Montserrat-Regular',
   },
 });

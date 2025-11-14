@@ -405,6 +405,16 @@ class YoraaAPIService {
           throw error;
         }
         
+        // Handle invite-friend endpoint errors silently (backend implementation pending)
+        if (endpoint.includes('/api/invite-friend/') || endpoint.includes('/api/user/invite')) {
+          const error = new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+          error.status = response.status;
+          error.statusCode = response.status;
+          error.response = { status: response.status, data };
+          error.isInviteEndpointMissing = true;
+          throw error;
+        }
+        
         // Log other errors normally
         console.error(`❌ API Error [${response.status}] ${endpoint}:`, data);
         console.error('❌ Full error response:', JSON.stringify(data, null, 2));
@@ -436,8 +446,8 @@ class YoraaAPIService {
       console.log(`✅ API Success [${method}] ${endpoint}:`, data.success ? 'SUCCESS' : 'RESPONSE_RECEIVED');
       return data;
     } catch (error) {
-      // Don't log cart 404 errors - they're handled gracefully
-      if (!(error.isCartEndpointMissing && error.status === 404)) {
+      // Don't log cart 404 errors or invite endpoint errors - they're handled gracefully
+      if (!(error.isCartEndpointMissing && error.status === 404) && !error.isInviteEndpointMissing) {
         console.error(`API Error [${method} ${endpoint}]:`, error);
       }
       throw error;
@@ -1639,19 +1649,17 @@ class YoraaAPIService {
       }
       
       try {
-        // PRIORITY: Try the working backend endpoint first!
-        // Backend has /api/invite-friend/admin/all with 3 active codes ready
+        // Try user-accessible endpoints only (no admin endpoints)
+        // The backend needs to implement one of these endpoints for invite codes to work
         const endpoints = [
-          { url: '/api/invite-friend/admin/all', params: { status: 'active' } },  // Backend endpoint with INVITE2024, REFERRAL15, FRIENDBONUS
-          { url: '/api/invite-friend/active', params: null },                     // Alternative endpoint
-          { url: '/api/invite-friend/public', params: null },                     // Public endpoint
-          { url: '/api/invite-friend/user/available', params: null },             // User-specific endpoint
-          { url: '/api/promoCode/user/available', params: null },                 // Fallback to promo codes
+          { url: '/api/invite-friend/user', params: null },                       // User-specific invite codes
+          { url: '/api/invite-friend/available', params: null },                  // Available invite codes
+          { url: '/api/user/invite-codes', params: null },                        // User invite codes alternative
         ];
         
         for (const endpoint of endpoints) {
           try {
-            console.log(`🔍 Trying endpoint: ${endpoint.url}${endpoint.params ? '?status=active' : ''}`);
+            console.log(`🔍 Trying endpoint: ${endpoint.url}`);
             
             // Build URL with params
             let url = endpoint.url;
@@ -1726,21 +1734,19 @@ class YoraaAPIService {
               console.log(`❌ Response not successful from ${endpoint.url}:`, response);
             }
           } catch (error) {
-            console.log(`❌ Endpoint ${endpoint.url} failed:`, error.message);
-            if (error.response) {
-              console.log(`   Status: ${error.response.status}`);
-              console.log(`   Data:`, error.response.data);
-            }
+            // Log minimal error info to reduce console noise
+            const statusCode = error.response?.status || error.status;
+            console.log(`⚠️ ${endpoint.url}: ${statusCode || 'Network error'}`);
             continue; // Try next endpoint
           }
         }
         
         // If all endpoints fail, return empty with helpful message
-        console.log('⚠️ No invite codes found from any endpoint');
+        console.log('ℹ️ Backend invite endpoints not yet implemented. Ask backend team to add user-accessible invite endpoint.');
         return {
           success: true,
           data: [],
-          message: 'No invite codes available at the moment'
+          message: 'Invite codes feature coming soon'
         };
         
       } catch (error) {

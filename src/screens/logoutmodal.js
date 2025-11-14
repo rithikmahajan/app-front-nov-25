@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Modal,
   Dimensions,
-  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
@@ -164,12 +163,7 @@ const LogoutModal = ({ visible, onClose, onSignOut, navigation }) => {
       
       console.log('✅ Complete logout process finished');
       
-      // Show success message
-      Alert.alert(
-        'Signed Out',
-        'You have been successfully signed out.',
-        [{ text: 'OK' }]
-      );
+      // Success message removed as per user request
       
     } catch (error) {
       console.error('❌ Error during logout:', error);
@@ -182,11 +176,7 @@ const LogoutModal = ({ visible, onClose, onSignOut, navigation }) => {
         console.error('❌ Failed to clear AsyncStorage:', clearError);
       }
       
-      Alert.alert(
-        'Logout',
-        'You have been signed out.',
-        [{ text: 'OK' }]
-      );
+      // Alert removed as per user request
       
       // Still navigate and call callback
       if (navigation && typeof navigation.reset === 'function') {

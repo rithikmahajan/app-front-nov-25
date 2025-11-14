@@ -224,11 +224,25 @@ const VoucherShape = ({ children }) => {
   );
 };
 
+// Lightning Icon Component
+const LightningIcon = () => (
+  <Svg width="18" height="27" viewBox="0 0 18 27" fill="none" style={{ marginHorizontal: 4 }}>
+    <Path 
+      d="M9.50586 21.6914L6.50586 26.9736L5.51465 24.6504L8.51562 19.3682L9.50586 21.6914ZM6.47754 8.43555L9.36035 12.2012L11.5215 8.58594H13.8506L8.16406 18.1094H7.7793L7.99805 18.3867L4.06543 24.9727H1.73535L8.22266 14.1094H9.7207L9.00977 13.207L7.59863 13.1885L3.93262 8.40137L6.47754 8.43555ZM13.4385 14.8955L10.4375 20.1777L9.44727 17.8545L12.4473 12.5723L13.4385 14.8955ZM17.3711 8.09961L14.3701 13.3818L13.3799 11.0586L16.3799 5.77637L17.3711 8.09961ZM16.9131 2.30371L14.0156 7.63965L12.9805 5.33496L15.8789 0L16.9131 2.30371ZM2.54492 2.61133L6.20996 7.39746L3.66602 7.36328L0 2.57617L2.54492 2.61133Z" 
+      fill="#848688"
+    />
+  </Svg>
+);
+
 // PromoCodeItem Component - Individual promo code card
-const PromoCodeItem = React.memo(({ promoCode, onApplyPromo, isSelected }) => {
+const PromoCodeItem = React.memo(({ promoCode, onApplyPromo, onRemovePromo, isSelected }) => {
   const handleApplyPress = useCallback(() => {
     onApplyPromo?.(promoCode);
   }, [onApplyPromo, promoCode]);
+
+  const handleRemovePress = useCallback(() => {
+    onRemovePromo?.();
+  }, [onRemovePromo]);
 
   // Format discount display
   const getDiscountDisplay = () => {
@@ -289,14 +303,14 @@ const PromoCodeItem = React.memo(({ promoCode, onApplyPromo, isSelected }) => {
               styles.voucherApplyButton,
               isSelected && styles.voucherApplyButtonSelected
             ]}
-            onPress={handleApplyPress}
-            accessibilityLabel={`Apply ${promoCode.code} discount`}
+            onPress={isSelected ? handleRemovePress : handleApplyPress}
+            accessibilityLabel={isSelected ? `Remove ${promoCode.code} discount` : `Apply ${promoCode.code} discount`}
           >
             <Text style={[
               styles.voucherApplyText,
               isSelected && styles.voucherApplyTextSelected
             ]}>
-              {isSelected ? 'Applied' : 'Apply'}
+              {isSelected ? 'Remove' : 'Apply'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -306,7 +320,7 @@ const PromoCodeItem = React.memo(({ promoCode, onApplyPromo, isSelected }) => {
 });
 
 // PromoCodeSection Component - Displays available promo codes
-const PromoCodeSection = React.memo(({ promoCodes, onApplyPromo, onRetryFetch }) => {
+const PromoCodeSection = React.memo(({ promoCodes, onApplyPromo, onRemovePromo, onRetryFetch }) => {
   if (promoCodes.loading) {
     return (
       <View style={styles.promoLoadingContainer}>
@@ -342,6 +356,7 @@ const PromoCodeSection = React.memo(({ promoCodes, onApplyPromo, onRetryFetch })
           key={promoCode.id || promoCode.code || index}
           promoCode={promoCode}
           onApplyPromo={onApplyPromo}
+          onRemovePromo={onRemovePromo}
           isSelected={promoCodes.selectedCode?.code === promoCode.code}
         />
       ))}
@@ -1372,7 +1387,11 @@ const BagScreen = ({ navigation, route }) => {
         </View>
       </View>
 
-      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollContainer} 
+        contentContainerStyle={bagItems.length === 0 ? styles.emptyScrollContent : undefined}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Empty Bag State */}
         {bagItems.length === 0 ? (
           <View style={styles.emptyBagContainer}>
@@ -1456,12 +1475,23 @@ const BagScreen = ({ navigation, route }) => {
                   ]}
                   onPress={userPoints.available > 0 && !userPoints.error && !userPoints.loading ? togglePoints : null}
                 >
-                  {modalStates.pointsApplied && <Text style={styles.checkmark}>✓</Text>}
+                  {modalStates.pointsApplied && (
+                    <Svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                      <Path 
+                        d="M1 4L3.5 6.5L9 1" 
+                        stroke="#111111" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      />
+                    </Svg>
+                  )}
                 </TouchableOpacity>
-                <View style={styles.pointsIcon}>
-                  <Text style={styles.pointsIconText}>⚡</Text>
+                <View style={styles.pointsTextContainer}>
+                  <Text style={styles.pointsText}>Apply </Text>
+                  <LightningIcon />
+                  <Text style={styles.pointsText}> Points</Text>
                 </View>
-                <Text style={styles.pointsText}>Apply Points</Text>
               </View>
               {userPoints.error ? (
                 <TouchableOpacity onPress={fetchUserPoints}>
@@ -1493,25 +1523,8 @@ const BagScreen = ({ navigation, route }) => {
                       : 'Have a Promo Code?'
                   }
                 </Text>
-                {promoCodes.selectedCode && (
-                  <Text style={styles.promoSavingsText}>
-                    Saving ₹{Math.round(bagCalculations.promoDiscount)}
-                  </Text>
-                )}
               </View>
               <View style={styles.promoToggleRight}>
-                {promoCodes.selectedCode && (
-                  <TouchableOpacity 
-                    style={styles.removePromoButton}
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      handleRemovePromo();
-                    }}
-                    accessibilityLabel="Remove promo code"
-                  >
-                    <Text style={styles.removePromoText}>Remove</Text>
-                  </TouchableOpacity>
-                )}
                 <Text style={styles.promoToggleIcon}>
                   {modalStates.promoCodeExpanded ? '−' : '+'}
                 </Text>
@@ -1521,7 +1534,8 @@ const BagScreen = ({ navigation, route }) => {
             {modalStates.promoCodeExpanded && (
               <PromoCodeSection 
                 promoCodes={promoCodes}
-                onApplyPromo={handleApplyPromo} 
+                onApplyPromo={handleApplyPromo}
+                onRemovePromo={handleRemovePromo}
                 onRetryFetch={fetchPromoCodes}
               />
             )}
@@ -1651,6 +1665,11 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
     paddingTop: 0, // Remove padding to start right after header
+    backgroundColor: '#FFFFFF',
+  },
+  emptyScrollContent: {
+    flexGrow: 1,
+    backgroundColor: '#FFFFFF',
   },
   productContainer: {
     paddingHorizontal: 24, // Adjusted to match Figma left positioning
@@ -1888,15 +1907,13 @@ const styles = StyleSheet.create({
   applyPointsContainer: {
     paddingHorizontal: 24,
     paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E4E4E4',
-    height: 64, // Fixed height to match Figma
+    height: 64,
+    justifyContent: 'center',
   },
   pointsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   pointsCheckbox: {
     width: 20,
@@ -1906,41 +1923,30 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 8,
   },
   pointsCheckboxDisabled: {
     borderColor: '#E0E0E0',
     backgroundColor: '#F5F5F5',
     opacity: 0.6,
   },
-  checkmark: {
-    fontSize: 12,
-    color: '#111111',
-  },
-  pointsIcon: {
-    justifyContent: 'center',
+  pointsTextContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    width: 17.371,
-    height: 26.974,
-  },
-  pointsIconText: {
-    fontSize: 16,
-    color: '#848688',
   },
   pointsText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.4,
-    lineHeight: 16,
-    fontFamily: 'Montserrat',
+    fontFamily: 'Montserrat-Medium',
   },
   availablePoints: {
     fontSize: 10,
     fontWeight: '400',
     color: '#6C6C6C',
-    lineHeight: 12,
-    marginLeft: 28, // Adjusted to match Figma positioning
-    fontFamily: 'Montserrat',
+    marginLeft: 28,
+    fontFamily: 'Montserrat-Regular',
   },
   availablePointsError: {
     color: '#FF6B6B',
@@ -1952,8 +1958,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingVertical: 24, // Increased to match Figma
-    borderTopWidth: 1,
-    borderTopColor: '#E4E4E4',
     height: 64, // Fixed height to match Figma
   },
   promoToggleLeft: {
@@ -2096,7 +2100,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   voucherApplyTextSelected: {
-    color: '#34C759', // Green color for selected state
+    color: '#EA4335', // Red color for remove button
   },
   promoCodesContainer: {
     paddingHorizontal: 16,
