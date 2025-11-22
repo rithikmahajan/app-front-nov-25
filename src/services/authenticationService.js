@@ -22,6 +22,9 @@ class AuthenticationService {
   /**
    * 📱 PHONE NUMBER LOGIN WITH OTP
    * Uses Firebase Phone Authentication
+   * 
+   * PRODUCTION FIX: Enables app verification for production builds
+   * Reference: https://rnfirebase.io/auth/phone-auth#production-verification
    */
   async signInWithPhoneNumber(phoneNumber) {
     try {
@@ -30,17 +33,45 @@ class AuthenticationService {
       console.log('╚═══════════════════════════════════════════════════════════════╝');
       console.log(`⏰ Start Time: ${new Date().toISOString()}`);
       console.log(`📞 Phone Number: ${phoneNumber}`);
+      console.log(`📱 Platform: ${Platform.OS}`);
+      console.log(`🏗️  Build Type: ${__DEV__ ? 'DEBUG' : 'PRODUCTION'}`);
 
       // Validate phone number format
       if (!phoneNumber || !phoneNumber.startsWith('+')) {
         throw new Error('Phone number must include country code (e.g., +91...)');
       }
 
+      // CRITICAL FIX: Enable app verification for production (Android)
+      // This fixes OTP not being received on physical devices in production builds
+      if (Platform.OS === 'android' && !__DEV__) {
+        console.log('🔐 Production build detected - enabling app verification...');
+        
+        // Set app verification to FALSE to enable SafetyNet in production
+        auth().settings.appVerificationDisabledForTesting = false;
+        
+        console.log('✅ App verification enabled for production');
+        console.log('🔒 SafetyNet/Play Integrity will be used');
+      } else if (__DEV__) {
+        // For development/testing, you can optionally disable verification
+        console.log('⚠️  Development mode - app verification can be bypassed');
+        // Uncomment below ONLY for dev testing without real device verification
+        // auth().settings.appVerificationDisabledForTesting = true;
+      }
+
       // Send OTP via Firebase
+      // NOTE: Don't pass forceResend parameter on first attempt
       console.log('🔄 Sending OTP via Firebase...');
+      console.log('📱 Phone number format check:', phoneNumber);
+      
       const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
       
-      console.log('✅ OTP sent successfully');
+      console.log('✅ OTP sent successfully!');
+      console.log('📬 Confirmation ID:', confirmation.verificationId ? 'Present' : 'Missing');
+      console.log('🔍 Confirmation object:', JSON.stringify({
+        verificationId: confirmation.verificationId ? 'exists' : 'missing',
+        hasConfirm: typeof confirmation.confirm === 'function'
+      }));
+      
       return {
         success: true,
         confirmation,
@@ -48,6 +79,17 @@ class AuthenticationService {
       };
     } catch (error) {
       console.error('❌ Send OTP error:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      
+      // Log specific production errors
+      if (error.code === 'auth/app-not-authorized') {
+        console.error('🚨 CRITICAL: App not authorized for Firebase Phone Auth');
+        console.error('📋 Fix: Add SHA-1/SHA-256 certificates to Firebase Console');
+      } else if (error.code === 'auth/quota-exceeded') {
+        console.error('🚨 CRITICAL: SMS quota exceeded in Firebase');
+      }
+      
       return {
         success: false,
         error: this._getAuthErrorMessage(error),

@@ -32,9 +32,9 @@ const LoginAccountEmailVerificationCode = ({ navigation, route }) => {
     }
   }, [resendTimer]);
 
-  // Log dev OTP for testing (remove in production!)
+  // Log dev OTP for testing - ONLY in development builds
   useEffect(() => {
-    if (devOTP) {
+    if (devOTP && __DEV__) {
       console.log('🔑 DEV MODE - OTP for testing:', devOTP);
       Alert.alert('Dev Mode', `OTP: ${devOTP}\n\nThis is only shown in development mode.`);
     }
@@ -114,8 +114,8 @@ const LoginAccountEmailVerificationCode = ({ navigation, route }) => {
       
       const otpResponse = await emailOTPService.resendOTP(email);
       
-      // Show dev OTP in development mode
-      if (otpResponse.devOTP) {
+      // Show dev OTP ONLY in development builds
+      if (otpResponse.devOTP && __DEV__) {
         console.log('🔑 DEV MODE - New OTP:', otpResponse.devOTP);
         Alert.alert('Dev Mode', `New OTP: ${otpResponse.devOTP}\n\nThis is only shown in development mode.`);
       } else {

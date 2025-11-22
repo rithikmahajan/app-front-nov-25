@@ -327,7 +327,7 @@ const TrackingModal = forwardRef((props, ref) => {
             </View>
 
             {/* Content */}
-            <View style={{ padding: 20 }}>
+            <View style={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 20 }}>
               <View
                 style={{
                   flexDirection: "row",
@@ -350,16 +350,6 @@ const TrackingModal = forwardRef((props, ref) => {
                   />
                 </TouchableOpacity>
               </View>
-
-              <View
-                style={{
-                  height: 1,
-                  width: "100%",
-                  alignSelf: "center",
-                  backgroundColor: "#ccc",
-                  marginVertical: 10,
-                }}
-              />
 
               {/* Loading indicator */}
               {loading && (

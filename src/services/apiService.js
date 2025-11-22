@@ -113,12 +113,15 @@ apiClient.interceptors.request.use(
       
       if (userToken) {
         config.headers.Authorization = `Bearer ${userToken}`;
-        console.log('✅ Auth token added to request');
-      } else {
-        console.warn('⚠️ No auth token found - request may require authentication');
+        if (__DEV__) {
+          console.log('✅ Auth token added to request');
+        }
       }
+      // No warning needed - guest access is valid for public endpoints
     } catch (error) {
-      console.warn('Failed to get auth token:', error);
+      if (__DEV__) {
+        console.warn('Failed to get auth token:', error);
+      }
     }
 
     // Environment-aware logging

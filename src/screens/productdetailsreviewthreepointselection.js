@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Alert,
   ActivityIndicator,
   Image,
+  ScrollView,
 } from 'react-native';
 import GlobalBackButton from '../components/GlobalBackButton';
 import { yoraaAPI } from '../services/yoraaAPI';
@@ -22,9 +22,26 @@ const ProductDetailsReviewThreePointSelection = ({ navigation, route }) => {
   // Get product information from route params
   const product = route?.params?.product;
   const productId = product?._id || product?.id || product?.productId || route?.params?.productId;
+  const reviewData = route?.params?.reviewData;
 
   console.log('🔍 ThreePointSelection - Product:', product);
   console.log('🔍 ThreePointSelection - Product ID:', productId);
+
+  // Restore rating data if user is returning from login
+  useEffect(() => {
+    if (reviewData) {
+      if (reviewData.sizeRating !== undefined && reviewData.sizeRating !== null) {
+        setSizeRating(reviewData.sizeRating);
+      }
+      if (reviewData.comfortRating !== undefined && reviewData.comfortRating !== null) {
+        setComfortRating(reviewData.comfortRating);
+      }
+      if (reviewData.durabilityRating !== undefined && reviewData.durabilityRating !== null) {
+        setDurabilityRating(reviewData.durabilityRating);
+      }
+      console.log('✅ Restored rating data after login:', reviewData);
+    }
+  }, [reviewData]);
 
   // Get product image URL from API data
   const getProductImageUrl = () => {
@@ -60,6 +77,40 @@ const ProductDetailsReviewThreePointSelection = ({ navigation, route }) => {
       return;
     }
 
+    // Check if user is authenticated before proceeding
+    const isAuthenticated = yoraaAPI.isAuthenticated();
+    console.log('🔍 handleNext - isAuthenticated:', isAuthenticated);
+    
+    if (!isAuthenticated) {
+      // User is not authenticated, navigate to LoginAccountMobileNumber for login
+      console.log('🔒 User not authenticated, navigating to LoginAccountMobileNumber to sign in');
+      Alert.alert(
+        'Sign In Required',
+        'Please sign in to rate this product.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Sign In', 
+            onPress: () => {
+              navigation.navigate('LoginAccountMobileNumber', { 
+                fromReview: true,
+                returnScreen: 'ProductDetailsReviewThreePointSelection',
+                reviewData: {
+                  sizeRating,
+                  comfortRating,
+                  durabilityRating,
+                  productId: productId,
+                  product,
+                  order: route?.params?.order
+                }
+              });
+            }
+          }
+        ]
+      );
+      return;
+    }
+
     try {
       setIsSubmittingRating(true);
       console.log('📊 Submitting detailed product ratings...');
@@ -83,7 +134,7 @@ const ProductDetailsReviewThreePointSelection = ({ navigation, route }) => {
         console.log('✅ Detailed ratings submitted successfully');
         
         // Navigate to written user review screen with rating data
-        const reviewData = {
+        const nextScreenData = {
           size: sizeRating,
           comfort: comfortRating,
           durability: durabilityRating,
@@ -91,7 +142,7 @@ const ProductDetailsReviewThreePointSelection = ({ navigation, route }) => {
         };
         
         navigation.navigate('ProductDetailsWrittenUserReview', { 
-          reviewData,
+          reviewData: nextScreenData,
           product: product,
           productId: productId,
           order: route?.params?.order
@@ -104,7 +155,7 @@ const ProductDetailsReviewThreePointSelection = ({ navigation, route }) => {
         );
         
         // Still allow user to continue to written review
-        const reviewData = {
+        const nextScreenData = {
           size: sizeRating,
           comfort: comfortRating,
           durability: durabilityRating,
@@ -112,7 +163,7 @@ const ProductDetailsReviewThreePointSelection = ({ navigation, route }) => {
         };
         
         navigation.navigate('ProductDetailsWrittenUserReview', { 
-          reviewData,
+          reviewData: nextScreenData,
           product: product,
           productId: productId,
           order: route?.params?.order
@@ -126,7 +177,7 @@ const ProductDetailsReviewThreePointSelection = ({ navigation, route }) => {
       );
       
       // Still allow user to continue to written review
-      const reviewData = {
+      const nextScreenData = {
         size: sizeRating,
         comfort: comfortRating,
         durability: durabilityRating,
@@ -134,7 +185,7 @@ const ProductDetailsReviewThreePointSelection = ({ navigation, route }) => {
       };
       
       navigation.navigate('ProductDetailsWrittenUserReview', { 
-        reviewData,
+        reviewData: nextScreenData,
         product: product,
         productId: productId,
         order: route?.params?.order
@@ -175,7 +226,7 @@ const ProductDetailsReviewThreePointSelection = ({ navigation, route }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F5F5F5" />
       
       {/* Header */}
@@ -191,71 +242,77 @@ const ProductDetailsReviewThreePointSelection = ({ navigation, route }) => {
         <View style={styles.headerButton} />
       </View>
 
-      {/* Product Image */}
-      <View style={styles.productImageContainer}>
-        <View style={styles.productImage}>
-          {getProductImageUrl() ? (
-            <Image
-              source={{ uri: getProductImageUrl() }}
-              style={styles.productImageActual}
-              resizeMode="cover"
-            />
-          ) : (
-            <View style={styles.imagePlaceholder}>
-              <Text style={styles.noImageText}>No Image</Text>
-            </View>
-          )}
-        </View>
-      </View>
-
-      {/* Size Rating */}
-      <View style={styles.ratingContainer}>
-        <Text style={styles.ratingTitle}>How was the size?</Text>
-        {renderRatingScale(sizeRating, setSizeRating, {
-          left: 'Too Small',
-          center: 'Perfect',
-          right: 'Too Big'
-        })}
-      </View>
-
-      {/* Comfort Rating */}
-      <View style={styles.ratingContainer}>
-        <Text style={styles.ratingTitle}>How was the comfort?</Text>
-        {renderRatingScale(comfortRating, setComfortRating, {
-          left: 'Uncomfortable',
-          right: 'Comfortable'
-        })}
-      </View>
-
-      {/* Durability Rating */}
-      <View style={styles.ratingContainer}>
-        <Text style={styles.ratingTitle}>How was the durability?</Text>
-        {renderRatingScale(durabilityRating, setDurabilityRating, {
-          left: 'Non-Durable',
-          center: 'Perfect',
-          right: 'Durable'
-        })}
-      </View>
-
-      {/* Next Button */}
-      <TouchableOpacity 
-        style={[
-          styles.nextButton,
-          (!isAllSelected || isSubmittingRating) && styles.nextButtonDisabled
-        ]} 
-        onPress={handleNext}
-        disabled={!isAllSelected || isSubmittingRating}
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
+        showsVerticalScrollIndicator={false}
       >
-        {isSubmittingRating ? (
-          <ActivityIndicator size="small" color="#FFFFFF" />
-        ) : (
-          <Text style={[
-            styles.nextButtonText,
-            (!isAllSelected || isSubmittingRating) && styles.nextButtonTextDisabled
-          ]}>Next</Text>
-        )}
-      </TouchableOpacity>
-    </SafeAreaView>
+        {/* Product Image */}
+        <View style={styles.productImageContainer}>
+          <View style={styles.productImage}>
+            {getProductImageUrl() ? (
+              <Image
+                source={{ uri: getProductImageUrl() }}
+                style={styles.productImageActual}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.imagePlaceholder}>
+                <Text style={styles.noImageText}>No Image</Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Size Rating */}
+        <View style={styles.ratingContainer}>
+          <Text style={styles.ratingTitle}>How was the size?</Text>
+          {renderRatingScale(sizeRating, setSizeRating, {
+            left: 'Too Small',
+            center: 'Perfect',
+            right: 'Too Big'
+          })}
+        </View>
+
+        {/* Comfort Rating */}
+        <View style={styles.ratingContainer}>
+          <Text style={styles.ratingTitle}>How was the comfort?</Text>
+          {renderRatingScale(comfortRating, setComfortRating, {
+            left: 'Uncomfortable',
+            right: 'Comfortable'
+          })}
+        </View>
+
+        {/* Durability Rating */}
+        <View style={styles.ratingContainer}>
+          <Text style={styles.ratingTitle}>How was the durability?</Text>
+          {renderRatingScale(durabilityRating, setDurabilityRating, {
+            left: 'Non-Durable',
+            center: 'Perfect',
+            right: 'Durable'
+          })}
+        </View>
+
+        {/* Next Button */}
+        <TouchableOpacity 
+          style={[
+            styles.nextButton,
+            (!isAllSelected || isSubmittingRating) && styles.nextButtonDisabled
+          ]} 
+          onPress={handleNext}
+          disabled={!isAllSelected || isSubmittingRating}
+        >
+          {isSubmittingRating ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Text style={[
+              styles.nextButtonText,
+              (!isAllSelected || isSubmittingRating) && styles.nextButtonTextDisabled
+            ]}>Next</Text>
+          )}
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
   );
 };
 
@@ -271,7 +328,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: 54,
     paddingBottom: 10,
     backgroundColor: '#F5F5F5',
   },
@@ -289,6 +346,15 @@ const styles = StyleSheet.create({
     flex: 1,
     letterSpacing: -0.4,
     fontFamily: 'Montserrat-Medium',
+  },
+
+  // ScrollView
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    paddingBottom: 30,
+    flexGrow: 1,
   },
 
   // Product Image
@@ -403,8 +469,8 @@ const styles = StyleSheet.create({
     // Next Button
   nextButton: {
     marginHorizontal: 30,
-    marginTop: 'auto',
-    marginBottom: 40,
+    marginTop: 40,
+    marginBottom: 20,
     height: 48,
     backgroundColor: '#000000',
     borderRadius: 24,

@@ -10,14 +10,19 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
+  Dimensions,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import GlobalSearchIcon from '../assets/icons/GlobalSearchIcon';
 import FilterIcon from '../assets/icons/FilterIcon';
 import BottomNavigationBar from '../components/bottomnavigationbar';
 import { useProductActions } from '../hooks/useProductActions';
-import { AnimatedHeartIcon } from '../components';
+import { AnimatedHeartIcon, ListItemSkeleton } from '../components';
 import { apiService } from '../services/apiService';
+
+// Get screen dimensions for responsive design
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const isTablet = SCREEN_WIDTH >= 768;
 
 // Icon components defined outside to avoid re-rendering
 const BackIcon = () => (
@@ -26,12 +31,9 @@ const BackIcon = () => (
   </Svg>
 );
 
-const GridIcon = () => (
-  <View style={{ width: 24, height: 24, position: 'relative' }}>
-    <View style={{ position: 'absolute', width: 7, height: 7, borderWidth: 1, borderColor: '#000000', top: 3, left: 5 }} />
-    <View style={{ position: 'absolute', width: 7, height: 7, borderWidth: 1, borderColor: '#000000', top: 3, right: 4 }} />
-    <View style={{ position: 'absolute', width: 7, height: 7, borderWidth: 1, borderColor: '#000000', bottom: 3, left: 5 }} />
-    <View style={{ position: 'absolute', width: 7, height: 7, borderWidth: 1, borderColor: '#000000', bottom: 3, right: 4 }} />
+const ViewThreeButton = () => (
+  <View style={styles.viewButtonContainer}>
+    <Text style={styles.viewButtonText}>VIEW 3</Text>
   </View>
 );
 
@@ -90,10 +92,15 @@ const ProductViewThree = ({ navigation, route }) => {
         const items = response.data.items || [];
         console.log(`📦 Found ${items.length} items for subcategory ${subcategoryId}`);
         
-        // Add random heights for Pinterest-style layout
+        // Add masonry layout heights matching Figma design
+        // Figma shows full-width product images stacked vertically
+        // For iPad/tablets, increase heights proportionally to screen width
+        const baseHeight1 = isTablet ? 480 : 363;
+        const baseHeight2 = isTablet ? 512 : 388;
+        
         const itemsWithHeights = items.map((item, index) => ({
           ...item,
-          height: 200 + (index % 3) * 60, // Varying heights: 200, 260, 320
+          height: index % 2 === 0 ? baseHeight1 : baseHeight2, // Alternating heights scaled for device
         }));
         
         setProducts(itemsWithHeights);
@@ -130,18 +137,31 @@ const ProductViewThree = ({ navigation, route }) => {
 
   // Removed custom FilterIcon, using imported SVG FilterIcon instead
 
-  const renderProduct = (product, index) => {
+  const renderProduct = (product, index, columnIndex) => {
     if (!product) return null;
     
     const imageUrl = getProductImageUrl(product);
-    const productHeight = product.height || 240;
+    // Use responsive height based on device
+    const productHeight = product.height || (isTablet ? 480 : 363);
+    
+    // Calculate staggered top position based on previous items in same column
+    let topPosition = 0;
+    const columnProducts = columnIndex === 0 ? leftColumnProducts : rightColumnProducts;
+    for (let i = 0; i < columnProducts.indexOf(product); i++) {
+      const prevProductHeight = columnProducts[i].height || (isTablet ? 480 : 363);
+      topPosition += prevProductHeight + (isTablet ? 16 : 10); // Larger gap for tablets
+    }
     
     return (
       <View 
         key={product.id || product._id || `product-${index}`} 
         style={[
           styles.productContainer,
-          { height: productHeight }
+          styles.productAbsolute,
+          { 
+            height: productHeight,
+            top: topPosition,
+          }
         ]}
       >
         {/* Product Image */}
@@ -179,11 +199,25 @@ const ProductViewThree = ({ navigation, route }) => {
     );
   };
 
-  const renderColumn = (columnProducts) => (
-    <View style={styles.column}>
-      {columnProducts.map((product, index) => renderProduct(product, index))}
-    </View>
-  );
+  const renderColumn = (columnProducts, columnIndex) => {
+    // Calculate total height for column container with responsive gaps
+    const gapSize = isTablet ? 16 : 10;
+    const totalHeight = columnProducts.reduce((sum, product) => {
+      const productHeight = product.height || (isTablet ? 480 : 363);
+      return sum + productHeight + gapSize;
+    }, 0);
+    
+    return (
+      <View style={[
+        styles.column,
+        { 
+          height: totalHeight,
+        }
+      ]}>
+        {columnProducts.map((product, index) => renderProduct(product, index, columnIndex))}
+      </View>
+    );
+  };
 
   const handleTabChange = (tabName) => {
     if (navigation) {
@@ -230,7 +264,7 @@ const ProductViewThree = ({ navigation, route }) => {
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.iconButton} onPress={handleGridPress}>
-            <GridIcon />
+            <ViewThreeButton />
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.iconButton} onPress={handleFilterPress}>
@@ -253,9 +287,10 @@ const ProductViewThree = ({ navigation, route }) => {
         }
       >
         {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#000000" />
-            <Text style={styles.loadingText}>Loading products...</Text>
+          <View style={styles.skeletonContainer}>
+            {[1, 2, 3, 4, 5, 6].map((index) => (
+              <ListItemSkeleton key={index} />
+            ))}
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>
@@ -270,8 +305,8 @@ const ProductViewThree = ({ navigation, route }) => {
           </View>
         ) : (
           <View style={styles.pinterestGrid}>
-            {renderColumn(leftColumnProducts)}
-            {renderColumn(rightColumnProducts)}
+            {renderColumn(leftColumnProducts, 0)}
+            {renderColumn(rightColumnProducts, 1)}
           </View>
         )}
       </ScrollView>
@@ -297,14 +332,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingHorizontal: isTablet ? 24 : 16,
+    paddingTop: isTablet ? 20 : 16,
+    paddingBottom: isTablet ? 16 : 12,
     backgroundColor: '#FFFFFF',
-    height: 90,
+    height: isTablet ? 100 : 90,
   },
   headerLeft: {
-    width: 68,
+    width: isTablet ? 80 : 68,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -315,10 +350,10 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: isTablet ? 20 : 16,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: isTablet ? 18 : 16,
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.4,
@@ -350,18 +385,18 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   
-  gridIcon: {
-    width: 24,
-    height: 24,
-    position: 'relative',
+  viewButtonContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
   },
-  
-  gridSquare: {
-    position: 'absolute',
-    width: 7,
-    height: 7,
-    borderWidth: 1,
-    borderColor: '#000000',
+  viewButtonText: {
+    fontFamily: 'Montserrat-Medium',
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#000000',
+    letterSpacing: -0.06,
+    textAlign: 'center',
   },
   
   filterIcon: {
@@ -388,43 +423,52 @@ const styles = StyleSheet.create({
   
   content: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     paddingTop: 8,
   },
   
   pinterestGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingBottom: 100, // Add space for bottom navigation
+    paddingHorizontal: isTablet ? 16 : 8,
+    paddingTop: 0,
+    paddingBottom: isTablet ? 120 : 100, // More space for bottom navigation on tablets
+    gap: isTablet ? 12 : 6, // Larger gap between columns on tablets
   },
   
   column: {
     flex: 1,
     flexDirection: 'column',
-    paddingHorizontal: 4,
+    position: 'relative',
   },
   
   productContainer: {
-    marginBottom: 12,
-    borderRadius: 8,
+    borderRadius: 0,
     overflow: 'hidden',
+    width: '100%',
+  },
+  
+  productAbsolute: {
+    position: 'absolute',
+    width: '100%',
   },
   
   imageContainer: {
     position: 'relative',
-    borderRadius: 8,
+    borderRadius: 0,
     overflow: 'hidden',
+    width: '100%',
   },
   
   imagePlaceholder: {
     width: '100%',
-    backgroundColor: '#E0E0E0',
-    borderRadius: 8,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 0,
   },
   
   productImage: {
     width: '100%',
-    borderRadius: 8,
+    borderRadius: 0,
   },
   
   // Loading, Error, Empty States
@@ -434,6 +478,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 60,
     minHeight: 300,
+  },
+  skeletonContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
   loadingText: {
     marginTop: 12,
@@ -482,8 +530,8 @@ const styles = StyleSheet.create({
   
   heartButton: {
     position: 'absolute',
-    top: 12,
-    left: 12,
+    top: 6,
+    right: 7,
     zIndex: 2,
   },
   

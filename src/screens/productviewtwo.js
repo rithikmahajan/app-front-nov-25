@@ -17,7 +17,9 @@ import FilterIcon from '../assets/icons/FilterIcon';
 import BottomNavigationBar from '../components/bottomnavigationbar';
 import { useProductActions } from '../hooks/useProductActions';
 import { AnimatedHeartIcon } from '../components';
+import { ProductGridSkeleton } from '../components/SkeletonLoader';
 import { apiService } from '../services/apiService';
+import { isTablet } from '../utils/deviceDetection';
 
 // Icon components defined outside to avoid re-rendering
 const BackIcon = () => (
@@ -26,12 +28,9 @@ const BackIcon = () => (
   </Svg>
 );
 
-const GridIcon = () => (
-  <View style={{ width: 22, height: 22, position: 'relative' }}>
-    <View style={{ position: 'absolute', width: 8, height: 8, borderWidth: 1, borderColor: '#000000', top: 1, left: 1 }} />
-    <View style={{ position: 'absolute', width: 8, height: 8, borderWidth: 1, borderColor: '#000000', top: 1, right: 1 }} />
-    <View style={{ position: 'absolute', width: 8, height: 8, borderWidth: 1, borderColor: '#000000', bottom: 1, left: 1 }} />
-    <View style={{ position: 'absolute', width: 8, height: 8, borderWidth: 1, borderColor: '#000000', bottom: 1, right: 1 }} />
+const ViewTwoButton = () => (
+  <View style={styles.viewButtonContainer}>
+    <Text style={styles.viewButtonText}>VIEW 2</Text>
   </View>
 );
 
@@ -41,6 +40,7 @@ const ProductViewTwo = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const isIPad = isTablet(); // Detect if device is iPad/tablet
   
   // Get route params to pass along
   const routeParams = route?.params || {};
@@ -228,7 +228,7 @@ const ProductViewTwo = ({ navigation, route }) => {
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.iconButton} onPress={handleGridPress}>
-            <GridIcon />
+            <ViewTwoButton />
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.iconButton} onPress={handleFilterPress}>
@@ -251,10 +251,7 @@ const ProductViewTwo = ({ navigation, route }) => {
         }
       >
         {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#000000" />
-            <Text style={styles.loadingText}>Loading products...</Text>
-          </View>
+          <ProductGridSkeleton count={6} columns={2} />
         ) : error ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
@@ -333,25 +330,26 @@ const styles = StyleSheet.create({
   // Content
   content: {
     flex: 1,
-    paddingHorizontal: 8,
+    paddingHorizontal: 0, // Remove horizontal padding for edge-to-edge
   },
   productsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    gap: 2, // 2px gap between items
+    paddingHorizontal: 2, // 2px padding on sides
     paddingBottom: 100, // Add space for bottom navigation
   },
 
   // Product Styles
   productContainer: {
-    width: '48%', // 2 columns layout
-    marginBottom: 12,
+    width: '33.1%', // 3 columns layout (approximately 33.33% minus gap)
+    marginBottom: 0, // Using gap instead
     paddingHorizontal: 0,
   },
   imageContainer: {
     position: 'relative',
-    aspectRatio: 1, // Square aspect ratio
-    backgroundColor: '#F5F5F5',
+    aspectRatio: 0.77, // Taller aspect ratio (approximately 3:4) to match Figma
+    backgroundColor: '#EEEEEE',
     borderRadius: 0,
   },
   imagePlaceholder: {
@@ -421,8 +419,8 @@ const styles = StyleSheet.create({
   // Heart Button
   heartButton: {
     position: 'absolute',
-    top: 6,
-    right: 6,
+    top: 10,
+    right: 7,
     width: 20,
     height: 20,
     borderRadius: 10,
@@ -434,9 +432,9 @@ const styles = StyleSheet.create({
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 2,
-    elevation: 2,
+    elevation: 3,
   },
   heartIconContainer: {
     width: 12,
@@ -461,33 +459,18 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '45deg' }],
   },
 
-  gridIcon: {
-    width: 22,
-    height: 22,
-    position: 'relative',
+  viewButtonContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
   },
-  gridSquare: {
-    position: 'absolute',
-    width: 8,
-    height: 8,
-    borderWidth: 1,
-    borderColor: '#000000',
-  },
-  topLeft: {
-    top: 1,
-    left: 1,
-  },
-  topRight: {
-    top: 1,
-    right: 1,
-  },
-  bottomLeft: {
-    bottom: 1,
-    left: 1,
-  },
-  bottomRight: {
-    bottom: 1,
-    right: 1,
+  viewButtonText: {
+    fontFamily: 'Montserrat-Medium',
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#000000',
+    letterSpacing: -0.06,
+    textAlign: 'center',
   },
 
   filterIcon: {

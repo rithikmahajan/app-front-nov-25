@@ -69,7 +69,7 @@ export { default as OrdersReturnRequest } from './ordersreturnrequest';
 export { default as OrdersReturnAcceptedModal } from './ordersreturnacceptedmodal';
 export { default as OrdersExchangeSizeSelectionChart } from './ordersexchangesizeselectionchart';
 export { default as OrdersCancelOrderModal } from './orderscancelordermodal';
-export { default as Inbox } from './inbox';
+// export { default as Inbox } from './inbox'; // File doesn't exist - commented out
 export { default as OrderConfirmationPhone } from './orderconfirmationphone';
 export { default as DeliveryOptionsStepFourIfCustomRequired } from './deliveryoptionsstepfourifcustomrequired';
 export { default as DeliveryOptionsStepThreeAddAddress } from './deliveryoptionsstepthreeaddaddress';

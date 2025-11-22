@@ -41,6 +41,7 @@ const ProductDetailsMain = ({ navigation, route }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showSizeModal, setShowSizeModal] = useState(false);
   const [showProductDetails, setShowProductDetails] = useState(false);
+  const [modalActionType, setModalActionType] = useState('addToCart'); // Track action type: 'addToCart' or 'buyNow'
   const imageSliderRef = useRef(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
@@ -523,7 +524,7 @@ const ProductDetailsMain = ({ navigation, route }) => {
           navigation.navigate('ProductViewOne', {
             subcategoryId,
             subcategoryName,
-            previousScreen: 'ProductDetailsMain'
+            previousScreen: 'Search' // Pass 'Search' instead of 'ProductDetailsMain' to maintain search flow
           });
         } else {
           // Fallback to Collection if no subcategory found
@@ -557,7 +558,7 @@ const ProductDetailsMain = ({ navigation, route }) => {
               <Video
                 source={{ uri: item.url }}
                 style={styles.mainProductImage}
-                resizeMode="cover"
+                resizeMode="contain"
                 repeat={true}
                 muted={true}
                 paused={activeImageIndex !== index}
@@ -567,7 +568,7 @@ const ProductDetailsMain = ({ navigation, route }) => {
               <Image 
                 source={{ uri: item.url }}
                 style={styles.mainProductImage}
-                resizeMode="cover"
+                resizeMode="contain"
               />
             )
           ) : (
@@ -749,7 +750,10 @@ const ProductDetailsMain = ({ navigation, route }) => {
       <View style={styles.buyNowContainer}>
         <TouchableOpacity 
           style={styles.buyNowButton}
-          onPress={() => setShowSizeModal(true)}
+          onPress={() => {
+            setModalActionType('buyNow');
+            setShowSizeModal(true);
+          }}
         >
           <Text style={styles.buyNowText}>Buy Now</Text>
         </TouchableOpacity>
@@ -759,7 +763,10 @@ const ProductDetailsMain = ({ navigation, route }) => {
       <View style={styles.addToCartContainer}>
         <TouchableOpacity 
           style={styles.addToCartButton}
-          onPress={() => setShowSizeModal(true)}
+          onPress={() => {
+            setModalActionType('addToCart');
+            setShowSizeModal(true);
+          }}
         >
           <Text style={styles.addToCartText}>Add to Cart</Text>
         </TouchableOpacity>
@@ -1204,6 +1211,7 @@ const ProductDetailsMain = ({ navigation, route }) => {
         activeSize={activeSize}
         setActiveSize={setActiveSize}
         navigation={navigation}
+        actionType={modalActionType}
       />
     </View>
   );
@@ -1252,28 +1260,36 @@ const styles = StyleSheet.create({
 
   scrollContentContainer: {
     paddingBottom: 200,
+    paddingHorizontal: 0,
   },
 
   // Product Images
   productImagesContainer: {
     position: 'relative',
-    height: 465,
-    backgroundColor: '#EEEEEE',
+    width: width,
+    height: Math.min(width * 1.2, 800),
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 0,
+    paddingHorizontal: 0,
   },
   imageContainer: {
     flex: 1,
+    width: width,
   },
   imageSlider: {
     flex: 1,
+    width: width,
   },
   imageSlide: {
     width: width,
-    height: 465,
+    height: Math.min(width * 1.2, 800),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   mainProductImage: {
-    width: '100%',
+    width: width,
     height: '100%',
-    backgroundColor: '#EEEEEE',
+    backgroundColor: '#FFFFFF',
   },
   paginationContainer: {
     position: 'absolute',
@@ -1299,16 +1315,26 @@ const styles = StyleSheet.create({
   },
   heartButton: {
     position: 'absolute',
-    top: 14,
-    right: 12,
+    top: 16,
+    right: 16,
+    zIndex: 10,
+    elevation: 5,
   },
   heartButtonContainer: {
-    width: 34,
-    height: 34,
+    width: 40,
+    height: 40,
     backgroundColor: '#FFFFFF',
-    borderRadius: 17,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   bagButton: {
     position: 'absolute',
@@ -1560,7 +1586,7 @@ const styles = StyleSheet.create({
   // Expandable Sections
   expandableSectionContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 37,
+    paddingVertical: 20,
     backgroundColor: '#FFFFFF',
   },
   sectionHeader: {
@@ -1780,9 +1806,9 @@ const styles = StyleSheet.create({
     lineHeight: 19.2,
   },
   addToCartContainer: {
-    paddingBottom: 48,
+    paddingBottom: 16,
     paddingTop: 0,
-    marginBottom: 16,
+    marginBottom: 0,
   },
   addToCartButton: {
     backgroundColor: '#FFFFFF',

@@ -19,6 +19,7 @@ class FirebasePhoneAuthService {
       console.log(`⏰ Start Time: ${new Date().toISOString()}`);
       console.log(`📞 Phone Number: ${phoneNumber}`);
       console.log(`📱 Platform: ${Platform.OS}`);
+      console.log(`🏗️  Build Type: ${__DEV__ ? 'DEBUG' : 'PRODUCTION'}`);
 
       // Validate phone number format
       console.log('\n🔍 STEP 1: Validating phone number format...');
@@ -27,6 +28,26 @@ class FirebasePhoneAuthService {
         throw new Error('Phone number must include country code (e.g., +91...)');
       }
       console.log('✅ Phone number format valid');
+      
+      // ✅ CRITICAL FIX: Configure app verification based on environment
+      console.log('\n🔐 STEP 1.5: Configuring app verification...');
+      console.log(`📱 Platform: ${Platform.OS}`);
+      console.log(`🏗️  Build Type: ${__DEV__ ? 'DEBUG/DEVELOPMENT' : 'PRODUCTION/RELEASE'}`);
+      
+      if (__DEV__) {
+        // DEVELOPMENT/DEBUG MODE: Disable verification for emulators/testing
+        console.log('🧪 Development mode - disabling app verification for emulator testing...');
+        auth().settings.appVerificationDisabledForTesting = true;
+        console.log('✅ App verification DISABLED (prevents reCAPTCHA errors on emulators)');
+        console.log('ℹ️  Use test phone numbers configured in Firebase Console for testing');
+      } else {
+        // PRODUCTION/RELEASE MODE: Enable verification for real devices
+        console.log('🔐 Production mode - enabling app verification...');
+        auth().settings.appVerificationDisabledForTesting = false;
+        console.log('✅ App verification ENABLED (uses SafetyNet/Play Integrity on Android, APNs on iOS)');
+        console.log('ℹ️  Real SMS will be sent to the phone number');
+      }
+      console.log('✅ App verification configured');
 
       // For iOS, we need to handle verification differently
       if (Platform.OS === 'ios') {
@@ -90,6 +111,13 @@ class FirebasePhoneAuthService {
         errorMessage = 'Network error. Please check your connection.';
       } else if (error.code === 'auth/operation-not-allowed') {
         errorMessage = 'Phone authentication error. Please ensure Phone Auth is enabled in Firebase Console and GoogleService-Info.plist is updated.';
+      } else if (error.code === 'auth/missing-recaptcha-token' || error.message?.includes('missing-recaptcha-token')) {
+        errorMessage = 'reCAPTCHA verification failed. This app requires a real device for phone authentication. Emulators are not fully supported.';
+        console.error('🚨 RECAPTCHA ERROR - TROUBLESHOOTING:');
+        console.error('   1. Use a real Android device instead of an emulator');
+        console.error('   2. Ensure SafetyNet/Play Integrity is enabled in Firebase Console');
+        console.error('   3. Check that google-services.json is up to date');
+        console.error('   4. For testing, add test phone numbers in Firebase Console');
       }
       
       console.log('📱 User-Friendly Error:', errorMessage);

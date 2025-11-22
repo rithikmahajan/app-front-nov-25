@@ -1,13 +1,13 @@
 import { Platform } from 'react-native';
+import Config from 'react-native-config';
+import auth, { GoogleAuthProvider, getAuth, signInWithCredential } from '@react-native-firebase/auth';
 
 let GoogleSignin, statusCodes;
-let auth;
 
 try {
   const googleSigninModule = require('@react-native-google-signin/google-signin');
   GoogleSignin = googleSigninModule.GoogleSignin;
   statusCodes = googleSigninModule.statusCodes;
-  auth = require('@react-native-firebase/auth').default;
 } catch (error) {
   console.warn('Google Sign-in module not available:', error.message);
 }
@@ -33,9 +33,13 @@ class GoogleAuthService {
     }
 
     try {
+      // Use Web Client ID from environment variable or fallback to hardcoded
+      const webClientId = Config.GOOGLE_SIGNIN_WEB_CLIENT_ID || 
+                         '133733122921-g3f9l1865vk4bchuc8cmu7qpq9o8ukkk.apps.googleusercontent.com';
+      
       const config = {
         // Web Client ID from Firebase project (client_type: 3)
-        webClientId: '133733122921-g3f9l1865vk4bchuc8cmu7qpq9o8ukkk.apps.googleusercontent.com',
+        webClientId: webClientId,
         offlineAccess: true, // Required for refresh token
         hostedDomain: '', // Specify if you want to restrict to a particular domain
         forceCodeForRefreshToken: true, // Force code for refresh token
@@ -53,7 +57,8 @@ class GoogleAuthService {
       console.log('Configuring Google Sign-in with config:', {
         platform: Platform.OS,
         webClientId: config.webClientId.substring(0, 20) + '...',
-        hasScopes: !!config.scopes
+        hasScopes: !!config.scopes,
+        environment: Config.APP_ENV || 'development'
       });
 
       GoogleSignin.configure(config);
@@ -147,12 +152,12 @@ class GoogleAuthService {
       
       // Create a Google credential with the token
       console.log('\n🔄 STEP 5: Creating Firebase credential...');
-      const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+      const googleCredential = GoogleAuthProvider.credential(idToken);
       console.log('✅ Firebase credential created');
       
       // Sign in with the credential
       console.log('\n🔄 STEP 6: Signing in to Firebase...');
-      const userCredential = await auth().signInWithCredential(googleCredential);
+      const userCredential = await signInWithCredential(getAuth(), googleCredential);
       
       console.log('✅ Firebase Sign In successful');
       console.log('👤 Firebase User Details:');

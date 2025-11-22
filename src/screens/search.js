@@ -719,12 +719,29 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
     console.log('handleTakePhoto called');
     
     try {
-      // Request camera permission on iOS
+      // Request camera permission for both iOS and Android
       if (Platform.OS === 'ios') {
         const permission = await request(PERMISSIONS.IOS.CAMERA);
         console.log('iOS Camera permission result:', permission);
         
         if (permission !== RESULTS.GRANTED) {
+          Alert.alert('Permission Denied', 'Camera permission is required to take photos');
+          return;
+        }
+      } else if (Platform.OS === 'android') {
+        const permission = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: 'Camera Permission',
+            message: 'This app needs access to camera to take photos.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+        console.log('Android Camera permission result:', permission);
+        
+        if (permission !== PermissionsAndroid.RESULTS.GRANTED) {
           Alert.alert('Permission Denied', 'Camera permission is required to take photos');
           return;
         }
@@ -931,12 +948,19 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
         windowSize={8}
         ItemSeparatorComponent={GridSeparator}
         getItemLayout={(data, index) => {
-          // Safer getItemLayout with additional validation
+          // Calculate item height based on responsive width
+          const itemWidth = (Dimensions.get('window').width - 24) / 2;
+          const imageHeight = itemWidth; // Square aspect ratio
+          const infoHeight = 60; // Approximate height for product info (text + padding)
+          const marginBottom = 20; // Margin between rows
+          const itemLength = imageHeight + infoHeight + marginBottom;
+          
           const safeIndex = Math.max(0, index || 0);
-          const itemLength = 120;
+          const rowIndex = Math.floor(safeIndex / 2); // Each row has 2 items
+          
           return {
             length: itemLength,
-            offset: itemLength * safeIndex,
+            offset: itemLength * rowIndex,
             index: safeIndex,
           };
         }}
@@ -969,7 +993,7 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
               onChangeText={setSearchText}
               autoFocus={true}
               returnKeyType="search"
-              accessibilityRole="searchbox"
+              accessibilityRole="search"
               accessibilityLabel="Search products"
               accessibilityHint="Type to search for products"
             />
@@ -1198,6 +1222,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 8,
     gap: 12,
+    justifyContent: 'center', // Always center for better appearance
+    alignItems: 'center',
   },
   actionButton: {
     flexDirection: 'row',
@@ -1311,7 +1337,7 @@ const styles = StyleSheet.create({
   // Search Results Styles
   searchResultsContainer: {
     flex: 1,
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: 8, // Reduced padding to match gridResultsList
   },
   resultsHeader: {
     fontSize: FontSizes.lg,
@@ -1560,21 +1586,22 @@ const styles = StyleSheet.create({
   },
   // Grid Layout Styles (Figma Design)
   gridResultsList: {
-    paddingHorizontal: 0, // Remove padding as per Figma
+    paddingHorizontal: 8, // Add padding for edge spacing
     paddingBottom: 20,
   },
   gridRow: {
     justifyContent: 'space-between',
     paddingHorizontal: 0,
+    gap: 8, // Add gap between columns
   },
   gridProductItem: {
-    width: 184, // 184px as per Figma
+    width: (Dimensions.get('window').width - 24) / 2, // Responsive width: (full width - padding) / 2 columns
     marginBottom: 20,
     backgroundColor: '#FFFFFF',
   },
   gridProductImageContainer: {
-    width: 184,
-    height: 184, // Square 184x184 as per Figma
+    width: '100%',
+    aspectRatio: 1, // Keep square aspect ratio (1:1)
     marginBottom: 14, // 14px gap as per Figma
   },
   gridProductImage: {
@@ -1591,7 +1618,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   gridProductInfo: {
-    paddingHorizontal: 14, // 14px padding as per Figma
+    paddingHorizontal: 8, // Responsive padding (reduced from 14px)
     gap: 5, // 5px gap between name and price
   },
   gridProductName: {

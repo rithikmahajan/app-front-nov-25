@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Image,
   Animated,
+  Dimensions,
 } from 'react-native';
 import { Colors, FontFamilies } from '../constants';
 import HeartFilledIcon from '../assets/icons/HeartFilledIcon';
@@ -15,6 +16,24 @@ import TrashIcon from '../assets/icons/TrashIcon';
 import { useOptimizedList } from '../hooks/usePerformanceOptimization';
 import { yoraaAPI } from '../services/yoraaAPI';
 import { useFavorites } from '../contexts/FavoritesContext';
+
+const { width: screenWidth } = Dimensions.get('window');
+
+// Calculate responsive columns and item width
+const getResponsiveLayout = () => {
+  const isTablet = screenWidth >= 768;
+  const numColumns = isTablet ? 3 : 2;
+  const horizontalPadding = 16;
+  const itemSpacing = 16;
+  const totalSpacing = horizontalPadding * 2 + (itemSpacing * (numColumns - 1));
+  const itemWidth = (screenWidth - totalSpacing) / numColumns;
+  
+  return {
+    numColumns,
+    itemWidth,
+    itemSpacing,
+  };
+};
 
 // Enhanced delete icon component matching Figma design
 const DeleteIcon = ({ size = 34, onPress, isLoading = false, animatedValue }) => (
@@ -71,44 +90,71 @@ const FavouritesContent = ({ navigation }) => {
       console.log('🔍 FavouritesContent: Loading wishlist items...');
       
       const response = await yoraaAPI.getWishlist();
-      console.log('🔍 FavouritesContent: API response:', response);
+      console.log('🔍 FavouritesContent: Full API response:', JSON.stringify(response, null, 2));
       
       // Check different possible response structures
       let items = [];
-      if (response && response.data && response.data.wishlist) {
-        // Handle the specific structure where wishlist items have nested 'item' objects
-        const rawWishlistItems = response.data.wishlist;
-        items = rawWishlistItems.map(wishlistEntry => {
-          // Extract the actual item from the wishlist entry
+      
+      // Try to extract items from various response structures
+      if (response && response.data) {
+        console.log('🔍 FavouritesContent: response.data exists');
+        
+        if (response.data.wishlist && Array.isArray(response.data.wishlist)) {
+          console.log('🔍 FavouritesContent: Found wishlist array with', response.data.wishlist.length, 'items');
+          // Handle the specific structure where wishlist items have nested 'item' objects
+          items = response.data.wishlist.map(wishlistEntry => {
+            // Extract the actual item from the wishlist entry
+            if (wishlistEntry.item) {
+              return {
+                ...wishlistEntry.item,
+                wishlistEntryId: wishlistEntry._id, // Keep the wishlist entry ID for removal
+                dateAdded: wishlistEntry.createdAt || wishlistEntry.dateAdded
+              };
+            }
+            return wishlistEntry;
+          });
+        } else if (response.data.items && Array.isArray(response.data.items)) {
+          console.log('🔍 FavouritesContent: Found items array with', response.data.items.length, 'items');
+          items = response.data.items;
+        } else if (Array.isArray(response.data)) {
+          console.log('🔍 FavouritesContent: response.data is array with', response.data.length, 'items');
+          items = response.data;
+        }
+      } else if (response && response.items && Array.isArray(response.items)) {
+        console.log('🔍 FavouritesContent: Found response.items with', response.items.length, 'items');
+        items = response.items;
+      } else if (response && response.wishlist && Array.isArray(response.wishlist)) {
+        console.log('🔍 FavouritesContent: Found response.wishlist with', response.wishlist.length, 'items');
+        items = response.wishlist.map(wishlistEntry => {
           if (wishlistEntry.item) {
             return {
               ...wishlistEntry.item,
-              wishlistEntryId: wishlistEntry._id, // Keep the wishlist entry ID for removal
+              wishlistEntryId: wishlistEntry._id,
               dateAdded: wishlistEntry.createdAt || wishlistEntry.dateAdded
             };
           }
           return wishlistEntry;
         });
-        console.log('🔍 FavouritesContent: Processed wishlist items:', items.length);
-      } else if (response && response.data && response.data.items) {
-        items = response.data.items;
-      } else if (response && response.items) {
-        items = response.items;
-      } else if (response && response.data && Array.isArray(response.data)) {
-        items = response.data;
+      } else if (Array.isArray(response)) {
+        console.log('🔍 FavouritesContent: response is array with', response.length, 'items');
+        items = response;
       }
       
       console.log('🔍 FavouritesContent: Final extracted items:', items.length);
       if (items.length > 0) {
-        console.log('🔍 FavouritesContent: Sample item structure:', items[0]);
+        console.log('🔍 FavouritesContent: Sample item structure:', JSON.stringify(items[0], null, 2));
+      } else {
+        console.warn('⚠️ FavouritesContent: No items found in API response');
       }
       setWishlistItems(items);
       
     } catch (error) {
       console.error('❌ Error loading wishlist items:', error);
+      console.error('❌ Error details:', error.message, error.stack);
       setWishlistItems([]);
     } finally {
       setLoading(false);
+      console.log('✅ FavouritesContent: Loading complete');
     }
   }, []);
 
@@ -240,7 +286,6 @@ const FavouritesContent = ({ navigation }) => {
 
   // Memoized render function to prevent unnecessary re-renders
   const renderProductItem = useCallback(({ item, index }) => {
-    const isLeftColumn = index % 2 === 0;
     const itemId = item.wishlistEntryId || item._id;
     const isRemoving = removingItems.has(itemId);
     
@@ -261,10 +306,12 @@ const FavouritesContent = ({ navigation }) => {
       }
     }
     
+    const { itemWidth } = getResponsiveLayout();
+    
     return (
       <View style={[
         styles.productContainer,
-        isLeftColumn ? styles.leftProduct : styles.rightProduct
+        { width: itemWidth }
       ]}>
         {/* Product Image */}
         <TouchableOpacity 
@@ -293,7 +340,7 @@ const FavouritesContent = ({ navigation }) => {
 
         {/* Product Info */}
         <View style={styles.productInfo}>
-          <Text style={styles.productName}>{itemName}</Text>
+          <Text style={styles.productName} numberOfLines={2}>{itemName}</Text>
           <Text style={styles.productPrice}>{itemPrice}</Text>
         </View>
       </View>
@@ -340,17 +387,23 @@ const FavouritesContent = ({ navigation }) => {
             <Text style={styles.loadingText}>Loading your favourites...</Text>
           </View>
         ) : favouritedProducts.length > 0 ? (
-          <FlatList
-            {...optimizedListProps}
-            renderItem={renderProductItem}
-            numColumns={2}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.gridContainer}
-            columnWrapperStyle={styles.row}
-          />
+          <>
+            {console.log('📱 Rendering FlatList with', favouritedProducts.length, 'products')}
+            <FlatList
+              {...optimizedListProps}
+              renderItem={renderProductItem}
+              numColumns={getResponsiveLayout().numColumns}
+              key={`grid-${getResponsiveLayout().numColumns}`}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.gridContainer}
+              columnWrapperStyle={styles.row}
+              keyExtractor={(item, index) => item._id || item.id || item.itemId || `fav-${index}`}
+            />
+          </>
         ) : (
           // Empty state
           <View style={styles.emptyContainer}>
+            {console.log('📱 Showing empty state - no products found')}
             <View style={styles.heartIconCircle}>
               <HeartFilledIcon color="#14142B" />
             </View>
@@ -386,9 +439,11 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 12,
     backgroundColor: Colors.white,
+    minHeight: 52,
   },
   headerLeft: {
     width: 68,
+    flexShrink: 0,
   },
   headerTitle: {
     fontSize: 16,
@@ -400,10 +455,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   editButton: {
-    width: 68,
+    minWidth: 50,
     height: 24,
     justifyContent: 'center',
     alignItems: 'flex-end',
+    paddingHorizontal: 8,
+    flexShrink: 0,
   },
   editText: {
     fontSize: 16,
@@ -419,19 +476,24 @@ const styles = StyleSheet.create({
   },
   gridContainer: {
     paddingBottom: 20,
+    flexGrow: 1,
   },
   row: {
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     marginBottom: 24,
+    paddingHorizontal: 0,
+    gap: 16,
   },
   productContainer: {
-    width: '48%',
+    // Width is set dynamically in renderProductItem
+    // This ensures proper responsiveness on all devices
+    maxWidth: screenWidth >= 768 ? 250 : 200,
   },
   leftProduct: {
-    marginRight: 8,
+    // Removed - no longer needed with dynamic width
   },
   rightProduct: {
-    marginLeft: 8,
+    // Removed - no longer needed with dynamic width
   },
   imageContainer: {
     position: 'relative',
@@ -571,9 +633,11 @@ const styles = StyleSheet.create({
   editModeButtons: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 0,
+    minWidth: 100,
   },
   clearAllButton: {
-    marginRight: 16,
+    marginRight: 12,
     paddingHorizontal: 8,
     paddingVertical: 4,
   },

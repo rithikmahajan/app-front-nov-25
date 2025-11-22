@@ -1,221 +1,188 @@
-# Production Build Complete Cleanup - DONE ✅
+# 🎯 Android Production Build - Ready to Execute
 
-## All Cache Cleared Successfully!
+## ✅ Configuration Verified
 
-### What Was Cleaned:
-
-✅ **1. Node Modules**
-- Removed all `node_modules`
-- Reinstalled fresh packages from package.json
-
-✅ **2. iOS Build Artifacts**
-- Removed `ios/build` directory
-- Removed `ios/Pods` directory
-- Removed `ios/Podfile.lock`
-
-✅ **3. Xcode DerivedData**
-- Cleared all cached Xcode build data
-- Location: `~/Library/Developer/Xcode/DerivedData/*`
-
-✅ **4. Metro Bundler Cache**
-- Cleared Metro JavaScript bundler cache
-- Cleared React Native temp files
-
-✅ **5. Watchman Cache**
-- Cleared file watcher cache
-- Removed: `/Users/rithikmahajan/Desktop/oct-7-appfront-main`
-
-✅ **6. Reinstalled Dependencies**
-- Fresh npm packages installed (1057 packages)
-- Fresh iOS Pods installed (116 total pods)
-
----
-
-## Your App is Now Ready for Production! 🚀
-
-### Build Configuration:
-- ✅ All old cached data removed
-- ✅ All dependencies freshly installed
-- ✅ No stale build artifacts
-- ✅ Clean slate for production build
-
----
-
-## Next Steps to Build for Production:
-
-### Option 1: Build from Xcode (Recommended)
-
-```bash
-# Open the workspace
-open ios/YoraaApp.xcworkspace
+### Environment File: `.env.production`
+```
+✅ Backend API: https://api.yoraa.in.net/api
+✅ Production MongoDB: Accessed via backend
+✅ Environment: production
+✅ Build Type: release
+✅ Debug Mode: false
+✅ Razorpay: Live keys (rzp_live_VRU7ggfYLI7DWV)
+✅ HTTPS: Enabled
+✅ Proxy: Disabled
 ```
 
-**In Xcode:**
-1. Select target: **YoraaApp**
-2. Select device: **Any iOS Device (arm64)** or your connected device
-3. Set scheme to **Release**
-   - Product → Scheme → Edit Scheme
-   - Change Build Configuration to "Release"
-4. Create archive:
-   - Product → Archive
-5. Distribute:
-   - Window → Organizer → Archives
-   - Click "Distribute App"
-   - Choose "App Store Connect"
-   - Follow prompts to upload
+### Signing Configuration
+```
+✅ Keystore: android/app/upload-keystore.jks
+✅ Properties: android/upload-keystore.properties
+✅ Key Alias: upload-key
+✅ Configured in: android/app/build.gradle
+```
 
-### Option 2: Build from Command Line
+### Build System
+```
+✅ Gradle: Configured
+✅ react-native-config: Installed
+✅ dotenv.gradle: Applied
+✅ Build tools: Ready
+```
+
+## 🚀 Execute Build
+
+### Simple Command
+```bash
+./build-android-production.sh
+```
+
+### What Happens
+1. Verifies `.env.production` exists
+2. Shows production configuration
+3. Verifies keystore
+4. Cleans previous builds
+5. Asks: APK or AAB?
+6. Builds signed production release
+7. Reports success with file location
+
+### Choose Your Build Type
+
+**For Play Store Upload (Recommended):**
+- Choose option `2` (AAB)
+- Output: `app-release.aab`
+
+**For Testing:**
+- Choose option `1` (APK)
+- Output: `app-release.apk`
+
+## 📦 Expected Output
+
+### AAB (Play Store)
+```
+android/app/build/outputs/bundle/release/app-release.aab
+✅ Ready to upload to Google Play Console
+```
+
+### APK (Testing)
+```
+android/app/build/outputs/apk/release/app-release.apk
+✅ Ready to install: adb install app-release.apk
+```
+
+## 🔗 What Connects to Production
+
+### Backend API
+- **URL:** `https://api.yoraa.in.net/api`
+- **Protocol:** HTTPS
+- **Port:** 443
+- **Tunnel:** Cloudflare
+
+### Database
+- **Type:** Production MongoDB
+- **Access:** Via backend API (no direct connection)
+- **Security:** Backend authentication
+
+### Payment Gateway
+- **Provider:** Razorpay
+- **Mode:** LIVE
+- **Key:** rzp_live_VRU7ggfYLI7DWV
+
+## ⚠️ Pre-Build Checklist
+
+- [x] `.env.production` configured
+- [x] Production backend URL set
+- [x] Debug mode disabled
+- [x] Live Razorpay keys configured
+- [x] Keystore files present
+- [x] Build script created
+- [ ] Version code incremented (if needed)
+- [ ] Tested on device (after build)
+
+## 📝 Version Info
+
+Current version in `android/app/build.gradle`:
+```gradle
+versionCode 5
+versionName "1.0"
+```
+
+**Before Play Store upload:** Increment `versionCode` if this is an update!
+
+## 🎬 Next Steps After Build
+
+### If Building AAB for Play Store:
+1. ✅ Build completes successfully
+2. Go to [Google Play Console](https://play.google.com/console)
+3. Select YORAA app
+4. Production → Create new release
+5. Upload `app-release.aab`
+6. Add release notes
+7. Review and publish
+
+### If Building APK for Testing:
+1. ✅ Build completes successfully
+2. Install on device: `adb install app-release.apk`
+3. Test all features
+4. Verify backend connectivity
+5. Test payments (LIVE mode - be careful!)
+6. If all good → Build AAB for Play Store
+
+## 🔍 Verification After Install
+
+Test these features:
+- [ ] App launches successfully
+- [ ] Login/signup works
+- [ ] Backend API calls succeed
+- [ ] Data loads from production
+- [ ] Images load correctly
+- [ ] Payment gateway initializes
+- [ ] No debug info visible
+- [ ] Performance is good
+
+## 📊 Build Logs
+
+All build output saved to:
+```
+build-production.log
+```
+
+Check this if build fails.
+
+## 🆘 Troubleshooting
+
+### Build Fails
+```bash
+# View detailed log
+cat build-production.log
+
+# Clean and retry
+cd android && ./gradlew clean && cd ..
+./build-android-production.sh
+```
+
+### Wrong Environment Loaded
+The script sets `ENVFILE=.env.production` automatically.
+No manual intervention needed.
+
+### Keystore Error
+```bash
+# Verify files
+ls -la android/app/upload-keystore.jks
+cat android/upload-keystore.properties
+```
+
+## 📱 Ready to Build!
+
+Everything is configured and ready. Just run:
 
 ```bash
-# For Release build on connected device
-npx react-native run-ios --configuration Release --device "Your iPhone Name"
-
-# Or build archive directly
-cd ios
-xcodebuild -workspace YoraaApp.xcworkspace \
-  -scheme YoraaApp \
-  -configuration Release \
-  -archivePath ./build/YoraaApp.xcarchive \
-  archive
+./build-android-production.sh
 ```
 
 ---
 
-## Important Production Checklist:
-
-### Before Building:
-
-- [ ] **Update Version Number**
-  - Open Xcode → General → Version (e.g., 1.0.1)
-  - Build number should auto-increment or set manually
-
-- [ ] **Verify Bundle Identifier**
-  - Should be: `com.yoraaapparelsprivatelimited.yoraa`
-
-- [ ] **Check Code Signing**
-  - Team: Select your Apple Developer Team
-  - Signing Certificate: Apple Distribution
-  - Provisioning Profile: Should auto-select or choose manually
-
-- [ ] **Verify API Configuration**
-  - Production API: `https://api.yoraa.in.net/api` ✅
-  - Razorpay Live Key: `rzp_live_VRU7ggfYLI7DWV` ✅
-  - Firebase: Production config ✅
-
-### After Building:
-
-- [ ] **Test the Release Build on Physical Device**
-  ```bash
-  npx react-native run-ios --configuration Release --device "Your iPhone"
-  ```
-
-- [ ] **Verify All Features Work:**
-  - [ ] Login/Authentication
-  - [ ] Product browsing
-  - [ ] Cart functionality
-  - [ ] Payment (Razorpay)
-  - [ ] Order tracking
-  - [ ] Push notifications
-
-- [ ] **Check for Console Errors:**
-  - No red errors in Metro console
-  - No warnings about missing modules
-
----
-
-## Common Production Build Issues & Solutions:
-
-### Issue 1: "No code signing identities found"
-**Solution:**
-- Open Xcode → Settings → Accounts
-- Add your Apple ID
-- Download Manual Profiles
-
-### Issue 2: "Provisioning profile doesn't include signing certificate"
-**Solution:**
-- Go to developer.apple.com
-- Certificates, Identifiers & Profiles
-- Create new Distribution certificate
-- Download and install
-
-### Issue 3: "App doesn't launch on device"
-**Solution:**
-- Device Settings → General → VPN & Device Management
-- Trust your developer certificate
-
-### Issue 4: "Old data still showing"
-**Solution:** (Already fixed! But if needed again)
-```bash
-# Delete app from device completely
-# Restart device
-# Build and install fresh
-```
-
----
-
-## Files Created for Reference:
-
-1. **`clean-for-production.sh`**
-   - Automated cleanup script
-   - Run anytime you need fresh build
-   - Usage: `./clean-for-production.sh`
-
-2. **`PAYMENT_CANCELLATION_FIX.md`**
-   - Documents payment cancellation handling
-   - User cancellations don't show errors
-
-3. **`RAZORPAY_TROUBLESHOOTING.md`**
-   - Razorpay integration guide
-   - iOS troubleshooting steps
-
-4. **`RATE_LIMITING_FIXES.md`**
-   - Backend API rate limiting fixes
-   - Request deduplication
-
----
-
-## What's Fixed in This Build:
-
-✅ **Payment Cancellation** - No error when user closes payment UI
-✅ **API Rate Limiting** - Proper request throttling and retry logic
-✅ **Order Cancellation Endpoint** - Fixed 404 error (now uses `/orders/cancel/${orderId}`)
-✅ **Fresh Dependencies** - All packages reinstalled from scratch
-✅ **Clean Build State** - No cached old data or tracking info
-
----
-
-## Production Environment Verified:
-
-✅ **Backend:** `https://api.yoraa.in.net/api` (LIVE)
-✅ **Razorpay:** `rzp_live_VRU7ggfYLI7DWV` (LIVE KEY)
-✅ **Firebase:** Production configuration active
-✅ **Bundle ID:** `com.yoraaapparelsprivatelimited.yoraa`
-
----
-
-## Ready to Deploy! 🎉
-
-Your iOS app is now:
-- ✅ Completely cleared of old cached data
-- ✅ Built with latest code changes
-- ✅ Using production API and payment keys
-- ✅ Ready for App Store submission
-
-**Good luck with your production release!** 🚀
-
----
-
-## Need Help?
-
-If you encounter any issues during production build:
-
-1. Check Xcode build logs for specific errors
-2. Verify code signing is properly configured
-3. Ensure all dependencies are installed: `pod install`
-4. Run clean script again: `./clean-for-production.sh`
-5. Make sure device is registered in Apple Developer portal
-
----
-
-**Last cleanup performed:** November 8, 2025  
-**Build status:** Ready for Production ✅
+**Production Backend:** https://api.yoraa.in.net/api  
+**Build Type:** Release (Signed)  
+**Configuration:** .env.production  
+**Date:** November 18, 2025

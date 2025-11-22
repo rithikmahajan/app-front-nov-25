@@ -11,13 +11,11 @@ import { useFavorites } from '../contexts/FavoritesContext';
 import FavouritesContent from './favouritescontent';
 
 const FavouritesScreen = React.memo(({ navigation }) => {
-  const { getFavoritesCount } = useFavorites();
+  const { favorites } = useFavorites();
 
-  // Memoize the favorites count to prevent unnecessary recalculations
-  const favoritesCount = useMemo(() => getFavoritesCount(), [getFavoritesCount]);
-  
   // Check if we should show content or empty state
-  const hasFavorites = favoritesCount > 0;
+  // Directly check favorites.size to ensure reactivity
+  const hasFavorites = favorites && favorites.size > 0;
 
   // Optimized handler with useCallback
   const handleAddFavouritesNow = useCallback(() => {

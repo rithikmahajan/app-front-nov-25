@@ -222,7 +222,6 @@ const BagSizeSelectorSizeChart = ({ visible, onClose, product }) => {
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={true}
-          style={{ marginHorizontal: -16 }}
           contentContainerStyle={{ paddingHorizontal: 16 }}
         >
           <View style={styles.tableContainer}>
@@ -396,11 +395,14 @@ const BagSizeSelectorSizeChart = ({ visible, onClose, product }) => {
     >
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
-          {/* Drag Handle */}
-          <View style={styles.dragHandle} />
-          
-          {/* Header */}
-          <Text style={styles.headerTitle}>Size Chart</Text>
+          {/* Header with Close Button */}
+          <View style={styles.headerContainer}>
+            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Size Chart</Text>
+            <View style={styles.closeButtonPlaceholder} />
+          </View>
           
           {/* Tab Container - Size Chart / How to Measure */}
           <View style={styles.tabContainer}>
@@ -445,7 +447,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 36,
     borderTopRightRadius: 36,
-    paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 40,
     minHeight: screenHeight * 0.7,
@@ -459,12 +460,33 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 16,
   },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    marginBottom: 16,
+  },
+  closeButton: {
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    fontSize: 24,
+    fontWeight: '300',
+    color: '#000000',
+  },
+  closeButtonPlaceholder: {
+    width: 30,
+    height: 30,
+  },
   headerTitle: {
     fontSize: 16,
     fontWeight: '500',
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 24,
     letterSpacing: -0.4,
   },
   tabContainer: {
@@ -504,7 +526,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 2,
+    paddingHorizontal: 26,
     marginBottom: 20,
     height: 45,
   },
@@ -602,6 +624,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
+    marginHorizontal: 16,
   },
   doneButtonText: {
     fontSize: 16,

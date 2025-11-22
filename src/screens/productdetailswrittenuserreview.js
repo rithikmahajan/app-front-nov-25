@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -76,6 +76,22 @@ const ProductDetailsWrittenUserReview = ({ navigation, route }) => {
   
   console.log('🔍 Product received in write review:', product);
   console.log('🔍 Final Product ID extracted:', finalProductId);
+
+  // Restore review data if user is returning from login
+  useEffect(() => {
+    if (reviewData) {
+      if (reviewData.starRating) {
+        setStarRating(reviewData.starRating);
+      }
+      if (reviewData.reviewText) {
+        setReviewText(reviewData.reviewText);
+      }
+      if (reviewData.selectedImages) {
+        setSelectedImages(reviewData.selectedImages);
+      }
+      console.log('✅ Restored review data after login:', reviewData);
+    }
+  }, [reviewData]);
 
   const handleBackPress = useCallback(() => {
     if (navigation) {
@@ -195,6 +211,40 @@ const ProductDetailsWrittenUserReview = ({ navigation, route }) => {
       return;
     }
 
+    // Check if user is authenticated
+    const isAuthenticated = yoraaAPI.isAuthenticated();
+    console.log('🔍 handlePostReview - isAuthenticated:', isAuthenticated);
+    
+    if (!isAuthenticated) {
+      // User is not authenticated, navigate to LoginAccountMobileNumber for login
+      console.log('🔒 User not authenticated, navigating to LoginAccountMobileNumber to sign in');
+      Alert.alert(
+        'Sign In Required',
+        'Please sign in to write a review.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Sign In', 
+            onPress: () => {
+              navigation.navigate('LoginAccountMobileNumber', { 
+                fromReview: true,
+                returnScreen: 'ProductDetailsWrittenUserReview',
+                reviewData: {
+                  starRating,
+                  reviewText,
+                  selectedImages,
+                  productId: finalProductId,
+                  product,
+                  ...reviewData
+                }
+              });
+            }
+          }
+        ]
+      );
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       console.log('📝 Submitting review for product:', finalProductId);
@@ -247,14 +297,14 @@ const ProductDetailsWrittenUserReview = ({ navigation, route }) => {
         );
       } else {
         Alert.alert(
-          'Error', 
+          '', 
           error.message || 'Failed to submit review. Please check your internet connection and try again.'
         );
       }
     } finally {
       setIsSubmitting(false);
     }
-  }, [reviewData, starRating, reviewText, finalProductId, selectedImages, navigation]);
+  }, [reviewData, starRating, reviewText, finalProductId, selectedImages, navigation, product]);
 
   const handleContinueShopping = useCallback(() => {
     setShowThanksModal(false);

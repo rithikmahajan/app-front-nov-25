@@ -302,9 +302,17 @@ const CreateAccountMobileNumber = ({ navigation, route }) => {
   };
 
   const handleBackPress = () => {
-    // Navigate back to RewardsScreen
+    // Check if user came from login screen
+    const fromLogin = route?.params?.fromLogin;
+    
     if (navigation) {
-      navigation.navigate('Rewards');
+      if (fromLogin) {
+        // Navigate back to login screen if came from sign up link
+        navigation.navigate('LoginAccountEmail');
+      } else {
+        // Navigate back to Rewards screen otherwise
+        navigation.navigate('Rewards');
+      }
     }
   };
 
@@ -320,9 +328,11 @@ const CreateAccountMobileNumber = ({ navigation, route }) => {
 
   const handleToggle = (type) => {
     if (type === 'email') {
-      // Navigate to create account email screen
+      // Navigate to create account email screen, preserving fromLogin parameter
       if (navigation) {
-        navigation.navigate('CreateAccountEmail');
+        navigation.navigate('CreateAccountEmail', { 
+          fromLogin: route?.params?.fromLogin 
+        });
       }
     }
   };

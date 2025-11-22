@@ -882,7 +882,7 @@ const EditProfile = ({ navigation }) => {
       </Modal>
 
       {/* Date Picker Modal */}
-      {showDatePicker && (
+      {showDatePicker && Platform.OS === 'ios' && (
         <Modal
           visible={showDatePicker}
           transparent={true}
@@ -902,7 +902,7 @@ const EditProfile = ({ navigation }) => {
               <DateTimePicker
                 value={formData.dateOfBirth}
                 mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                display="spinner"
                 onChange={handleDateChange}
                 maximumDate={new Date()}
                 minimumDate={new Date(1900, 0, 1)}
@@ -911,6 +911,18 @@ const EditProfile = ({ navigation }) => {
             </View>
           </View>
         </Modal>
+      )}
+
+      {/* Android Date Picker (native dialog) */}
+      {showDatePicker && Platform.OS === 'android' && (
+        <DateTimePicker
+          value={formData.dateOfBirth}
+          mode="date"
+          display="default"
+          onChange={handleDateChange}
+          maximumDate={new Date()}
+          minimumDate={new Date(1900, 0, 1)}
+        />
       )}
 
       {/* Save Button */}

@@ -1,8 +1,8 @@
-// import { YoraaAPI } from '../../YoraaAPIClient';
-// TODO: Use YoraaAPI in production to call backend endpoints
+import YoraaAPI from './yoraaAPI';
 
 class EmailOTPService {
   constructor() {
+    // Only used in development mode for testing
     this.pendingOTP = null;
     this.pendingEmail = null;
     this.otpExpiry = null;
@@ -17,31 +17,42 @@ class EmailOTPService {
     try {
       console.log('📧 Sending OTP to email:', email);
       
-      // Generate 6-digit OTP
-      const otp = this.generateOTP();
+      // In development mode, generate OTP locally for testing
+      if (__DEV__) {
+        const otp = this.generateOTP();
+        this.pendingOTP = otp;
+        this.pendingEmail = email;
+        this.otpExpiry = Date.now() + 5 * 60 * 1000; // 5 minutes
+        
+        console.log('✅ DEV MODE - OTP Generated:', otp);
+        console.log('⚠️ In production, this OTP will be sent via email');
+        
+        return {
+          success: true,
+          message: 'OTP sent successfully',
+          devOTP: otp // Only in development
+        };
+      }
       
-      // Store OTP temporarily (in production, this should be on backend)
-      this.pendingOTP = otp;
-      this.pendingEmail = email;
-      this.otpExpiry = Date.now() + 5 * 60 * 1000; // 5 minutes
+      // Production mode: Call backend API to send email
+      const response = await YoraaAPI.makeRequest('/api/auth/send-email-otp', 'POST', { 
+        email 
+      });
       
-      // TODO: In production, call backend API to send email
-      // const response = await YoraaAPI.makeRequest('/api/auth/send-email-otp', 'POST', { email });
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to send OTP');
+      }
       
-      // For now, just log the OTP (in production, this would be sent via email)
-      console.log('✅ OTP Generated:', otp);
-      console.log('⚠️ In production, this OTP would be sent to:', email);
+      console.log('✅ OTP sent to email:', email);
       
       return {
         success: true,
-        message: 'OTP sent successfully',
-        // In development, return OTP for testing (remove in production!)
-        devOTP: otp
+        message: response.message || 'OTP sent successfully'
       };
       
     } catch (error) {
       console.error('❌ Error sending OTP:', error);
-      throw new Error('Failed to send OTP. Please try again.');
+      throw new Error(error.message || 'Failed to send OTP. Please try again.');
     }
   }
 
@@ -55,29 +66,41 @@ class EmailOTPService {
     try {
       console.log('🔍 Verifying OTP for email:', email);
       
-      // Check if OTP exists and hasn't expired
-      if (!this.pendingOTP || !this.pendingEmail) {
-        throw new Error('No OTP found. Please request a new one.');
-      }
-      
-      if (Date.now() > this.otpExpiry) {
+      // Development mode: Verify locally
+      if (__DEV__) {
+        if (!this.pendingOTP || !this.pendingEmail) {
+          throw new Error('No OTP found. Please request a new one.');
+        }
+        
+        if (Date.now() > this.otpExpiry) {
+          this.clearOTP();
+          throw new Error('OTP has expired. Please request a new one.');
+        }
+        
+        if (this.pendingEmail !== email) {
+          throw new Error('Email mismatch. Please try again.');
+        }
+        
+        if (this.pendingOTP !== otp) {
+          throw new Error('Invalid OTP. Please check and try again.');
+        }
+        
+        console.log('✅ DEV MODE - OTP verified successfully');
         this.clearOTP();
-        throw new Error('OTP has expired. Please request a new one.');
+        return true;
       }
       
-      if (this.pendingEmail !== email) {
-        throw new Error('Email mismatch. Please try again.');
-      }
+      // Production mode: Verify with backend
+      const response = await YoraaAPI.makeRequest('/api/auth/verify-email-otp', 'POST', { 
+        email, 
+        otp 
+      });
       
-      if (this.pendingOTP !== otp) {
-        throw new Error('Invalid OTP. Please check and try again.');
+      if (!response.success) {
+        throw new Error(response.message || 'Invalid OTP');
       }
-      
-      // TODO: In production, verify with backend
-      // const response = await YoraaAPI.makeRequest('/api/auth/verify-email-otp', 'POST', { email, otp });
       
       console.log('✅ OTP verified successfully');
-      this.clearOTP();
       return true;
       
     } catch (error) {

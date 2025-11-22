@@ -5,6 +5,8 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
+  Platform,
+  Dimensions,
 } from 'react-native';
 import BottomNavigationBar from './bottomnavigationbar';
 import { Colors, FontSizes, FontWeights, Spacing } from '../constants';
@@ -325,7 +327,7 @@ const EnhancedLayout = () => {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       
-      <SafeAreaView style={styles.safeContainer}>
+      <View style={styles.safeContainer}>
         {/* Dynamic Header - Only show for main tabs except Collection and Home */}
         {shouldShowHeader && activeTab !== 'Home' && activeTab !== 'Profile' && (
           <View style={styles.header}>
@@ -337,7 +339,7 @@ const EnhancedLayout = () => {
         <View style={styles.mainContent}>
           {renderContent()}
         </View>
-      </SafeAreaView>
+      </View>
 
       {/* Bottom Navigation - Only show for main tabs */}
       {shouldShowBottomNav && (
@@ -362,10 +364,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+    width: '100%',
+    height: '100%',
   },
   safeContainer: {
     flex: 1,
     backgroundColor: Colors.background,
+    width: '100%',
   },
   header: {
     paddingHorizontal: Spacing.xl,
@@ -373,6 +378,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderLight,
+    width: '100%',
   },
   headerTitle: {
     fontSize: FontSizes.xxxl,
@@ -383,6 +389,7 @@ const styles = StyleSheet.create({
   mainContent: {
     flex: 1,
     backgroundColor: Colors.backgroundSecondary,
+    width: '100%',
   },
   errorContainer: {
     flex: 1,
@@ -390,6 +397,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.background,
     padding: Spacing.xl,
+    width: '100%',
   },
   errorText: {
     fontSize: FontSizes.lg,

@@ -7,26 +7,34 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:133733122921:android:1e06335e663ae7ed35b3f8",
+        "mobilesdk_app_id": "1:133733122921:android:85c2c33dcb293fdf35b3f8",
         "android_client_info": {
           "package_name": "com.yoraa"
         }
       },
       "oauth_client": [
         {
-          "client_id": "133733122921-6k252j8o0n8ej7iqf03t9ngk2fe5ur85.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.yoraa",
-            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
-          }
-        },
-        {
-          "client_id": "133733122921-c46gfe5e2ae4r980i5bc7ogh2f7qcfjo.apps.googleusercontent.com",
+          "client_id": "133733122921-9s1868ckbgho2527g4vo64r4hkvknb9c.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.yoraa",
             "certificate_hash": "8487d61de8145729d9869c44753535477de47d2f"
+          }
+        },
+        {
+          "client_id": "133733122921-assk3t2oje8fsm07j1i1u590kn7g2bpg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yoraa",
+            "certificate_hash": "54b7734caa83ca53d26480b5cb46dc297e0285b1"
+          }
+        },
+        {
+          "client_id": "133733122921-n0djd3la1l160af0l8r3sp1c3pjlic12.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yoraa",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
           }
         },
         {

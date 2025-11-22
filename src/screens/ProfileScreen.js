@@ -14,6 +14,12 @@ import LogoutModal from './logoutmodal';
 import ContactUsScreen from './contactus';
 import yoraaAPI from '../services/yoraaAPI';
 import authManager from '../services/authManager';
+import SkeletonLoader from '../components/SkeletonLoader';
+import { 
+  getResponsiveValue, 
+  getResponsiveFontSize, 
+  getResponsiveSpacing 
+} from '../utils/responsive';
 
 // Arrow Icon Component - SVG Arrow
 const ArrowIcon = () => (
@@ -89,12 +95,6 @@ const ProfileScreen = React.memo(({ navigation }) => {
   const handleSettings = useCallback(() => {
     if (navigation?.navigate) {
       navigation.navigate('Settings', { previousScreen: 'Profile' });
-    }
-  }, [navigation]);
-
-  const handleFAQ = useCallback(() => {
-    if (navigation?.navigate) {
-      navigation.navigate('FAQ', { previousScreen: 'Profile' });
     }
   }, [navigation]);
 
@@ -302,8 +302,7 @@ const ProfileScreen = React.memo(({ navigation }) => {
         <View style={styles.profileContainer}>
           {isLoadingUserName ? (
             <View style={styles.nameLoadingContainer}>
-              <ActivityIndicator size="small" color="#000000" />
-              <Text style={styles.loadingText}>Loading...</Text>
+              <SkeletonLoader width="60%" height={24} borderRadius={4} />
             </View>
           ) : (
             <Text style={styles.clientName} accessibilityRole="header">{userName}</Text>
@@ -372,20 +371,6 @@ const ProfileScreen = React.memo(({ navigation }) => {
         </View>
 
         {/* Menu Items */}
-        <TouchableOpacity 
-          style={styles.menuItem} 
-          onPress={handleFAQ}
-          accessibilityRole="button"
-          accessibilityLabel="FAQ - View queries"
-          accessibilityHint="Navigate to frequently asked questions"
-        >
-          <View style={styles.menuItemContent}>
-            <Text style={styles.menuItemTitle}>FAQ</Text>
-            <Text style={styles.menuItemSubtitle}>View queries</Text>
-          </View>
-          <ArrowIcon />
-        </TouchableOpacity>
-
         <TouchableOpacity 
           style={styles.menuItem} 
           onPress={handleInvoices}
@@ -485,7 +470,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingTop: 80,
+    paddingTop: getResponsiveSpacing(80),
   },
   scrollContainer: {
     flex: 1,
@@ -494,14 +479,14 @@ const styles = StyleSheet.create({
   // Profile Header Styles - matching Figma positioning
   profileContainer: {
     alignItems: 'center',
-    paddingHorizontal: 24,
-    marginBottom: 30,
+    paddingHorizontal: getResponsiveSpacing(24),
+    marginBottom: getResponsiveSpacing(30),
   },
   clientName: {
-    fontSize: 20,
+    fontSize: getResponsiveFontSize(20),
     fontWeight: '500',
     color: '#000000',
-    marginBottom: 30,
+    marginBottom: getResponsiveSpacing(30),
     textAlign: 'center',
     fontFamily: 'Montserrat-Medium',
   },
@@ -510,27 +495,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#000000',
     borderRadius: 100,
-    paddingHorizontal: 51,
-    paddingVertical: 16,
+    paddingHorizontal: getResponsiveSpacing(51),
+    paddingVertical: getResponsiveSpacing(16),
   },
   editProfileText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
     fontFamily: 'Montserrat-Medium',
   },
   signInButton: {
     backgroundColor: '#000000',
-    paddingVertical: 16,
-    paddingHorizontal: 51,
+    paddingVertical: getResponsiveSpacing(16),
+    paddingHorizontal: getResponsiveSpacing(51),
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 180,
+    minWidth: getResponsiveValue(180, 200, 220),
   },
   signInButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
   },
@@ -540,9 +525,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 28, // Side margins to contain the dividers
-    marginBottom: 20,
-    paddingVertical: 10,
+    marginHorizontal: getResponsiveSpacing(28),
+    marginBottom: getResponsiveSpacing(20),
+    paddingVertical: getResponsiveSpacing(10),
   },
   actionButton: {
     alignItems: 'center',
@@ -551,15 +536,15 @@ const styles = StyleSheet.create({
   },
   actionDivider: {
     width: 1,
-    height: 31,
+    height: getResponsiveValue(31, 35, 40),
     backgroundColor: '#000000',
     marginHorizontal: 0, // Remove horizontal margins so dividers don't extend to screen edges
   },
   actionButtonText: {
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     fontWeight: '400',
     color: '#000000',
-    marginTop: 10,
+    marginTop: getResponsiveSpacing(10),
     textAlign: 'center',
     fontFamily: 'Montserrat-Regular',
     letterSpacing: -0.3,
@@ -570,11 +555,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 32, // 76px height with 32px vertical padding
+    paddingHorizontal: getResponsiveSpacing(24),
+    paddingVertical: getResponsiveSpacing(32),
     borderBottomWidth: 1,
     borderBottomColor: '#E4E4E4',
-    minHeight: 76,
+    minHeight: getResponsiveValue(76, 84, 92),
   },
   lastMenuItem: {
     borderBottomWidth: 1,
@@ -582,32 +567,32 @@ const styles = StyleSheet.create({
   },
   menuItemContent: {
     flex: 1,
-    gap: 6, // 1.5 * 4 = 6px gap between title and subtitle
+    gap: getResponsiveSpacing(6),
   },
   menuItemTitle: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
     fontFamily: 'Montserrat-Medium',
-    lineHeight: 19.2, // 1.2 line height
+    lineHeight: getResponsiveFontSize(19.2),
   },
   menuItemSubtitle: {
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     fontWeight: '400',
     color: '#767676',
     fontFamily: 'Montserrat-Regular',
     letterSpacing: -0.3,
-    lineHeight: 12, // line-height: none equivalent
+    lineHeight: getResponsiveFontSize(12),
   },
   nameLoadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 30,
+    marginBottom: getResponsiveSpacing(30),
   },
   loadingText: {
-    marginLeft: 8,
-    fontSize: 16,
+    marginLeft: getResponsiveSpacing(8),
+    fontSize: getResponsiveFontSize(16),
     color: '#666666',
     fontFamily: 'Montserrat-Medium',
   },

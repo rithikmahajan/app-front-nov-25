@@ -11,6 +11,13 @@ import {
 import { apiService } from '../services/apiService';
 import GlobalSearchIcon from '../assets/icons/GlobalSearchIcon';
 import RightArrowIcon from '../assets/icons/RightArrowIcon';
+import { CategoryCardSkeleton } from '../components/SkeletonLoader';
+import { 
+  getResponsiveValue, 
+  getResponsiveFontSize, 
+  getResponsiveSpacing,
+  DeviceSize 
+} from '../utils/responsive';
 
 const HomeScreen = React.memo(({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState('');
@@ -219,7 +226,21 @@ const HomeScreen = React.memo(({ navigation, route }) => {
 
   // Optimized navigation handlers with useCallback
   const handleNavigateToSearch = useCallback(() => {
-    navigation?.navigate('SearchScreen', { previousScreen: 'Home' });
+    console.log('🔍 Search icon pressed!');
+    console.log('Navigation object:', navigation);
+    
+    if (!navigation) {
+      console.error('❌ Navigation object is undefined!');
+      return;
+    }
+    
+    if (typeof navigation.navigate !== 'function') {
+      console.error('❌ navigation.navigate is not a function!');
+      return;
+    }
+    
+    console.log('✅ Navigating to SearchScreen...');
+    navigation.navigate('SearchScreen', { previousScreen: 'Home' });
   }, [navigation]);
 
   const handleNavigateToProduct = useCallback((subcategoryId, subcategoryName) => {
@@ -279,6 +300,7 @@ const HomeScreen = React.memo(({ navigation, route }) => {
           <TouchableOpacity 
             style={styles.iconButton}
             onPress={handleNavigateToSearch}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             accessibilityRole="button"
             accessibilityLabel="Search"
             accessibilityHint="Navigate to search screen"
@@ -320,9 +342,10 @@ const HomeScreen = React.memo(({ navigation, route }) => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.categoriesContainer}>
           {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#000000" />
-              <Text style={styles.loadingText}>Loading categories...</Text>
+            <View style={styles.skeletonGrid}>
+              {[1, 2, 3, 4, 5, 6].map((index) => (
+                <CategoryCardSkeleton key={index} />
+              ))}
             </View>
           ) : (
             <>
@@ -354,7 +377,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingTop: 16, // 16px top padding
+    paddingTop: getResponsiveSpacing(16),
   },
   
   // Header Styles
@@ -362,26 +385,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 16, // Consistent spacing
-    paddingBottom: 12,
+    paddingHorizontal: getResponsiveSpacing(16),
+    paddingTop: getResponsiveSpacing(16),
+    paddingBottom: getResponsiveSpacing(12),
     backgroundColor: '#FFFFFF',
   },
   shopTitle: {
-    fontSize: 28,
+    fontSize: getResponsiveFontSize(28),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.168,
-    lineHeight: 33.6, // 1.2 line height as in Figma
+    lineHeight: getResponsiveFontSize(33.6),
     fontFamily: 'Montserrat-Medium',
   },
   headerIcons: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 23, // Match Figma spacing between icons
+    gap: getResponsiveSpacing(23),
   },
   iconButton: {
-    padding: 4, // Reduce padding for better visual spacing
+    padding: getResponsiveSpacing(8),
+    minWidth: getResponsiveValue(40, 48, 56),
+    minHeight: getResponsiveValue(40, 48, 56),
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   // Tab Navigation Styles
@@ -389,24 +416,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#CDCDCD',
-    paddingTop: 12, // Add top padding to match Figma
+    paddingTop: getResponsiveSpacing(12),
     flexDirection: 'row',
     position: 'relative',
   },
   tabWrapper: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingBottom: 4,
+    paddingHorizontal: getResponsiveSpacing(16),
+    paddingBottom: getResponsiveSpacing(4),
     flex: 1,
   },
   tab: {
-    paddingHorizontal: 16,
+    paddingHorizontal: getResponsiveSpacing(16),
     paddingTop: 0,
-    paddingBottom: 16,
+    paddingBottom: getResponsiveSpacing(16),
     position: 'relative',
   },
   firstTab: {
-    paddingLeft: 16,
+    paddingLeft: getResponsiveSpacing(16),
   },
   tabContent: {
     flexDirection: 'row',
@@ -416,7 +443,7 @@ const styles = StyleSheet.create({
     // Active tab styling handled by indicator
   },
   tabText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#767676',
     letterSpacing: -0.4,
@@ -437,18 +464,18 @@ const styles = StyleSheet.create({
   // Content Styles
   content: {
     flex: 1,
-    marginTop: 6, // Small gap after tabs to match Figma content positioning
+    marginTop: getResponsiveSpacing(6),
   },
   categoriesContainer: {
-    paddingTop: 0, // Remove extra top padding
+    paddingTop: 0,
   },
 
   // Category Item Styles
   categoryItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: getResponsiveSpacing(16),
+    paddingVertical: getResponsiveSpacing(16),
     borderBottomWidth: 1,
     borderBottomColor: '#E4E4E4',
   },
@@ -456,28 +483,28 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   categoryImageContainer: {
-    marginRight: 16,
+    marginRight: getResponsiveSpacing(16),
   },
   categoryImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 8,
+    width: getResponsiveValue(70, 90, 110),
+    height: getResponsiveValue(70, 90, 110),
+    borderRadius: getResponsiveSpacing(8),
   },
   categoryImagePlaceholder: {
-    width: 70,
-    height: 70,
+    width: getResponsiveValue(70, 90, 110),
+    height: getResponsiveValue(70, 90, 110),
     backgroundColor: '#EEEEEE',
-    borderRadius: 8,
+    borderRadius: getResponsiveSpacing(8),
   },
   categoryInfo: {
     flex: 1,
   },
   categoryName: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontWeight: '400',
     color: '#000000',
     letterSpacing: -0.14,
-    lineHeight: 16.8, // 1.2 line height as in Figma
+    lineHeight: getResponsiveFontSize(16.8),
     fontFamily: 'Montserrat-Regular',
   },
   saleText: {
@@ -491,37 +518,43 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: getResponsiveSpacing(40),
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
+    marginTop: getResponsiveSpacing(12),
+    fontSize: getResponsiveFontSize(14),
     color: '#767676',
     fontFamily: 'Montserrat-Regular',
+  },
+  skeletonGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: getResponsiveSpacing(8),
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 20,
+    paddingVertical: getResponsiveSpacing(40),
+    paddingHorizontal: getResponsiveSpacing(20),
   },
   errorText: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     color: '#CA3327',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: getResponsiveSpacing(16),
     fontFamily: 'Montserrat-Regular',
   },
   retryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingVertical: getResponsiveSpacing(10),
     backgroundColor: '#000000',
-    borderRadius: 6,
+    borderRadius: getResponsiveSpacing(6),
   },
   retryButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
   },
@@ -532,30 +565,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#FFF3CD',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginHorizontal: 16,
-    marginBottom: 8,
-    borderRadius: 8,
+    paddingHorizontal: getResponsiveSpacing(16),
+    paddingVertical: getResponsiveSpacing(12),
+    marginHorizontal: getResponsiveSpacing(16),
+    marginBottom: getResponsiveSpacing(8),
+    borderRadius: getResponsiveSpacing(8),
     borderLeftWidth: 4,
     borderLeftColor: '#FF9800',
   },
   errorBannerText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     color: '#856404',
     fontFamily: 'Montserrat-Regular',
-    marginRight: 12,
+    marginRight: getResponsiveSpacing(12),
   },
   retryBannerButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: getResponsiveSpacing(12),
+    paddingVertical: getResponsiveSpacing(6),
     backgroundColor: '#FF9800',
-    borderRadius: 4,
+    borderRadius: getResponsiveSpacing(4),
   },
   retryBannerButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
   },

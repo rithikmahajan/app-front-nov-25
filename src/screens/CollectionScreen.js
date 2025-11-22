@@ -15,10 +15,12 @@ import {
   ActivityIndicator,
   RefreshControl,
   Image,
+  Platform,
 } from 'react-native';
 import { FontSizes, FontWeights, Spacing, BorderRadius } from '../constants';
 import { GlobalSearchIcon, FilterIcon, HeartIcon } from '../assets/icons';
 import { useFavorites } from '../contexts/FavoritesContext';
+import { ProductGridSkeleton, CategoryCardSkeleton } from '../components/SkeletonLoader';
 // import { useBag } from '../contexts/BagContext'; // Removed as cart button is no longer displayed
 import { apiService } from '../services/apiService';
 
@@ -360,6 +362,11 @@ const CollectionScreen = ({ navigation, route }) => {
       setError(null);
       console.log('🔄 Fetching subcategories...');
       
+      // Debug: Log API configuration
+      const { API_CONFIG } = require('../config/apiConfig');
+      console.log('🔧 API Base URL:', API_CONFIG.BASE_URL);
+      console.log('🔧 Platform:', Platform.OS);
+      
       const response = await apiService.getSubcategories();
       console.log('✅ Subcategories fetched:', response);
       console.log('🔍 First subcategory structure:', response[0]);
@@ -374,6 +381,7 @@ const CollectionScreen = ({ navigation, route }) => {
       }
     } catch (err) {
       console.error('❌ Error fetching subcategories:', err);
+      console.error('❌ Error details:', err.message, err.code);
       setError('Failed to load categories. Please try again.');
       
       // Fallback to empty array
@@ -742,10 +750,7 @@ const CollectionScreen = ({ navigation, route }) => {
             </TouchableOpacity>
           </View>
         ) : itemsLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#000000" />
-            <Text style={styles.loadingText}>Loading products...</Text>
-          </View>
+          <ProductGridSkeleton count={6} columns={2} />
         ) : currentItems.length > 0 ? (
           <View style={styles.contentContainer}>
             <FlatList
@@ -1022,12 +1027,17 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+    position: 'relative',
+    minHeight: 40,
   },
   clearFiltersText: {
     fontSize: FontSizes.sm,
     fontWeight: FontWeights.semiBold,
-    color: '#000000',
+    color: '#FF0000',
     letterSpacing: 0.5,
+    position: 'absolute',
+    right: 16,
+    top: 12,
   },
   filterContent: {
     paddingHorizontal: 16,

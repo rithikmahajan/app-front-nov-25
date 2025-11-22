@@ -169,7 +169,11 @@ const ProductDetailScreenshot = ({ route, navigation }) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
         {/* Bundle Selector Pills */}
         {bundles.length > 1 && (
           <ScrollView
@@ -218,7 +222,7 @@ const ProductDetailScreenshot = ({ route, navigation }) => {
                 <Image
                   source={{ uri: selectedBundle.mainProduct.image }}
                   style={styles.mainProductImage}
-                  resizeMode="cover"
+                  resizeMode="contain"
                 />
                 <View style={styles.mainProductBadge}>
                   <Text style={styles.mainProductBadgeText}>This Item</Text>
@@ -479,7 +483,7 @@ const styles = StyleSheet.create({
   },
   mainProductImage: {
     width: '100%',
-    height: width - 32,
+    height: 400, // Fixed reasonable height for iPad
     borderRadius: 12,
     backgroundColor: '#f5f5f5',
   },
@@ -504,7 +508,8 @@ const styles = StyleSheet.create({
   },
   bundleItemImage: {
     width: '100%',
-    height: (width / 2) - 24,
+    height: Math.min((width / 2) - 24, 250), // Cap height at 250 for tablets
+    aspectRatio: 1,
     borderRadius: 12,
     backgroundColor: '#f5f5f5',
   },

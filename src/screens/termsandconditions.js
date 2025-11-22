@@ -57,6 +57,8 @@ const TermsAndConditions = ({ navigation, route }) => {
       
       // Check if user is from checkout flow
       const fromCheckout = route?.params?.fromCheckout;
+      const fromReview = route?.params?.fromReview;
+      const returnScreen = route?.params?.reviewData?.returnScreen;
       
       if (navigation) {
         if (fromCheckout) {
@@ -66,6 +68,13 @@ const TermsAndConditions = ({ navigation, route }) => {
             returnScreen: 'Bag',
             bagData: route?.params?.bagData,
             fromCheckout: true
+          });
+        } else if (fromReview) {
+          // From review: Return to the appropriate review screen with review data
+          const targetScreen = returnScreen || 'ProductDetailsWrittenUserReview';
+          console.log(`User from review - navigating back to ${targetScreen}`);
+          navigation.navigate(targetScreen, {
+            reviewData: route?.params?.reviewData
           });
         } else {
           // Regular flow: Navigate directly to HomeScreen after accepting terms
@@ -235,22 +244,23 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 38,
-    gap: 20,
+    gap: 30,
   },
   readButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    width: 150,
-    height: 48,
+    minWidth: 200,
+    height: 60,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 51,
-    paddingVertical: 16,
+    paddingHorizontal: 60,
+    paddingVertical: 18,
   },
   readButtonText: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'Montserrat-Medium',
     fontWeight: '500',
     color: '#FFFFFF',
@@ -261,18 +271,18 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     borderWidth: 1,
     borderColor: '#000000',
-    width: 150,
-    height: 48,
+    minWidth: 200,
+    height: 60,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 51,
-    paddingVertical: 16,
+    paddingHorizontal: 60,
+    paddingVertical: 18,
   },
   yesButtonDisabled: {
     borderColor: '#CCCCCC',
   },
   yesButtonText: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'Montserrat-Medium',
     fontWeight: '500',
     color: '#000000',

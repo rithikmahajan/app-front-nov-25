@@ -10,14 +10,34 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import GlobalBackButton from '../components/GlobalBackButton';
 import { AppleIcon, GoogleIcon } from '../assets/icons';
 import auth from '@react-native-firebase/auth';
 import appleAuthService from '../services/appleAuthService';
 import googleAuthService from '../services/googleAuthService';
 import sessionManager from '../services/sessionManager';
-import emailOTPService from '../services/emailOTPService';
 import yoraaAPI from '../services/yoraaAPI';
+
+// Eye Icon Component
+const EyeIcon = ({ width = 22, height = 16, color = "#979797" }) => (
+  <Svg width={width} height={height} viewBox="0 0 22 16" fill="none">
+    {/* Outer eye shape */}
+    <Path 
+      d="M11 1.25C3.5 1.25 0.5 8 0.5 8C0.5 8 3.5 14.75 11 14.75C18.5 14.75 21.5 8 21.5 8C21.5 8 18.5 1.25 11 1.25Z" 
+      stroke={color} 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    />
+    {/* Inner circle (pupil) */}
+    <Path 
+      d="M11 13C13.0711 13 14.75 11.3211 14.75 9.25C14.75 7.17893 13.0711 5.5 11 5.5C8.92893 5.5 7.25 7.17893 7.25 9.25C7.25 11.3211 8.92893 13 11 13Z" 
+      stroke={color} 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
 
 const LoginAccountEmail = ({ navigation, route }) => {
   const [isEmailSelected, setIsEmailSelected] = useState(true);
@@ -42,34 +62,44 @@ const LoginAccountEmail = ({ navigation, route }) => {
     setIsLoading(true);
 
     try {
-      console.log('🔐 Starting email login process...');
+      console.log('🔐 Starting email/password login process...');
       
       // Trim email to remove any whitespace
       const trimmedEmail = email.trim().toLowerCase();
       
-      // Sign in with Firebase to validate credentials
+      // Step 1: Sign in with Firebase to validate credentials
       const userCredential = await auth().signInWithEmailAndPassword(trimmedEmail, password);
       const user = userCredential.user;
       
-      console.log('✅ Firebase credentials validated for:', user.email);
+      console.log('✅ Firebase authentication successful for:', user.email);
       
-      // Sign out immediately - we'll sign in again after OTP verification
-      await auth().signOut();
-      console.log('🔒 Signed out - awaiting OTP verification');
+      // Step 2: Get Firebase ID token
+      const idToken = await user.getIdToken();
+      console.log('� Firebase ID token obtained');
       
-      // Send OTP to email
-      const otpResponse = await emailOTPService.sendOTP(trimmedEmail);
-      console.log('📧 OTP sent to email');
+      // Step 3: Authenticate with backend using Firebase token
+      await yoraaAPI.firebaseLogin(idToken);
+      console.log('✅ Backend authentication successful');
       
-      // Navigate to verification screen
-      if (navigation && navigation.navigate) {
-        navigation.navigate('LoginAccountEmailVerificationCode', { 
-          email: trimmedEmail,
-          password: password, // Pass password to re-authenticate after OTP
-          uid: user.uid,
-          fromCheckout: route?.params?.fromCheckout,
-          devOTP: otpResponse.devOTP // Remove in production!
-        });
+      // Step 4: Create session
+      await sessionManager.createSession({
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL
+      }, 'email');
+      
+      console.log('✅ Session created for email/password login');
+      
+      // Step 5: Navigate based on context
+      const fromCheckout = route?.params?.fromCheckout;
+      
+      if (fromCheckout) {
+        console.log('User from checkout - navigating to checkout');
+        navigation.navigate('CheckoutScreen');
+      } else {
+        console.log('Navigating to Home');
+        navigation.navigate('Home');
       }
       
     } catch (error) {
@@ -83,6 +113,8 @@ const LoginAccountEmail = ({ navigation, route }) => {
         errorMessage = 'That email address is invalid!';
       } else if (error.code === 'auth/user-disabled') {
         errorMessage = 'This account has been disabled.';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many failed login attempts. Please try again later.';
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -108,7 +140,7 @@ const LoginAccountEmail = ({ navigation, route }) => {
   const handleSignUpLink = () => {
     // Handle "Sign Up" link in the footer
     if (navigation) {
-      navigation.navigate('CreateAccountEmail');
+      navigation.navigate('CreateAccountEmail', { fromLogin: true });
     }
   };
 
@@ -409,7 +441,7 @@ const LoginAccountEmail = ({ navigation, route }) => {
                 style={styles.eyeIcon}
                 onPress={() => setShowPassword(!showPassword)}
               >
-                <Text style={styles.eyeText}>{showPassword ? '👁️' : '👁️'}</Text>
+                <EyeIcon color="#979797" />
               </TouchableOpacity>
             </View>
             <View style={styles.underline} />
@@ -555,10 +587,6 @@ const styles = StyleSheet.create({
   },
   eyeIcon: {
     padding: 5,
-  },
-  eyeText: {
-    fontSize: 16,
-    color: '#979797',
   },
   underline: {
     height: 1,

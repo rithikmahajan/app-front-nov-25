@@ -342,42 +342,73 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
         console.error('❌ Firebase Error Code:', result.errorCode);
         console.error('❌ Error Message:', result.error);
         console.error('❌ Full Error:', errorMsg);
+        
+        // ✅ CRITICAL FIX: Handle auth/app-not-authorized error specifically
+        if (result.errorCode === 'auth/app-not-authorized') {
+          Alert.alert(
+            'Authentication Error',
+            'This app is not authorized to use Firebase Authentication.\n\n' +
+            'This is usually caused by:\n' +
+            '• Missing or incorrect SHA-256 certificate in Firebase Console\n' +
+            '• Outdated google-services.json file\n\n' +
+            'Please contact support or try again later.',
+            [{ text: 'OK' }]
+          );
+          return;
+        }
+        
         throw new Error(errorMsg);
       }
       
       console.log('✅ STEP 1 SUCCESS: OTP sent successfully');
       console.log('📦 Confirmation Object:', result.confirmation ? 'EXISTS' : 'MISSING');
+      console.log('📦 Confirmation Keys:', result.confirmation ? Object.keys(result.confirmation) : 'N/A');
+      console.log('📦 Has verificationId:', result.confirmation?.verificationId ? 'YES' : 'NO');
+      console.log('📦 Has confirm method:', typeof result.confirmation?.confirm === 'function' ? 'YES' : 'NO');
       console.log(`⏰ OTP Sent Time: ${new Date().toISOString()}`);
       
-      Alert.alert(
-        'OTP Sent', 
-        `A verification code has been sent to ${formattedPhoneNumber}`,
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              console.log('\n🚀 Navigating to OTP Verification Screen');
-              console.log('📦 Navigation Params:', {
-                phoneNumber: formattedPhoneNumber,
-                hasConfirmation: !!result.confirmation,
-                countryCode: selectedCountry.code,
-                mobileNumber: mobileNumber,
-                fromCheckout: route?.params?.fromCheckout
-              });
-              // Navigate to verification code screen with confirmation object
-              if (navigation) {
-                navigation.navigate('LoginAccountMobileNumberVerificationCode', {
-                  phoneNumber: formattedPhoneNumber,
-                  confirmation: result.confirmation,
-                  countryCode: selectedCountry.code,
-                  mobileNumber: mobileNumber,
-                  fromCheckout: route?.params?.fromCheckout
-                });
-              }
-            }
-          }
-        ]
-      );
+      // ✅ CRITICAL FIX: Store confirmation in a ref to prevent loss during navigation
+      if (!result.confirmation) {
+        console.error('❌ CRITICAL: No confirmation object returned from Firebase!');
+        Alert.alert('Error', 'Failed to initialize OTP session. Please try again.');
+        return;
+      }
+      
+      // ✅ Navigate immediately without Alert to prevent state loss
+      console.log('\n🚀 Navigating to OTP Verification Screen');
+      console.log('📦 Navigation Params:', {
+        phoneNumber: formattedPhoneNumber,
+        hasConfirmation: !!result.confirmation,
+        verificationId: result.confirmation?.verificationId,
+        countryCode: selectedCountry.code,
+        mobileNumber: mobileNumber,
+        fromCheckout: route?.params?.fromCheckout,
+        fromReview: route?.params?.fromReview
+      });
+      
+      // Navigate to verification code screen with confirmation object
+      if (navigation) {
+        // ✅ CRITICAL: Pass the actual confirmation object with verificationId
+        navigation.navigate('LoginAccountMobileNumberVerificationCode', {
+          phoneNumber: formattedPhoneNumber,
+          verificationId: result.confirmation.verificationId, // ✅ NEW: Pass verificationId separately
+          confirmation: result.confirmation,
+          countryCode: selectedCountry.code,
+          mobileNumber: mobileNumber,
+          fromCheckout: route?.params?.fromCheckout,
+          fromReview: route?.params?.fromReview,
+          reviewData: route?.params?.reviewData
+        });
+        
+        // Show success message after navigation
+        setTimeout(() => {
+          Alert.alert(
+            'OTP Sent',
+            `A verification code has been sent to ${formattedPhoneNumber}\n\n⏱️ SMS may take 5-30 seconds to arrive.\n\nIf you don't receive it within 30 seconds, use "Resend Code" on the next screen.`,
+            [{ text: 'OK' }]
+          );
+        }, 500);
+      }
       
     } catch (error) {
       console.log('\n╔═══════════════════════════════════════════════════════════════╗');
@@ -398,6 +429,8 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
         errorMessage = 'Too many requests. Please try again later.';
       } else if (error.code === 'auth/network-request-failed') {
         errorMessage = 'Network error. Please check your internet connection.';
+      } else if (error.code === 'auth/app-not-authorized') {
+        errorMessage = 'App not authorized. Please verify that the correct package name, SHA-1, and SHA-256 are configured in the Firebase Console.';
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -476,9 +509,11 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
         
         // Navigate based on user type and context
         const fromCheckout = route?.params?.fromCheckout;
+        const fromReview = route?.params?.fromReview;
         
         console.log('\n🚀 STEP 3: Determining Navigation Path');
         console.log(`   - From Checkout: ${fromCheckout}`);
+        console.log(`   - From Review: ${fromReview}`);
         console.log(`   - Is New User: ${isNewUser}`);
         
         if (fromCheckout) {
@@ -488,6 +523,15 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
             user: userCredential.user,
             isNewUser: isNewUser,
             fromCheckout: true
+          });
+        } else if (fromReview) {
+          console.log('📍 Navigation Decision: Terms & Conditions (from review)');
+          navigation.navigate('TermsAndConditions', { 
+            previousScreen: 'AppleSignIn',
+            user: userCredential.user,
+            isNewUser: isNewUser,
+            fromReview: true,
+            reviewData: route?.params?.reviewData
           });
         } else if (isNewUser) {
           console.log('📍 Navigation Decision: Terms & Conditions (new user)');
@@ -581,9 +625,11 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
         
         // Navigate based on user type and context (same logic as Apple Sign In)
         const fromCheckout = route?.params?.fromCheckout;
+        const fromReview = route?.params?.fromReview;
         
         console.log('\n🚀 STEP 3: Determining Navigation Path');
         console.log(`   - From Checkout: ${fromCheckout}`);
+        console.log(`   - From Review: ${fromReview}`);
         console.log(`   - Is New User: ${isNewUser}`);
         
         if (fromCheckout) {
@@ -593,6 +639,15 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
             user: userCredential.user,
             isNewUser: isNewUser,
             fromCheckout: true
+          });
+        } else if (fromReview) {
+          console.log('📍 Navigation Decision: Terms & Conditions (from review)');
+          navigation.navigate('TermsAndConditions', { 
+            previousScreen: 'GoogleSignIn',
+            user: userCredential.user,
+            isNewUser: isNewUser,
+            fromReview: true,
+            reviewData: route?.params?.reviewData
           });
         } else if (isNewUser) {
           console.log('📍 Navigation Decision: Terms & Conditions (new user)');
@@ -648,7 +703,24 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
         <View style={styles.header}>
           <GlobalBackButton 
             navigation={navigation}
-            onPress={() => navigation && navigation.navigate('Rewards')}
+            onPress={() => {
+              if (route?.params?.fromCheckout) {
+                navigation && navigation.navigate('Bag');
+              } else if (route?.params?.fromReview) {
+                // Return to the screen where the sign-in was initiated
+                const returnScreen = route?.params?.returnScreen || 'ProductDetailsReviewThreePointSelection';
+                navigation && navigation.navigate(returnScreen, {
+                  reviewData: route?.params?.reviewData,
+                  product: route?.params?.reviewData?.product,
+                  productId: route?.params?.reviewData?.productId,
+                  order: route?.params?.reviewData?.order
+                });
+              } else if (route?.params?.fromOrders) {
+                navigation && navigation.navigate('Profile');
+              } else {
+                navigation && navigation.navigate('Rewards');
+              }
+            }}
           />
         </View>
 

@@ -23,6 +23,7 @@ const OrdersScreen = ({ navigation, route }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [currentCancelOrder, setCurrentCancelOrder] = useState(null);
+  const [isGuest, setIsGuest] = useState(false);
 
   // Function to get customer-facing actions based on order status
   const getCustomerActions = useCallback((order) => {
@@ -67,64 +68,101 @@ const OrdersScreen = ({ navigation, route }) => {
   const fetchOrders = useCallback(async () => {
     try {
       setError(null);
+      
+      // Check if user is authenticated
+      await yoraaAPI.initialize();
+      const isAuthenticated = yoraaAPI.isAuthenticated();
+      
+      if (!isAuthenticated) {
+        // User is a guest - show sign-in prompt instead of error
+        console.log('👤 Guest user detected - prompting to sign in');
+        setIsGuest(true);
+        setLoading(false);
+        setRefreshing(false);
+        setOrders([]);
+        return;
+      }
+      
+      setIsGuest(false);
       const response = await yoraaAPI.getUserOrders();
       
-      if (response.success && response.data) {
-        // Transform API data to match our component structure
-        const transformedOrders = response.data.map(order => {
-          // Get the first item
-          const firstItem = order.items?.[0];
+      if (response.success) {
+        // Check if data exists and is an array
+        if (response.data && Array.isArray(response.data)) {
+          // Transform API data to match our component structure
+          const transformedOrders = response.data.map(order => {
+            // Get the first item
+            const firstItem = order.items?.[0];
+            
+            // Extract image URL with proper fallback handling
+            let imageUrl = null;
+            if (firstItem) {
+              // Try multiple image formats
+              imageUrl = firstItem.images?.[0]?.url ||  // Image object with url property
+                        firstItem.images?.[0] ||         // Direct image URL in array
+                        firstItem.image ||               // Direct image property
+                        firstItem.thumbnail;             // Thumbnail property
+            }
+            
+            return {
+              id: order._id || order.id,
+              status: order.order_status,
+              statusColor: getStatusColor(order.order_status),
+              productName: firstItem?.name || firstItem?.description || 'Product Name',
+              productDescription: firstItem?.description || 'Product Description',
+              size: order.item_quantities?.[0]?.sku || 'Size Info',
+              image: imageUrl, // No fallback - show only actual product images
+              actions: getCustomerActions(order),
+              orderDate: order.created_at,
+              totalAmount: order.total_price,
+              paymentStatus: order.payment_status,
+              shippingStatus: order.shipping_status,
+              razorpayOrderId: order.razorpay_order_id,
+              address: order.address,
+              // ✅ CRITICAL FIX: Ensure AWB code is extracted from API response
+              awbCode: order.awb_code || order.awbCode || order.tracking_number,
+              awb_code: order.awb_code || order.awbCode || order.tracking_number,
+              shipmentId: order.shipment_id || order.shiprocket_order_id,
+              items: order.items || [],
+              item_quantities: order.item_quantities || []
+            };
+          });
           
-          // Extract image URL with proper fallback handling
-          let imageUrl = null;
-          if (firstItem) {
-            // Try multiple image formats
-            imageUrl = firstItem.images?.[0]?.url ||  // Image object with url property
-                      firstItem.images?.[0] ||         // Direct image URL in array
-                      firstItem.image ||               // Direct image property
-                      firstItem.thumbnail;             // Thumbnail property
-          }
+          console.log('✅ Orders fetched and transformed:', {
+            count: transformedOrders.length,
+            firstOrderHasAWB: !!transformedOrders[0]?.awbCode,
+            sampleAWB: transformedOrders[0]?.awbCode,
+            firstOrderImage: transformedOrders[0]?.image,
+            firstOrderHasActualImage: transformedOrders[0]?.image && !transformedOrders[0]?.image?.includes('unsplash.com')
+          });
           
-          return {
-            id: order._id || order.id,
-            status: order.order_status,
-            statusColor: getStatusColor(order.order_status),
-            productName: firstItem?.name || firstItem?.description || 'Product Name',
-            productDescription: firstItem?.description || 'Product Description',
-            size: order.item_quantities?.[0]?.sku || 'Size Info',
-            image: imageUrl, // No fallback - show only actual product images
-            actions: getCustomerActions(order),
-            orderDate: order.created_at,
-            totalAmount: order.total_price,
-            paymentStatus: order.payment_status,
-            shippingStatus: order.shipping_status,
-            razorpayOrderId: order.razorpay_order_id,
-            address: order.address,
-            // ✅ CRITICAL FIX: Ensure AWB code is extracted from API response
-            awbCode: order.awb_code || order.awbCode || order.tracking_number,
-            awb_code: order.awb_code || order.awbCode || order.tracking_number,
-            shipmentId: order.shipment_id || order.shiprocket_order_id,
-            items: order.items || [],
-            item_quantities: order.item_quantities || []
-          };
-        });
-        
-        console.log('✅ Orders fetched and transformed:', {
-          count: transformedOrders.length,
-          firstOrderHasAWB: !!transformedOrders[0]?.awbCode,
-          sampleAWB: transformedOrders[0]?.awbCode,
-          firstOrderImage: transformedOrders[0]?.image,
-          firstOrderHasActualImage: transformedOrders[0]?.image && !transformedOrders[0]?.image?.includes('unsplash.com')
-        });
-        
-        setOrders(transformedOrders);
+          setOrders(transformedOrders);
+        } else {
+          // API success but no data - user has no orders yet
+          console.log('✅ API successful but no orders found for user');
+          setOrders([]);
+        }
       } else {
+        // API returned success: false - this is an error
+        console.error('❌ API returned success: false');
+        setError('Failed to load orders. Please try again.');
         setOrders([]);
       }
     } catch (err) {
-      console.error('Error fetching orders:', err);
-      setError('Failed to load orders. Please try again.');
-      setOrders([]);
+      console.error('❌ Error fetching orders:', err);
+      
+      // Check if this is an authentication error
+      if (err.message?.includes('Authentication required') || 
+          err.message?.includes('log in') || 
+          err.code === 'AUTHENTICATION_REQUIRED') {
+        console.log('🔐 Authentication error - user needs to sign in');
+        setIsGuest(true);
+        setOrders([]);
+      } else {
+        // Only set error for actual network/API errors
+        setError('Failed to load orders. Please try again.');
+        setOrders([]);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -160,6 +198,11 @@ const OrdersScreen = ({ navigation, route }) => {
     setRefreshing(true);
     fetchOrders();
   }, [fetchOrders]);
+
+  // Handle sign in navigation for guest users
+  const handleSignIn = useCallback(() => {
+    navigation.navigate('LoginAccountMobileNumber', { fromOrders: true });
+  }, [navigation]);
 
   const getStatusText = useCallback((status) => {
     switch (status?.toLowerCase()) {
@@ -392,6 +435,14 @@ const OrdersScreen = ({ navigation, route }) => {
             <ActivityIndicator size="large" color="#000000" />
             <Text style={styles.loadingText}>Loading orders...</Text>
           </View>
+        ) : isGuest ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Sign in to view orders</Text>
+            <Text style={styles.emptySubText}>Please sign in to view your order history and track shipments</Text>
+            <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
+              <Text style={styles.signInButtonText}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
         ) : error ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
@@ -401,7 +452,7 @@ const OrdersScreen = ({ navigation, route }) => {
           </View>
         ) : orders.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No orders found</Text>
+            <Text style={styles.emptyText}>No orders yet</Text>
             <Text style={styles.emptySubText}>Your orders will appear here once you make a purchase</Text>
           </View>
         ) : (
@@ -626,6 +677,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
+  },
+  signInButton: {
+    backgroundColor: '#000000',
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  signInButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Montserrat-SemiBold',
   },
   emptyContainer: {
     flex: 1,

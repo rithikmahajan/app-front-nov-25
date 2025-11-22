@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "133733122921",
+    "project_id": "yoraa-android-ios",
+    "storage_bucket": "yoraa-android-ios.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:133733122921:android:85c2c33dcb293fdf35b3f8",
+        "android_client_info": {
+          "package_name": "com.yoraa"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "133733122921-9s1868ckbgho2527g4vo64r4hkvknb9c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yoraa",
+            "certificate_hash": "8487d61de8145729d9869c44753535477de47d2f"
+          }
+        },
+        {
+          "client_id": "133733122921-g3f9l1865vk4bchuc8cmu7qpq9o8ukkk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIYkTNzIrk_RugNOybriphlQ8aVTJ-KD8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "133733122921-cr74erk8tdpgt1akts7juqq0cm44bjda.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "133733122921-535l0n0ld9ncak8bnic262sp0vnjrj92.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.yoraaapparelsprivatelimited.yoraa"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:133733122921:android:1e06335e663ae7ed35b3f8",
+        "android_client_info": {
+          "package_name": "com.yoraapparelsprivatelimited.yoraa"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "133733122921-g3f9l1865vk4bchuc8cmu7qpq9o8ukkk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIYkTNzIrk_RugNOybriphlQ8aVTJ-KD8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "133733122921-cr74erk8tdpgt1akts7juqq0cm44bjda.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "133733122921-535l0n0ld9ncak8bnic262sp0vnjrj92.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.yoraaapparelsprivatelimited.yoraa"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

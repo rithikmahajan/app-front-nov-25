@@ -16,9 +16,8 @@ export const FavoritesProvider = ({ children }) => {
     const initializeFavorites = async () => {
       try {
         await yoraaAPI.initialize();
-        if (yoraaAPI.isAuthenticated()) {
-          await loadFavoritesFromAPI();
-        }
+        // Always load favorites - API handles both authenticated and guest sessions
+        await loadFavoritesFromAPI();
         setInitialized(true);
       } catch (error) {
         console.error('Error initializing favorites:', error);
@@ -36,9 +35,9 @@ export const FavoritesProvider = ({ children }) => {
           await syncLocalFavoritesToServer();
         }
         await loadFavoritesFromAPI();
-      } else if (!user) {
-        // User signed out, clear favorites
-        setFavorites(new Set());
+      } else {
+        // User signed out or is guest - still load favorites (will use guest session)
+        await loadFavoritesFromAPI();
       }
     });
 
@@ -87,14 +86,10 @@ export const FavoritesProvider = ({ children }) => {
 
   // Load favorites from API
   const loadFavoritesFromAPI = async () => {
-    if (!yoraaAPI.isAuthenticated()) {
-      console.log('🔍 User not authenticated, skipping wishlist load');
-      return;
-    }
-
+    // Always try to load wishlist - API will use guest session if not authenticated
     try {
       setLoading(true);
-      console.log('🔍 Loading favorites from API...');
+      console.log('🔍 Loading favorites from API... (authenticated:', yoraaAPI.isAuthenticated(), ')');
       const response = await yoraaAPI.getWishlist();
       
       console.log('🔍 API Response structure:', {
@@ -166,45 +161,37 @@ export const FavoritesProvider = ({ children }) => {
   };
 
   const addToFavorites = async (productId) => {
-    // Sync with backend if authenticated - use toggleWishlist to handle existing items
-    if (yoraaAPI.isAuthenticated()) {
-      try {
-        const result = await yoraaAPI.toggleWishlist(productId);
-        
-        // Update local state based on backend response
-        const newFavorites = new Set(favorites);
-        if (result.added) {
-          newFavorites.add(productId);
-          console.log('✅ Item added to wishlist');
-        } else {
-          newFavorites.delete(productId);
-          console.log('✅ Item removed from wishlist (was already added)');
-        }
-        setFavorites(newFavorites);
-        
-      } catch (error) {
-        const errorMessage = yoraaAPI.handleError(error);
-        
-        // Don't show alerts for expected wishlist toggle errors
-        if (error.isExpectedWishlistError) {
-          console.log('ℹ️ Expected wishlist error handled by toggle logic');
-          return;
-        }
-        
-        console.error('Error toggling favorites:', errorMessage);
-        
-        if (errorMessage.includes('Authentication required')) {
-          Alert.alert('Login Required', 'Please log in to add items to your favorites.');
-        } else {
-          Alert.alert('Error', 'Failed to update favorites. Please try again.');
-        }
-      }
-    } else {
-      // For unauthenticated users, keep the favorite in local storage only
+    // Always sync with backend - API handles both authenticated and guest sessions
+    try {
+      const result = await yoraaAPI.toggleWishlist(productId);
+      
+      // Update local state based on backend response
       const newFavorites = new Set(favorites);
-      newFavorites.add(productId);
+      if (result.added) {
+        newFavorites.add(productId);
+        console.log('✅ Item added to wishlist');
+      } else {
+        newFavorites.delete(productId);
+        console.log('✅ Item removed from wishlist (was already added)');
+      }
       setFavorites(newFavorites);
-      console.log('❤️ Item added to local favorites (user not authenticated)');
+      
+    } catch (error) {
+      const errorMessage = yoraaAPI.handleError(error);
+      
+      // Don't show alerts for expected wishlist toggle errors
+      if (error.isExpectedWishlistError) {
+        console.log('ℹ️ Expected wishlist error handled by toggle logic');
+        return;
+      }
+      
+      console.error('Error toggling favorites:', errorMessage);
+      
+      if (errorMessage.includes('Authentication required')) {
+        Alert.alert('Login Required', 'Please log in to add items to your favorites.');
+      } else {
+        Alert.alert('Error', 'Failed to update favorites. Please try again.');
+      }
     }
   };
 
@@ -214,66 +201,48 @@ export const FavoritesProvider = ({ children }) => {
     newFavorites.delete(productId);
     setFavorites(newFavorites);
 
-    // Sync with backend if authenticated
-    if (yoraaAPI.isAuthenticated()) {
-      try {
-        await yoraaAPI.removeFromWishlist(productId);
-      } catch (error) {
-        // Revert optimistic update on error
-        const revertedFavorites = new Set(favorites);
-        revertedFavorites.add(productId);
-        setFavorites(revertedFavorites);
-        
-        const errorMessage = yoraaAPI.handleError(error);
-        console.error('Error removing from favorites:', errorMessage);
-        Alert.alert('Error', 'Failed to remove item from favorites. Please try again.');
-      }
+    // Always sync with backend - API handles both authenticated and guest sessions
+    try {
+      await yoraaAPI.removeFromWishlist(productId);
+    } catch (error) {
+      // Revert optimistic update on error
+      const revertedFavorites = new Set(favorites);
+      revertedFavorites.add(productId);
+      setFavorites(revertedFavorites);
+      
+      const errorMessage = yoraaAPI.handleError(error);
+      console.error('Error removing from favorites:', errorMessage);
+      Alert.alert('Error', 'Failed to remove item from favorites. Please try again.');
     }
   };
 
   const toggleFavorite = async (productId) => {
-    // For authenticated users, use backend toggle logic
-    if (yoraaAPI.isAuthenticated()) {
-      try {
-        const result = await yoraaAPI.toggleWishlist(productId);
-        
-        // Update local state based on backend response
-        const newFavorites = new Set(favorites);
-        if (result.added) {
-          newFavorites.add(productId);
-          console.log('✅ Item added to wishlist');
-        } else {
-          newFavorites.delete(productId);
-          console.log('✅ Item removed from wishlist');
-        }
-        setFavorites(newFavorites);
-        
-        return result.added;
-      } catch (error) {
-        const errorMessage = yoraaAPI.handleError(error);
-        console.error('Error toggling favorites:', errorMessage);
-        
-        if (errorMessage.includes('Authentication required')) {
-          Alert.alert('Login Required', 'Please log in to manage your favorites.');
-        } else {
-          Alert.alert('Error', 'Failed to update favorites. Please try again.');
-        }
-        return null; // Indicate error
-      }
-    } else {
-      // For guest users, use local state logic
+    // Always use backend toggle logic - API handles both authenticated and guest sessions
+    try {
+      const result = await yoraaAPI.toggleWishlist(productId);
+      
+      // Update local state based on backend response
       const newFavorites = new Set(favorites);
-      if (favorites.has(productId)) {
-        newFavorites.delete(productId);
-        setFavorites(newFavorites);
-        console.log('❤️ Item removed from local favorites (guest user)');
-        return false;
-      } else {
+      if (result.added) {
         newFavorites.add(productId);
-        setFavorites(newFavorites);
-        console.log('❤️ Item added to local favorites (guest user)');
-        return true;
+        console.log('✅ Item added to wishlist');
+      } else {
+        newFavorites.delete(productId);
+        console.log('✅ Item removed from wishlist');
       }
+      setFavorites(newFavorites);
+      
+      return result.added;
+    } catch (error) {
+      const errorMessage = yoraaAPI.handleError(error);
+      console.error('Error toggling favorites:', errorMessage);
+      
+      if (errorMessage.includes('Authentication required')) {
+        Alert.alert('Login Required', 'Please log in to manage your favorites.');
+      } else {
+        Alert.alert('Error', 'Failed to update favorites. Please try again.');
+      }
+      return null; // Indicate error
     }
   };
 

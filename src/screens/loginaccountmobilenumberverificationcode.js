@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,14 @@ import {
   TextInput,
   ScrollView,
   Alert,
+  Platform,
 } from 'react-native';
+import auth from '@react-native-firebase/auth';
 import GlobalBackButton from '../components/GlobalBackButton';
 import sessionManager from '../services/sessionManager';
 import yoraaAPI from '../services/yoraaAPI';
 import authStorageService from '../services/authStorageService';
+import firebasePhoneAuthService from '../services/firebasePhoneAuth';
 
 const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
   const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
@@ -20,11 +23,88 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef([]);
   
-  // Get params from navigation
-  const phoneNumber = route?.params?.phoneNumber || '';
-  const confirmation = route?.params?.confirmation || null;
-  const countryCode = route?.params?.countryCode || '';
-  const mobileNumber = route?.params?.mobileNumber || '';
+  // ✅ CRITICAL FIX: Use state with useEffect to handle async navigation params
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [confirmation, setConfirmation] = useState(null);
+  const [verificationId, setVerificationId] = useState('');
+  const [countryCode, setCountryCode] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
+  
+  // ✅ CRITICAL FIX: Store confirmation in ref to prevent loss during re-renders
+  const confirmationRef = useRef(null);
+  
+  // ✅ Update state when route params change
+  useEffect(() => {
+    if (route?.params) {
+      console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+      console.log('║  📦 ROUTE PARAMS RECEIVED                                     ║');
+      console.log('╚═══════════════════════════════════════════════════════════════╝');
+      console.log('📞 Phone Number:', route.params.phoneNumber);
+      console.log('🆔 Verification ID:', route.params.verificationId ? 'EXISTS' : 'MISSING');
+      console.log('📦 Confirmation:', route.params.confirmation ? 'EXISTS' : 'MISSING');
+      console.log('📦 Confirmation Type:', typeof route.params.confirmation);
+      console.log('📦 Confirmation Object Keys:', route.params.confirmation ? Object.keys(route.params.confirmation) : 'N/A');
+      console.log('📦 Has confirm method:', route.params.confirmation?.confirm ? 'YES' : 'NO');
+      console.log('🌍 Country Code:', route.params.countryCode);
+      console.log('📱 Mobile Number:', route.params.mobileNumber);
+      
+      if (route.params.phoneNumber) {
+        setPhoneNumber(route.params.phoneNumber);
+      }
+      if (route.params.verificationId) {
+        console.log('🔧 Setting verificationId to state...');
+        setVerificationId(route.params.verificationId);
+      }
+      if (route.params.confirmation) {
+        console.log('🔧 Setting confirmation object to state and ref...');
+        setConfirmation(route.params.confirmation);
+        confirmationRef.current = route.params.confirmation; // ✅ Store in ref too
+        console.log('✅ Confirmation state and ref updated');
+      } else {
+        console.log('⚠️ No confirmation object in route params!');
+      }
+      if (route.params.countryCode) {
+        setCountryCode(route.params.countryCode);
+      }
+      if (route.params.mobileNumber) {
+        setMobileNumber(route.params.mobileNumber);
+      }
+    }
+  }, [route?.params]);
+  
+  // 🐛 DEBUG: Log phone number when it changes
+  useEffect(() => {
+    console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+    console.log('║  📱 PHONE NUMBER STATE UPDATED                                ║');
+    console.log('╚═══════════════════════════════════════════════════════════════╝');
+    console.log('📞 Phone Number:', phoneNumber);
+    console.log('✅ Has Value:', !!phoneNumber);
+    console.log('📏 Length:', phoneNumber?.length || 0);
+    console.log('╚═══════════════════════════════════════════════════════════════╝\n');
+  }, [phoneNumber]);
+  
+  // ✅ Timer countdown effect
+  useEffect(() => {
+    let interval = null;
+    
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer(prevTimer => {
+          if (prevTimer <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prevTimer - 1;
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [resendTimer]);
 
   const handleVerification = async () => {
     const code = verificationCode.join('');
@@ -37,7 +117,10 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
     console.log(`📞 Phone Number: ${phoneNumber}`);
     console.log(`🔢 OTP Code: ${code}`);
     console.log(`📦 Confirmation Object: ${confirmation ? 'EXISTS' : 'MISSING'}`);
-    console.log(`🛒 From Checkout: ${route?.params?.fromCheckout ? 'YES' : 'NO'}`);
+    console.log(`� Confirmation Type: ${typeof confirmation}`);
+    console.log(`📦 Confirmation Keys: ${confirmation ? Object.keys(confirmation) : 'N/A'}`);
+    console.log(`📦 Has confirm method: ${confirmation?.confirm ? 'YES' : 'NO'}`);
+    console.log(`�🛒 From Checkout: ${route?.params?.fromCheckout ? 'YES' : 'NO'}`);
     
     if (code.length !== 6) {
       console.log('❌ Validation failed: Incomplete OTP code');
@@ -45,8 +128,41 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
       return;
     }
 
-    if (!confirmation) {
-      console.log('❌ Validation failed: No confirmation object');
+    // ✅ CRITICAL FIX: Use confirmation from ref or state or try to get from service
+    let activeConfirmation = confirmation || confirmationRef.current || route?.params?.confirmation;
+    
+    // ✅ CRITICAL FIX: If no confirmation object, try to verify using verificationId directly
+    if (!activeConfirmation) {
+      console.log('⚠️ No confirmation object found in state, ref, or params');
+      console.log('🔄 Attempting alternative verification using verificationId...');
+      
+      if (verificationId) {
+        try {
+          console.log('📝 Creating PhoneAuthCredential from verificationId...');
+          const credential = auth.PhoneAuthProvider.credential(verificationId, code);
+          console.log('✅ Credential created, attempting sign-in...');
+          
+          // Create a mock confirmation object that works like the real one
+          activeConfirmation = {
+            verificationId: verificationId,
+            confirm: async (otp) => {
+              console.log('🔐 Using credential-based verification...');
+              return await auth().signInWithCredential(credential);
+            }
+          };
+          console.log('✅ Alternative confirmation object created');
+        } catch (credError) {
+          console.error('❌ Failed to create credential:', credError);
+        }
+      }
+    }
+    
+    if (!activeConfirmation) {
+      console.log('❌ Validation failed: No confirmation object available');
+      console.log('❌ State Confirmation:', confirmation ? 'EXISTS' : 'MISSING');
+      console.log('❌ Ref Confirmation:', confirmationRef.current ? 'EXISTS' : 'MISSING');
+      console.log('❌ Route Params Confirmation:', route?.params?.confirmation ? 'EXISTS' : 'MISSING');
+      console.log('❌ VerificationId:', verificationId ? 'EXISTS' : 'MISSING');
       Alert.alert('Error', 'No verification session found. Please request a new OTP.');
       return;
     }
@@ -54,11 +170,11 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
     setIsLoading(true);
     
     try {
-      console.log('\n� STEP 1: Verifying OTP with Firebase...');
+      console.log('\n🔄 STEP 1: Verifying OTP with Firebase...');
       console.log(`⏰ Verification Start: ${new Date().toISOString()}`);
       
-      // Step 1: Verify OTP with Firebase
-      const verificationResult = await confirmation.confirm(code);
+      // Step 1: Verify OTP with Firebase using activeConfirmation
+      const verificationResult = await activeConfirmation.confirm(code);
       
       console.log('✅ STEP 1 SUCCESS: OTP verified by Firebase');
       console.log('📦 Verification Result:', {
@@ -68,9 +184,7 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
       
       // Step 2: Get the current user from Firebase Auth
       console.log('\n🔄 STEP 2: Getting Firebase Auth current user...');
-      const { getAuth } = require('@react-native-firebase/auth');
-      const auth = getAuth();
-      const user = auth.currentUser;
+      const user = auth().currentUser;
       
       if (!user) {
         console.error('❌ STEP 2 FAILED: No current user found');
@@ -218,7 +332,8 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
               console.log('📦 Navigation Params:', {
                 previousScreen: 'LoginAccountMobileNumberVerificationCode',
                 hasUser: !!user,
-                fromCheckout: route?.params?.fromCheckout
+                fromCheckout: route?.params?.fromCheckout,
+                fromReview: route?.params?.fromReview
               });
               
               // Navigate to Terms and Conditions screen after successful login verification
@@ -226,7 +341,9 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
                 navigation.navigate('TermsAndConditions', { 
                   previousScreen: 'LoginAccountMobileNumberVerificationCode',
                   user: user,
-                  fromCheckout: route?.params?.fromCheckout
+                  fromCheckout: route?.params?.fromCheckout,
+                  fromReview: route?.params?.fromReview,
+                  reviewData: route?.params?.reviewData
                 });
               }
               
@@ -288,6 +405,15 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
   };
 
   const handleResendCode = async () => {
+    console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+    console.log('║  🔄 RESEND OTP BUTTON CLICKED - DEBUG INFO                    ║');
+    console.log('╚═══════════════════════════════════════════════════════════════╝');
+    console.log('📞 Phone Number from state:', phoneNumber);
+    console.log('✅ Phone Number Exists:', !!phoneNumber);
+    console.log('📏 Phone Number Length:', phoneNumber?.length || 0);
+    console.log('📦 Route Params:', route?.params);
+    console.log('╚═══════════════════════════════════════════════════════════════╝\n');
+    
     if (!phoneNumber) {
       Alert.alert('Error', 'Phone number not found. Please go back and try again.');
       return;
@@ -297,15 +423,40 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
     
     try {
       console.log('🔄 Resending OTP to:', phoneNumber);
+      console.log('📱 Platform:', Platform.OS);
+      console.log('🏗️  Build Type:', __DEV__ ? 'DEBUG' : 'PRODUCTION');
+      console.log('📱 Platform:', Platform.OS);
+      console.log('🏗️  Build Type:', __DEV__ ? 'DEBUG' : 'PRODUCTION');
       
-      // Resend OTP using signInWithPhoneNumber directly
-      const { signInWithPhoneNumber, getAuth } = require('@react-native-firebase/auth');
-      const newConfirmation = await signInWithPhoneNumber(getAuth(), phoneNumber);
-      
-      // Update the confirmation object for this screen
-      if (route?.params) {
-        route.params.confirmation = newConfirmation;
+      // ✅ CRITICAL FIX: Enable app verification for production builds
+      console.log('\n🔐 Configuring app verification for resend...');
+      if (Platform.OS === 'android' && !__DEV__) {
+        console.log('🔐 Production build detected - enabling app verification...');
+        auth().settings.appVerificationDisabledForTesting = false;
+        console.log('✅ App verification ENABLED for production');
+      } else if (__DEV__) {
+        console.log('🧪 Development build - disabling app verification for testing...');
+        auth().settings.appVerificationDisabledForTesting = true;
+        console.log('✅ App verification DISABLED for development');
       }
+      
+      // Resend OTP using correct React Native Firebase API
+      console.log('📤 Sending OTP via Firebase with forceResend=true...');
+      const newConfirmation = await auth().signInWithPhoneNumber(phoneNumber, true);
+      
+      console.log('✅ OTP resent successfully!');
+      console.log('📬 Confirmation ID:', newConfirmation.verificationId ? 'Present' : 'Missing');
+      
+      // ✅ CRITICAL FIX: Update both confirmation state and ref, plus verificationId
+      setConfirmation(newConfirmation);
+      confirmationRef.current = newConfirmation; // ✅ Also update ref
+      
+      if (newConfirmation.verificationId) {
+        setVerificationId(newConfirmation.verificationId); // ✅ Update verificationId
+        console.log('✅ VerificationId updated:', newConfirmation.verificationId);
+      }
+      
+      console.log('✅ Confirmation state, ref, and verificationId all updated');
       
       // Reset verification code inputs
       setVerificationCode(['', '', '', '', '', '']);
@@ -317,9 +468,18 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
       
     } catch (error) {
       console.error('❌ Resend OTP error:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
       
       let errorMessage = 'Failed to resend OTP. Please try again.';
-      if (error.message) {
+      
+      if (error.code === 'auth/app-not-authorized') {
+        errorMessage = 'App not authorized. Please check Firebase Console configuration.';
+      } else if (error.code === 'auth/quota-exceeded') {
+        errorMessage = 'SMS quota exceeded. Please try again later.';
+      } else if (error.code === 'auth/invalid-phone-number') {
+        errorMessage = 'Invalid phone number format.';
+      } else if (error.message) {
         errorMessage = error.message;
       }
       
@@ -338,7 +498,19 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
         <View style={styles.header}>
           <GlobalBackButton 
             navigation={navigation}
-            onPress={() => navigation && navigation.navigate('LoginAccountMobileNumber')}
+            onPress={() => {
+              if (route?.params?.fromReview) {
+                // Go back to login screen with review data preserved
+                navigation && navigation.navigate('LoginAccountMobileNumber', {
+                  fromReview: true,
+                  returnScreen: route?.params?.returnScreen,
+                  reviewData: route?.params?.reviewData
+                });
+              } else {
+                // Default behavior - just go back to login screen
+                navigation && navigation.navigate('LoginAccountMobileNumber');
+              }
+            }}
           />
         </View>
 

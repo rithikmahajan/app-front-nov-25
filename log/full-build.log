@@ -1,0 +1,8 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -workspace Yoraa.xcworkspace -scheme Yoraa -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPad Pro (9.7-inch)" build
+
+Build settings from command line:
+    SDKROOT = iphonesimulator18.5
+
+2025-11-15 18:43:20.912 xcodebuild[67079:5661986] Writing error result bundle to /var/folders/dw/rb7b412d5pb792dk6wtqsg9w0000gn/T/ResultBundle_2025-15-11_18-43-0020.xcresult
+xcodebuild: error: 'Yoraa.xcworkspace' does not exist.

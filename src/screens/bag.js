@@ -43,6 +43,11 @@ import {
   MaestroIcon,
   CaretDownIcon
 } from '../assets/icons';
+import { 
+  getResponsiveValue, 
+  getResponsiveFontSize, 
+  getResponsiveSpacing 
+} from '../utils/responsive';
 
 // Helper function to get first image URL
 const getFirstImage = (images) => {
@@ -769,26 +774,21 @@ const BagScreen = ({ navigation, route }) => {
     }
   }, [navigation]);
 
-  // Redirect to empty bag screen if no items (only when explicitly coming from another screen)
+  // Redirect to empty bag screen when bag is empty
   useEffect(() => {
-    // Add a small delay to allow bag context to fully load
-    const timer = setTimeout(() => {
-      // Always redirect to empty screen when bag is empty and initialized
-      // Unless explicitly forced to show content or coming from BagContent
-      const shouldRedirectToEmpty = bagItems.length === 0 && 
-          route?.params?.previousScreen !== 'BagContent' && 
-          !route?.params?.forceShowContent &&
-          initialized; // Only redirect if bag context is fully initialized
-          
-      if (shouldRedirectToEmpty) {
-        console.log('🔄 Redirecting to empty bag screen');
-        navigation.navigate('bagemptyscreen');
-      } else {
-        console.log('🛍️ Staying on bag screen - items:', bagItems.length, 'initialized:', initialized, 'previousScreen:', route?.params?.previousScreen);
-      }
-    }, 100); // Small delay to allow async bag loading
-    
-    return () => clearTimeout(timer);
+    // Always redirect to empty screen when bag is empty and initialized
+    // Unless explicitly forced to show content or coming from BagContent
+    const shouldRedirectToEmpty = bagItems.length === 0 && 
+        route?.params?.previousScreen !== 'BagContent' && 
+        !route?.params?.forceShowContent &&
+        initialized; // Only redirect if bag context is fully initialized
+        
+    if (shouldRedirectToEmpty) {
+      console.log('🔄 Redirecting to empty bag screen');
+      navigation.navigate('bagemptyscreen');
+    } else {
+      console.log('🛍️ Staying on bag screen - items:', bagItems.length, 'initialized:', initialized, 'previousScreen:', route?.params?.previousScreen);
+    }
   }, [bagItems.length, navigation, route?.params?.previousScreen, route?.params?.forceShowContent, initialized]);
 
 
@@ -1012,16 +1012,29 @@ const BagScreen = ({ navigation, route }) => {
     console.log('🔍 handleCheckout - isAuthenticated:', isAuthenticated);
     
     if (!isAuthenticated) {
-      // User is not authenticated, navigate to RewardsScreen for signup/login
-      console.log('🔒 User not authenticated, navigating to RewardsScreen for signup/login');
-      navigation.navigate('RewardsScreen', { 
-        fromCheckout: true,
-        bagData: {
-          items: bagItems,
-          pricing: dynamicPricing,
-          calculations: bagCalculations
-        }
-      });
+      // User is not authenticated, navigate to LoginAccountMobileNumber for login
+      console.log('🔒 User not authenticated, navigating to LoginAccountMobileNumber for login');
+      Alert.alert(
+        'Sign In Required',
+        'Please sign in to proceed with checkout.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Sign In', 
+            onPress: () => {
+              navigation.navigate('LoginAccountMobileNumber', { 
+                fromCheckout: true,
+                returnScreen: 'Bag',
+                bagData: {
+                  items: bagItems,
+                  pricing: dynamicPricing,
+                  calculations: bagCalculations
+                }
+              });
+            }
+          }
+        ]
+      );
       return;
     }
 
@@ -1381,7 +1394,6 @@ const BagScreen = ({ navigation, route }) => {
       
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Bag</Text>
         <View style={styles.headerRight}>
           {/* Currency selector removed */}
         </View>
@@ -1443,7 +1455,7 @@ const BagScreen = ({ navigation, route }) => {
                       { text: 'Cancel', style: 'cancel' },
                       { 
                         text: 'Sign In', 
-                        onPress: () => navigation.navigate('RewardsScreen', { fromCheckout: true })
+                        onPress: () => navigation.navigate('LoginAccountMobileNumber', { fromCheckout: true })
                       }
                     ]
                   );
@@ -1638,13 +1650,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 54, // Increased top padding to match Figma
-    paddingBottom: 12,
+    paddingHorizontal: getResponsiveSpacing(16),
+    paddingTop: getResponsiveSpacing(54),
+    paddingBottom: getResponsiveSpacing(12),
     backgroundColor: '#FFFFFF',
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
     textAlign: 'center',
@@ -1655,12 +1667,12 @@ const styles = StyleSheet.create({
     right: 0,
   },
   headerRight: {
-    width: 68,
+    width: getResponsiveValue(68, 78, 88),
     alignItems: 'flex-end',
     justifyContent: 'center',
   },
   locationSelector: {
-    marginRight: -8, // Adjust positioning
+    marginRight: getResponsiveSpacing(-8),
   },
   scrollContainer: {
     flex: 1,
@@ -1672,65 +1684,67 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   productContainer: {
-    paddingHorizontal: 24, // Adjusted to match Figma left positioning
-    paddingTop: 24,
+    paddingHorizontal: getResponsiveSpacing(24),
+    paddingTop: getResponsiveSpacing(24),
     paddingBottom: 0,
   },
   productRow: {
     flexDirection: 'row',
-    gap: 16,
+    gap: getResponsiveSpacing(16),
     alignItems: 'flex-start',
-    marginBottom: 8, // Reduced spacing for tighter layout
+    marginBottom: getResponsiveSpacing(8),
   },
   productImageContainer: {
-    flex: 1,
+    width: getResponsiveValue(140, 154, 180),
+    height: getResponsiveValue(140, 154, 180),
   },
   productImagePlaceholder: {
-    height: 154,
+    height: getResponsiveValue(140, 154, 180),
+    width: getResponsiveValue(140, 154, 180),
     backgroundColor: '#F0F0F0', // Lighter background for placeholder
     borderRadius: 0, // Remove border radius to match Figma
     justifyContent: 'center',
     alignItems: 'center',
   },
   productImage: {
-    height: 154,
-    width: '100%',
+    height: getResponsiveValue(140, 154, 180),
+    width: getResponsiveValue(140, 154, 180),
     borderRadius: 0, // Remove border radius to match Figma
   },
   imagePlaceholderText: {
     color: '#999999',
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
   },
   productDetailsContainer: {
     flex: 1,
     paddingTop: 0, // Removed top padding
   },
   productInfo: {
-    gap: 3,
+    gap: getResponsiveSpacing(3),
   },
   productTitle: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontWeight: '400',
     color: '#767676',
     letterSpacing: -0.14,
-    lineHeight: 16.8,
+    lineHeight: getResponsiveFontSize(16.8),
     fontFamily: 'Montserrat',
     marginBottom: 0,
   },
   productName: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.14,
-    lineHeight: 16.8,
+    lineHeight: getResponsiveFontSize(16.8),
     fontFamily: 'Montserrat',
   },
   productDescription: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontWeight: '400',
     color: '#767676',
     letterSpacing: -0.14,
-    lineHeight: 16.8,
+    lineHeight: getResponsiveFontSize(16.8),
     fontFamily: 'Montserrat',
   },
   removeButton: {
@@ -1843,8 +1857,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   deliveryLocationContent: {
     flex: 1,
@@ -2216,6 +2228,7 @@ const styles = StyleSheet.create({
   paymentIconsRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 4,
     flexWrap: 'wrap',
   },
@@ -2228,30 +2241,29 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat',
   },
   bottomSpacing: {
-    height: 20, // Reduced spacing to bring checkout button closer
+    height: getResponsiveSpacing(20),
   },
   checkoutContainer: {
-    paddingHorizontal: 22,
-    paddingVertical: 16,
+    paddingHorizontal: getResponsiveSpacing(16),
+    paddingVertical: getResponsiveSpacing(16),
     backgroundColor: '#FFFFFF',
     borderTopWidth: 0, // Remove any border
-    paddingBottom: 32, // Added bottom padding for safe area
+    paddingBottom: getResponsiveSpacing(32),
   },
   checkoutButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    paddingVertical: 16,
-    paddingHorizontal: 51,
+    paddingVertical: getResponsiveSpacing(16),
+    paddingHorizontal: getResponsiveSpacing(51),
     alignItems: 'center',
     justifyContent: 'center',
-    width: 331, // Fixed width to match Figma
-    alignSelf: 'center',
+    width: '100%', // Full width
   },
   checkoutButtonText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#FFFFFF',
-    lineHeight: 19.2,
+    lineHeight: getResponsiveFontSize(19.2),
     fontFamily: 'Montserrat',
   },
   // Empty bag styles
@@ -2259,38 +2271,38 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 80,
-    paddingHorizontal: 24,
+    paddingVertical: getResponsiveSpacing(80),
+    paddingHorizontal: getResponsiveSpacing(24),
   },
   emptyBagTitle: {
-    fontSize: 24,
+    fontSize: getResponsiveFontSize(24),
     fontWeight: '600',
     color: '#000000',
-    marginBottom: 8,
+    marginBottom: getResponsiveSpacing(8),
     textAlign: 'center',
     fontFamily: 'Montserrat',
   },
   emptyBagSubtitle: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '400',
     color: '#767676',
-    marginBottom: 32,
+    marginBottom: getResponsiveSpacing(32),
     textAlign: 'center',
     fontFamily: 'Montserrat',
   },
   continueShoppingButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
+    paddingVertical: getResponsiveSpacing(16),
+    paddingHorizontal: getResponsiveSpacing(32),
     alignItems: 'center',
     justifyContent: 'center',
   },
   continueShoppingText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#FFFFFF',
-    lineHeight: 19.2,
+    lineHeight: getResponsiveFontSize(19.2),
     fontFamily: 'Montserrat',
   },
   // Swipe-to-delete styles

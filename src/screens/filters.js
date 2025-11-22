@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { yoraaAPI } from '../services/yoraaAPI';
+import { FilterOptionsSkeleton } from '../components/SkeletonLoader';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -338,9 +339,14 @@ const FiltersScreen = ({ navigation, route }) => {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#000000" />
-          <Text style={styles.loadingText}>Loading filters...</Text>
+        <View style={styles.skeletonWrapper}>
+          <View style={styles.modalHandle} />
+          <View style={styles.filterHeader}>
+            <View style={styles.headerPlaceholder} />
+          </View>
+          <ScrollView style={styles.filterContent}>
+            <FilterOptionsSkeleton />
+          </ScrollView>
         </View>
       </SafeAreaView>
     );
@@ -363,9 +369,6 @@ const FiltersScreen = ({ navigation, route }) => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-            <Text style={styles.backButtonText}>✕</Text>
-          </TouchableOpacity>
           <TouchableOpacity onPress={handleClearFilters}>
             <Text style={styles.clearButton}>CLEAR FILTERS</Text>
           </TouchableOpacity>
@@ -454,6 +457,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#000000',
   },
+  skeletonWrapper: {
+    backgroundColor: '#FFFFFF',
+    height: SCREEN_HEIGHT * 0.85,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+  },
+  headerPlaceholder: {
+    height: 20,
+  },
   modalContainer: {
     backgroundColor: '#FFFFFF',
     height: SCREEN_HEIGHT * 0.85,
@@ -463,8 +475,6 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
     position: 'relative',
     flexDirection: 'row',
     justifyContent: 'center',
@@ -493,10 +503,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Medium',
     fontSize: 12,
     fontWeight: '500',
-    color: '#000000',
+    color: '#FF0000',
     textTransform: 'uppercase',
     letterSpacing: 1,
-    textDecorationLine: 'underline',
+    position: 'absolute',
+    right: 20,
+    top: 20,
+    zIndex: 1,
   },
   scrollContent: {
     flex: 1,
@@ -563,8 +576,6 @@ const styles = StyleSheet.create({
   },
   filterSection: {
     paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
   },
   filterTitle: {
     fontFamily: 'Montserrat-Medium',

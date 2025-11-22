@@ -371,12 +371,8 @@ const SizeSelectionModal = ({
 
   // Handle backdrop press
   const handleBackdropPress = useCallback(() => {
-    if (navigation && navigation.goBack) {
-      navigation.goBack();
-    } else {
-      handleClose();
-    }
-  }, [navigation, handleClose]);
+    handleClose();
+  }, [handleClose]);
 
   // Simple touch handlers as fallback
   const handleTouchStart = useCallback((evt) => {
@@ -748,17 +744,6 @@ const SizeSelectionModal = ({
                   console.log('✅ Loaded URL:', sizeChartImage.url);
                 }}
               />
-              {sizeChartImage.uploadedAt && (
-                <Text style={styles.imageMetadata}>
-                  Updated: {new Date(sizeChartImage.uploadedAt).toLocaleDateString()}
-                </Text>
-              )}
-              {/* Show filename for debugging */}
-              {sizeChartImage.filename && (
-                <Text style={styles.imageFilename}>
-                  File: {sizeChartImage.filename}
-                </Text>
-              )}
             </View>
           ) : (
             <View style={styles.noImageContainer}>
@@ -1174,7 +1159,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 400,
     borderRadius: 8,
-    backgroundColor: '#F8F8F8',
   },
   imageMetadata: {
     fontSize: 12,
@@ -1234,8 +1218,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingBottom: 32,
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#E4E4E4',
   },
   confirmButton: {
     backgroundColor: '#000000',

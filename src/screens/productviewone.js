@@ -17,7 +17,20 @@ import FilterIcon from '../assets/icons/FilterIcon';
 import BottomNavigationBar from '../components/bottomnavigationbar';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { apiService } from '../services/apiService';
-import { AnimatedHeartIcon } from '../components';
+import { AnimatedHeartIcon, ProductGridSkeleton } from '../components';
+
+// Icon components defined outside to avoid re-rendering
+const BackIcon = () => (
+  <Svg width="10" height="17" viewBox="0 0 10 17" fill="none">
+    <Path d="M8.5 16L1 8.5L8.5 1" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
+
+const ViewOneButton = () => (
+  <View style={styles.viewButtonContainer}>
+    <Text style={styles.viewButtonText}>VIEW 1</Text>
+  </View>
+);
 
 const ProductViewOne = ({ navigation, route }) => {
   const { toggleFavorite, isFavorite } = useFavorites();
@@ -107,23 +120,6 @@ const ProductViewOne = ({ navigation, route }) => {
     if (!images || images.length === 0) return null;
     return images[0]?.url || null;
   };
-
-  const BackIcon = () => (
-    <Svg width="10" height="17" viewBox="0 0 10 17" fill="none">
-      <Path d="M8.5 16L1 8.5L8.5 1" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    </Svg>
-  );
-
-  const GridIcon = () => (
-    <Svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <Rect x="1.54761" y="1.5" width="5.16247" height="8.33334" stroke="black" />
-      <Rect x="8.94263" y="1.5" width="5.16247" height="8.33334" stroke="black" />
-      <Rect x="16.3375" y="1.5" width="5.16247" height="8.33334" stroke="black" />
-      <Rect x="1.54761" y="12.1666" width="5.16247" height="8.33334" stroke="black" />
-      <Rect x="8.94263" y="12.1666" width="5.16247" height="8.33334" stroke="black" />
-      <Rect x="16.3375" y="12.1666" width="5.16247" height="8.33334" stroke="black" />
-    </Svg>
-  );
 
   // Removed custom FilterIcon, using imported SVG FilterIcon instead
 
@@ -229,7 +225,13 @@ const ProductViewOne = ({ navigation, route }) => {
 
   const handleBackPress = () => {
     if (navigation) {
-      navigation.goBack();
+      // Check if we came from SearchScreen or Search flow, if so navigate to Home
+      const previousScreen = route?.params?.previousScreen;
+      if (previousScreen === 'SearchScreen' || previousScreen === 'Search') {
+        navigation.navigate('Home');
+      } else {
+        navigation.goBack();
+      }
     }
   };
 
@@ -258,7 +260,7 @@ const ProductViewOne = ({ navigation, route }) => {
             console.log('🔄 ProductViewOne -> ProductViewTwo - Passing params:', routeParams);
             navigation.navigate('ProductViewTwo', routeParams);
           }}>
-            <GridIcon />
+            <ViewOneButton />
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.iconButton} onPress={handleFilterPress}>
@@ -270,10 +272,7 @@ const ProductViewOne = ({ navigation, route }) => {
       {/* Product Grid */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#000000" />
-            <Text style={styles.loadingText}>Loading products...</Text>
-          </View>
+          <ProductGridSkeleton count={6} columns={1} />
         ) : error ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
@@ -362,35 +361,18 @@ const styles = StyleSheet.create({
     marginRight: 2,
   },
 
-  gridIcon: {
-    width: 30,
-    height: 30,
-    position: 'relative',
+  viewButtonContainer: {
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 4,
   },
-  gridSquare: {
-    position: 'absolute',
-    width: 7,
-    height: 7,
-    borderWidth: 1.5,
-    borderColor: '#000000',
-  },
-  topLeft: {
-    top: 5,
-    left: 5,
-  },
-  topRight: {
-    top: 5,
-    right: 5,
-  },
-  bottomLeft: {
-    bottom: 5,
-    left: 5,
-  },
-  bottomRight: {
-    bottom: 5,
-    right: 5,
+  viewButtonText: {
+    fontFamily: 'Montserrat-Medium',
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#000000',
+    letterSpacing: -0.06,
+    textAlign: 'center',
   },
   
   filterIcon: {

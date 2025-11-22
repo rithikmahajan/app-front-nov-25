@@ -12,6 +12,7 @@ import {
 import authManager from '../services/authManager';
 import { yoraaAPI } from '../services/yoraaAPI';
 import auth from '@react-native-firebase/auth';
+import SkeletonLoader from '../components/SkeletonLoader';
 
 const SHOPPING_PREFERENCES = ['Women', 'Men'];
 const ADDITIONAL_PREFERENCES = ['Boy', 'Women', 'Mens', 'Girls'];
@@ -179,9 +180,40 @@ const RewardsScreen = ({ navigation, route }) => {
     // Show loading state
     if (loading) {
       return (
-        <View style={[styles.container, styles.centerContent]}>
-          <ActivityIndicator size="large" color="#000000" />
-          <Text style={styles.loadingText}>Loading rewards...</Text>
+        <View style={styles.skeletonContainer}>
+          {/* Header Skeleton */}
+          <View style={styles.skeletonHeader}>
+            <SkeletonLoader width="60%" height={24} borderRadius={4} />
+            <SkeletonLoader width="40%" height={16} borderRadius={4} style={styles.skeletonHeaderSubtitle} />
+          </View>
+          
+          {/* Banner Skeleton */}
+          <SkeletonLoader 
+            width="90%" 
+            height={150} 
+            borderRadius={12} 
+            style={styles.skeletonBanner}
+          />
+          
+          {/* Points Card Skeleton */}
+          <View style={styles.skeletonCard}>
+            <SkeletonLoader width="50%" height={20} borderRadius={4} />
+            <SkeletonLoader width="70%" height={32} borderRadius={4} style={styles.skeletonCardPoints} />
+            <SkeletonLoader width="40%" height={16} borderRadius={4} style={styles.skeletonCardSubtext} />
+          </View>
+          
+          {/* Tiers List Skeleton */}
+          <View style={styles.skeletonTiers}>
+            {[1, 2, 3].map((index) => (
+              <View key={index} style={styles.skeletonTierItem}>
+                <SkeletonLoader width={60} height={60} borderRadius={30} />
+                <View style={styles.skeletonTierContent}>
+                  <SkeletonLoader width="60%" height={18} borderRadius={4} />
+                  <SkeletonLoader width="80%" height={14} borderRadius={4} style={styles.skeletonTierSubtext} />
+                </View>
+              </View>
+            ))}
+          </View>
         </View>
       );
     }
@@ -923,6 +955,51 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     color: '#111111',
+  },
+  
+  // Skeleton Styles
+  skeletonContainer: {
+    padding: 20,
+  },
+  skeletonHeader: {
+    marginBottom: 16,
+  },
+  skeletonHeaderSubtitle: {
+    marginTop: 8,
+  },
+  skeletonBanner: {
+    marginVertical: 20,
+    alignSelf: 'center',
+  },
+  skeletonCard: {
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+    padding: 20,
+    marginVertical: 16,
+  },
+  skeletonCardPoints: {
+    marginTop: 12,
+  },
+  skeletonCardSubtext: {
+    marginTop: 8,
+  },
+  skeletonTiers: {
+    marginTop: 20,
+  },
+  skeletonTierItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+  },
+  skeletonTierContent: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  skeletonTierSubtext: {
+    marginTop: 8,
   },
 });
 

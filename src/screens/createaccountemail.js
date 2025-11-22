@@ -56,9 +56,17 @@ const CreateAccountEmail = ({ navigation, route }) => {
   };
 
   const handleBackPress = () => {
-    // Navigate back to RewardsScreen
+    // Check if user came from login screen
+    const fromLogin = route?.params?.fromLogin;
+    
     if (navigation) {
-      navigation.navigate('Rewards');
+      if (fromLogin) {
+        // Navigate back to login screen if came from sign up link
+        navigation.navigate('LoginAccountEmail');
+      } else {
+        // Navigate back to Rewards screen otherwise
+        navigation.navigate('Rewards');
+      }
     }
   };
 
@@ -138,9 +146,11 @@ const CreateAccountEmail = ({ navigation, route }) => {
 
   const handleToggle = (type) => {
     if (type === 'phone') {
-      // Navigate to mobile number screen
+      // Navigate to mobile number screen, preserving fromLogin parameter
       if (navigation) {
-        navigation.navigate('CreateAccountMobileNumber');
+        navigation.navigate('CreateAccountMobileNumber', { 
+          fromLogin: route?.params?.fromLogin 
+        });
       }
     }
     // Keep email selected since we're on the email screen

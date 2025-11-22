@@ -7,6 +7,7 @@
  */
 
 import RazorpayCheckout from 'react-native-razorpay';
+import RazorpayFullscreen from './RazorpayFullscreen';
 import orderService from './orderService';
 
 // Razorpay Configuration
@@ -94,13 +95,13 @@ export const initiatePayment = async (orderResponse, address, onSuccess, onError
       throw new Error('Order ID is missing');
     }
     
-    console.log('🚀 About to call RazorpayCheckout.open()...');
+    console.log('🚀 About to call RazorpayFullscreen.open() for tablet support...');
     
-    // Open Razorpay checkout with proper error handling
+    // Open Razorpay checkout with fullscreen support for tablets
     let paymentResponse;
     try {
-      paymentResponse = await RazorpayCheckout.open(razorpayOptions);
-      console.log('✅ RazorpayCheckout.open() resolved successfully');
+      paymentResponse = await RazorpayFullscreen.open(razorpayOptions);
+      console.log('✅ RazorpayFullscreen.open() resolved successfully');
       console.log('✅ Payment successful:', paymentResponse);
     } catch (razorpayError) {
       // Check if this is a cancellation (code 0) before logging as error

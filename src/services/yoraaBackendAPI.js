@@ -35,7 +35,10 @@ class YoraaBackendAPI {
       }
       
       this.token = token;
-      console.log('🔧 API Service initialized', this.token ? 'with token' : 'without token');
+      // Only log in dev mode, don't show warning if no token (guest access is fine)
+      if (__DEV__) {
+        console.log('🔧 API Service initialized', this.token ? '✅ with token' : '👤 without token (guest mode)');
+      }
     } catch (error) {
       console.error('❌ Error loading token:', error);
     }

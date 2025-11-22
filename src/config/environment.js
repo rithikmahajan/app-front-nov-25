@@ -63,27 +63,33 @@ class EnvironmentConfig {
   /**
    * Get the appropriate API URL based on environment and platform
    * This is the SINGLE SOURCE OF TRUTH for API URLs
+   * 
+   * NOTE: For Android emulator to work, backend MUST listen on 0.0.0.0
+   * See: BACKEND_TEAM_FIX_NEEDED.md for details
    */
   getApiUrl() {
     if (this.isDevelopment) {
-      // Development mode - use localhost backend from .env.development
+      // Development mode - platform-specific URLs
       if (this.platform.isAndroid) {
         // Android emulator uses 10.0.2.2 to access host machine
-        const url = this.api.baseUrl.replace('localhost', '10.0.2.2');
+        // Backend must listen on 0.0.0.0 (not localhost) for this to work
+        const url = 'http://10.0.2.2:8001/api';
         if (__DEV__) {
           console.log('🤖 Android Emulator URL:', url);
+          console.log('⚠️  Backend must listen on 0.0.0.0 (see BACKEND_TEAM_FIX_NEEDED.md)');
         }
         return url;
       } else {
-        // iOS Simulator - direct localhost from .env.development
+        // iOS Simulator - can use localhost directly
+        const url = 'http://localhost:8001/api';
         if (__DEV__) {
-          console.log('📱 iOS Simulator URL:', this.api.baseUrl);
+          console.log('📱 iOS Simulator URL:', url);
         }
-        return this.api.baseUrl;
+        return url;
       }
     }
     
-    // Production - use production backend from .env.production (port 8080)
+    // Production - use production backend from .env.production
     if (!__DEV__) {
       console.log('🚀 Production URL:', this.api.backendUrl);
     }

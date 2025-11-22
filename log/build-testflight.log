@@ -1,0 +1,9 @@
+🚀 Building for TestFlight with Production Backend...
+
+[0;34mStep 1: Verifying production environment...[0m
+[0;32m✅ Production backend: https://api.yoraa.in.net/api[0m
+
+[0;34mStep 2: Cleaning build artifacts...[0m
+[1;33mThis ensures environment variables are re-embedded[0m
+  ✅ Removed ios/build
+  ✅ Removed Pods

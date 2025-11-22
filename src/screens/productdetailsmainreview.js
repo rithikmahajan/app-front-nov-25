@@ -447,8 +447,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   headerButton: {
     width: 24,
@@ -472,8 +470,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 20,
     paddingVertical: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   leftRatingScore: {
     flex: 1,
@@ -519,8 +515,6 @@ const styles = StyleSheet.create({
   ratingBreakdown: {
     paddingHorizontal: 20,
     paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   ratingRow: {
     flexDirection: 'row',
@@ -558,8 +552,6 @@ const styles = StyleSheet.create({
   // Filter
   filterContainer: {
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   filterScroll: {
     paddingHorizontal: 20,

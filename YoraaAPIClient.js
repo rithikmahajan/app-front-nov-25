@@ -2,12 +2,27 @@
 // Usage: import { YoraaAPI } from './YoraaAPIClient';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+import Config from 'react-native-config';
 
 class YoraaAPIClient {
-  constructor(baseURL = __DEV__ ? 'http://localhost:8001' : 'http://185.193.19.244:8080') {
+  constructor(baseURL) {
+    // Auto-detect the correct base URL for the platform
+    if (!baseURL) {
+      if (__DEV__) {
+        // Development mode: Use platform-specific localhost or .env config
+        baseURL = Config.API_BASE_URL || (Platform.OS === 'android' 
+          ? 'http://10.0.2.2:8001'  // Android emulator maps localhost to 10.0.2.2
+          : 'http://localhost:8001'); // iOS simulator uses localhost directly
+      } else {
+        // Production mode: Use environment variable from .env.production
+        baseURL = Config.API_BASE_URL || 'https://api.yoraa.in.net/api';
+      }
+    }
     this.baseURL = baseURL;
     this.userToken = null;
     this.adminToken = null;
+    console.log(`[YoraaAPI] Initialized with baseURL: ${this.baseURL} (Environment: ${Config.APP_ENV || 'unknown'})`);
   }
 
   // Initialize tokens from storage
@@ -35,22 +50,37 @@ class YoraaAPIClient {
       headers.Authorization = `Bearer ${token}`;
     }
 
+    const fullUrl = `${this.baseURL}${endpoint}`;
+    console.log(`[YoraaAPI] ${method} ${fullUrl}`);
+
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      const response = await fetch(fullUrl, {
         method,
         headers,
         body: body ? JSON.stringify(body) : null,
+        timeout: 10000, // 10 second timeout
       });
+
+      console.log(`[YoraaAPI] Response status: ${response.status}`);
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || `HTTP ${response.status}`);
+        const errorMsg = data.message || `HTTP ${response.status}`;
+        console.error(`[YoraaAPI] Error response:`, errorMsg);
+        throw new Error(errorMsg);
       }
 
+      console.log(`[YoraaAPI] Success:`, method, endpoint);
       return data;
     } catch (error) {
-      console.error(`API Error [${method} ${endpoint}]:`, error);
+      console.error(`[YoraaAPI] Request failed [${method} ${endpoint}]:`, error.message);
+      
+      // Provide more helpful error messages
+      if (error.message.includes('Network request failed')) {
+        throw new Error('Cannot connect to server. Please check:\n1. Backend server is running\n2. Network connection is active\n3. Correct URL is configured');
+      }
+      
       throw error;
     }
   }
@@ -227,15 +257,15 @@ class YoraaAPIClient {
 
   // FAQ Methods
   async getFAQs() {
-    return await this.makeRequest('/api/faqs');
+    return await this.makeRequest('/faqs');
   }
 
   async getFAQById(faqId) {
-    return await this.makeRequest(`/api/faqs/${faqId}`);
+    return await this.makeRequest(`/faqs/${faqId}`);
   }
 
   async getFAQsByCategory(category) {
-    return await this.makeRequest(`/api/faqs/category/${category}`);
+    return await this.makeRequest(`/faqs/category/${category}`);
   }
 
   // Error handling helper

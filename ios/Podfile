@@ -38,8 +38,8 @@ target 'YoraaApp' do
     :path => config[:reactNativePath],
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/..",
-    # Disable New Architecture (Fabric) - causes crashes with complex initialization
-    :fabric_enabled => false,
+    # Enable New Architecture (Fabric) for Bridgeless mode with dev tools
+    :fabric_enabled => true,
     :hermes_enabled => true
   )
 
@@ -48,9 +48,6 @@ target 'YoraaApp' do
   
   # Google reCAPTCHA Enterprise for phone authentication
   pod 'RecaptchaEnterprise'
-  
-  # Razorpay SDK - use latest version compatible with iOS 13.4+
-  pod 'razorpay-pod', '~> 1.3.9'
 
   # Add react-native-camera without subspecs to avoid MLKit conflicts
   # The scanner functionality will work with basic camera features
@@ -75,6 +72,9 @@ target 'YoraaApp' do
           # Set consistent deployment target
           config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.4'
           
+          # Fix for "Unsupported Swift architecture" - exclude arm64 for simulator
+          config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+          
           # Disable active arch only for Release
           if config.name == 'Release'
             config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
@@ -91,6 +91,9 @@ target 'YoraaApp' do
         
         # Set consistent deployment target
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.4'
+        
+        # Fix for "Unsupported Swift architecture" - exclude arm64 for simulator
+        config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
         
         # Ensure debug information format is set to dwarf-with-dsym for release builds
         if config.name == 'Release'

@@ -42,21 +42,21 @@ const VoucherShape = ({ children }) => {
   return (
     <View style={styles.voucherContainer}>
       <Svg 
-        width={310} 
-        height={137} 
-        viewBox="0 0 310 137" 
+        width={450} 
+        height={180} 
+        viewBox="0 0 450 180" 
         style={styles.voucherSvg}
       >
         <Defs>
           <ClipPath id="voucher-clip">
-            <Path d="M310 59.8004C310 65.323 304.929 70.7402 302.67 75.7795C301.644 78.069 301.041 80.861 301.041 83.874C301.041 91.5257 304.928 97.751 309.77 97.9434V97.9434C309.898 97.9461 310 98.0507 310 98.1788V127C310 132.523 305.523 137 300 137H10C4.47716 137 0 132.523 0 127V107.948C0 102.425 5.07117 97.008 7.33064 91.9685C8.35715 89.679 8.95996 86.8871 8.95996 83.874C8.95995 80.861 8.35713 78.069 7.33063 75.7795C5.07116 70.74 0 65.3227 0 59.7998V10C0 4.47715 4.47715 0 10 0H300C305.523 0 310 4.47715 310 10V59.8004Z" />
+            <Path d="M450 75C450 82 442.929 89.574 440.17 96.065C438.93 99 438.2 102.494 438.2 106C438.2 116 442.93 124 449 124.266V124.266C449.15 124.27 449.27 124.393 449.27 124.543V167C449.27 173.627 443.45 179 436.27 179H13.73C6.548 179 0.73 173.627 0.73 167V137C0.73 130 7.801 122.426 10.56 115.935C11.8 113 12.53 109.506 12.53 106C12.53 102.494 11.8 99 10.56 96.065C7.801 89.574 0.73 82 0.73 75V13C0.73 6.373 6.548 1 13.73 1H436.27C443.45 1 449.27 6.373 449.27 13V75Z" />
           </ClipPath>
         </Defs>
         <G clipPath="url(#voucher-clip)">
-          <Rect width={310} height={137} fill="#F6F6F6" />
+          <Rect width={450} height={180} fill="#F6F6F6" />
         </G>
         <Path 
-          d="M310 59.8004C310 65.323 304.929 70.7402 302.67 75.7795C301.644 78.069 301.041 80.861 301.041 83.874C301.041 91.5257 304.928 97.751 309.77 97.9434V97.9434C309.898 97.9461 310 98.0507 310 98.1788V127C310 132.523 305.523 137 300 137H10C4.47716 137 0 132.523 0 127V107.948C0 102.425 5.07117 97.008 7.33064 91.9685C8.35715 89.679 8.95996 86.8871 8.95996 83.874C8.95995 80.861 8.35713 78.069 7.33063 75.7795C5.07116 70.74 0 65.3227 0 59.7998V10C0 4.47715 4.47715 0 10 0H300C305.523 0 310 4.47715 310 10V59.8004Z" 
+          d="M450 75C450 82 442.929 89.574 440.17 96.065C438.93 99 438.2 102.494 438.2 106C438.2 116 442.93 124 449 124.266V124.266C449.15 124.27 449.27 124.393 449.27 124.543V167C449.27 173.627 443.45 179 436.27 179H13.73C6.548 179 0.73 173.627 0.73 167V137C0.73 130 7.801 122.426 10.56 115.935C11.8 113 12.53 109.506 12.53 106C12.53 102.494 11.8 99 10.56 96.065C7.801 89.574 0.73 82 0.73 75V13C0.73 6.373 6.548 1 13.73 1H436.27C443.45 1 449.27 6.373 449.27 13V75Z" 
           fill="#F6F6F6" 
           stroke="#000000" 
           strokeWidth={1}
@@ -234,11 +234,11 @@ const InviteAFriend = ({ navigation, route }) => {
                     </View>
                     
                     <View style={styles.dashedLineContainer}>
-                      <Svg width={284} height={1} viewBox="0 0 284 1" style={styles.dashedLineSvg}>
+                      <Svg width={400} height={1} viewBox="0 0 400 1" style={styles.dashedLineSvg}>
                         <Line
                           x1="0.5"
                           y1="0.5"
-                          x2="283.502"
+                          x2="399.5"
                           y2="0.5"
                           stroke="#000000"
                           strokeWidth={1}
@@ -333,41 +333,41 @@ const styles = StyleSheet.create({
   voucherWrapper: {
     alignItems: 'center',
     marginBottom: 32,
-    paddingHorizontal: 32,
+    paddingHorizontal: 16,
   },
   codeName: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '600',
     color: '#3E3E3E',
     fontFamily: 'Montserrat-SemiBold',
     textAlign: 'left',
-    lineHeight: 24,
+    lineHeight: 28,
     position: 'absolute',
-    left: 24,
-    top: 14,
+    left: 32,
+    top: 20,
   },
   discountText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: '#000000',
     fontFamily: 'Montserrat-SemiBold',
     textTransform: 'uppercase',
     marginRight: 8,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   minOrderText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'normal',
     color: '#6C6C6C',
     fontFamily: 'Montserrat-Regular',
     textAlign: 'left',
     position: 'absolute',
-    left: 24,
-    bottom: 10,
+    left: 32,
+    bottom: 20,
   },
   voucherContainer: {
-    width: 310,
-    height: 137,
+    width: 450,
+    height: 180,
     position: 'relative',
   },
   voucherSvg: {
@@ -376,27 +376,27 @@ const styles = StyleSheet.create({
     left: 0,
   },
   voucherContent: {
-    width: 310,
-    height: 137,
+    width: 450,
+    height: 180,
     position: 'relative',
   },
   userName: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '600',
     color: '#3E3E3E', // neutral-800 equivalent
     fontFamily: 'Montserrat-SemiBold',
     textAlign: 'left',
-    lineHeight: 24,
+    lineHeight: 28,
     position: 'absolute',
-    left: 24,
-    top: 14,
+    left: 32,
+    top: 20,
   },
   codeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     position: 'absolute',
-    left: 24,
-    top: 49,
+    left: 32,
+    top: 60,
   },
   referralCode: {
     fontSize: 12,
@@ -413,10 +413,10 @@ const styles = StyleSheet.create({
   },
   dashedLineContainer: {
     position: 'absolute',
-    width: 284,
+    width: 400,
     height: 1,
-    left: 13,
-    top: 85, // 50% + 17px offset as in Figma
+    left: 25,
+    top: 110,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -424,24 +424,25 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '359.798deg' }], // matching Figma rotation
   },
   benefitText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 'normal',
     color: '#6C6C6C',
     fontFamily: 'Montserrat-Regular',
     textAlign: 'left',
-    lineHeight: 16,
+    lineHeight: 18,
     position: 'absolute',
-    left: 24,
-    top: 94,
-    width: 262,
+    left: 32,
+    top: 125,
+    width: 380,
   },
   inviteButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    paddingVertical: 16,
-    paddingHorizontal: 51,
+    paddingVertical: 18,
+    paddingHorizontal: 60,
     marginHorizontal: 20,
-    marginTop: 20,
+    marginTop: 24,
+    minWidth: 200,
   },
   inviteButtonText: {
     color: '#FFFFFF',
