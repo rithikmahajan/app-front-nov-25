@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import GlobalBackButton from '../components/GlobalBackButton';
 import { yoraaAPI } from '../services/yoraaAPI';
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 // Helper function for status colors
 const getStatusColor = (status) => {
@@ -327,131 +328,125 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // Header Styles
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingHorizontal: wp(isTablet ? 5.3 : 4.3),
+    paddingBottom: hp(isTablet ? 1.8 : 1.5),
     backgroundColor: '#FFFFFF',
-    paddingTop: 16,
+    paddingTop: hp(isTablet ? 2.5 : 2),
     borderBottomWidth: 0,
     overflow: 'hidden',
   },
   backButtonContainer: {
-    width: 68,
+    width: wp(isTablet ? 22 : 18),
     alignItems: 'flex-start',
     justifyContent: 'center',
-    gap: 10,
+    gap: hp(isTablet ? 1.5 : 1.2),
   },
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.4,
     fontFamily: 'Montserrat-Medium',
-    lineHeight: 0, // Leading 0 as per Figma
+    lineHeight: 0,
   },
   headerSpacer: {
-    width: 68,
+    width: wp(isTablet ? 22 : 18),
     opacity: 0,
   },
 
-  // Content Styles
   scrollContainer: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 20, // Normal padding after header
-    paddingBottom: 20,
+    paddingHorizontal: wp(isTablet ? 6.6 : 5.3),
+    paddingTop: hp(isTablet ? 3.1 : 2.5),
+    paddingBottom: hp(isTablet ? 3.1 : 2.5),
   },
 
-  // Invoice Item Styles
   invoiceItem: {
     backgroundColor: 'transparent',
-    marginBottom: 40, // Spacing between invoice items
+    marginBottom: hp(isTablet ? 6.2 : 5),
     width: '100%',
   },
 
-  // Product Styles
   productContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 24, // 6 * 4 = 24px gap as per Figma
-    gap: 14, // 3.5 * 4 = 14px gap as per Figma
+    marginBottom: hp(isTablet ? 3.7 : 3),
+    gap: wp(isTablet ? 4.6 : 3.7),
   },
   imageContainer: {
-    width: 140,
-    height: 140,
+    width: wp(isTablet ? 46 : isSmallDevice ? 33 : 37.3),
+    height: wp(isTablet ? 46 : isSmallDevice ? 33 : 37.3),
     borderRadius: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#EEEEEE', // Changed to match Figma background
+    backgroundColor: '#EEEEEE',
     flexShrink: 0,
   },
   imagePlaceholder: {
-    fontSize: 40,
+    fontSize: fs(isTablet ? 48 : isSmallDevice ? 32 : 40),
   },
   productDetails: {
     flex: 1,
     flexDirection: 'column',
-    gap: 8, // 2 * 4 = 8px gap as per Figma
+    gap: hp(isTablet ? 1.2 : 1),
     alignSelf: 'stretch',
   },
   statusAndNameContainer: {
     flexDirection: 'column',
-    gap: 3, // 3px gap between status and name as per Figma
+    gap: hp(isTablet ? 0.5 : 0.4),
   },
   descriptionContainer: {
     flexDirection: 'column',
     gap: 0,
   },
-  // Status and Text Styles
   statusText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     fontWeight: '500',
     letterSpacing: -0.14,
     fontFamily: 'Montserrat-Medium',
-    lineHeight: 16.8, // 1.2 * 14 = 16.8
+    lineHeight: fs(isTablet ? 19 : isSmallDevice ? 16 : 17),
     marginBottom: 0,
   },
   productName: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.14,
     fontFamily: 'Montserrat-Medium',
-    lineHeight: 16.8, // 1.2 * 14 = 16.8
+    lineHeight: fs(isTablet ? 19 : isSmallDevice ? 16 : 17),
     marginBottom: 0,
   },
   productDescription: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     fontWeight: '400',
     color: '#767676',
     letterSpacing: -0.14,
     fontFamily: 'Montserrat-Regular',
-    lineHeight: 16.8, // 1.2 * 14 = 16.8
+    lineHeight: fs(isTablet ? 19 : isSmallDevice ? 16 : 17),
     marginBottom: 0,
   },
   productSize: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     fontWeight: '400',
     color: '#767676',
     letterSpacing: -0.14,
     fontFamily: 'Montserrat-Regular',
-    lineHeight: 16.8, // 1.2 * 14 = 16.8
+    lineHeight: fs(isTablet ? 19 : isSmallDevice ? 16 : 17),
     marginBottom: 0,
   },
 
-  // Button Styles
   viewInvoiceButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    paddingVertical: 16,
-    paddingHorizontal: 51,
+    paddingVertical: hp(isTablet ? 2.5 : 2),
+    paddingHorizontal: wp(isTablet ? 16.8 : 13.6),
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'stretch',
@@ -462,12 +457,11 @@ const styles = StyleSheet.create({
   },
   viewInvoiceText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
-    lineHeight: 19.2, // 1.2 * 16 = 19.2 as per Figma
+    lineHeight: fs(isTablet ? 22 : isSmallDevice ? 17 : 19),
     textAlign: 'center',
-    whiteSpace: 'pre', // To match Figma whitespace handling
   },
   productImage: {
     width: '100%',
@@ -475,95 +469,92 @@ const styles = StyleSheet.create({
     borderRadius: 0,
   },
 
-  // Loading Styles
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: wp(isTablet ? 6.6 : 5.3),
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 16,
+    marginTop: hp(isTablet ? 1.8 : 1.5),
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '400',
     color: '#767676',
     fontFamily: 'Montserrat-Regular',
   },
 
-  // Empty State Styles
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 40,
-    paddingTop: 100,
+    paddingHorizontal: wp(isTablet ? 13.3 : 10.6),
+    paddingTop: hp(isTablet ? 15.5 : 12.5),
   },
   emptyIcon: {
-    fontSize: 64,
-    marginBottom: 20,
+    fontSize: fs(isTablet ? 76 : isSmallDevice ? 56 : 64),
+    marginBottom: hp(isTablet ? 3.1 : 2.5),
   },
   emptyTitle: {
-    fontSize: 20,
+    fontSize: fs(isTablet ? 24 : isSmallDevice ? 18 : 20),
     fontWeight: '500',
     color: '#000000',
     fontFamily: 'Montserrat-Medium',
-    marginBottom: 8,
+    marginBottom: hp(isTablet ? 1.2 : 1),
     textAlign: 'center',
   },
   emptyMessage: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     fontWeight: '400',
     color: '#767676',
     fontFamily: 'Montserrat-Regular',
     textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 20,
+    marginBottom: hp(isTablet ? 5 : 4),
+    lineHeight: fs(isTablet ? 24 : isSmallDevice ? 18 : 20),
   },
   shopNowButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    paddingVertical: 16,
-    paddingHorizontal: 51,
+    paddingVertical: hp(isTablet ? 2.5 : 2),
+    paddingHorizontal: wp(isTablet ? 16.8 : 13.6),
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 180,
+    minWidth: wp(isTablet ? 60 : 48),
   },
   shopNowText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
   },
 
-  // Error Styles
   errorContainer: {
     backgroundColor: '#FFF3F3',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
+    padding: wp(isTablet ? 5.3 : 4.3),
+    marginBottom: hp(isTablet ? 3.1 : 2.5),
     borderWidth: 1,
     borderColor: '#EA4335',
   },
   errorText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     fontWeight: '400',
     color: '#EA4335',
     fontFamily: 'Montserrat-Regular',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: hp(isTablet ? 1.8 : 1.5),
   },
   retryButton: {
     backgroundColor: '#EA4335',
     borderRadius: 100,
-    paddingVertical: 10,
-    paddingHorizontal: 24,
+    paddingVertical: hp(isTablet ? 1.5 : 1.2),
+    paddingHorizontal: wp(isTablet ? 8 : 6.4),
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
   },
   retryText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
   },

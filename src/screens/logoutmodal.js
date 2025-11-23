@@ -5,14 +5,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Modal,
-  Dimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth from '@react-native-firebase/auth';
 import yoraaAPI from '../services/yoraaAPI';
 import sessionManager from '../services/sessionManager';
-
-const { width } = Dimensions.get('window');
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 const LogoutModal = ({ visible, onClose, onSignOut, navigation }) => {
   // Log navigation availability for debugging
@@ -235,11 +233,11 @@ const styles = StyleSheet.create({
   modalContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 36,
-    paddingTop: 43,
-    paddingBottom: 40,
-    paddingHorizontal: 40,
-    width: width * 0.95,
-    maxWidth: 480,
+    paddingTop: hp(isTablet ? 6.6 : 5.3),
+    paddingBottom: hp(isTablet ? 6.2 : 5),
+    paddingHorizontal: wp(isTablet ? 13.3 : 10.6),
+    width: wp(isTablet ? 80 : 95),
+    maxWidth: wp(isTablet ? 64 : 100),
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -251,12 +249,12 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   title: {
-    fontSize: 18,
+    fontSize: fs(isTablet ? 22 : isSmallDevice ? 16 : 18),
     fontWeight: 'bold',
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 81,
-    lineHeight: 22,
+    marginBottom: hp(isTablet ? 12.5 : 10),
+    lineHeight: fs(isTablet ? 26 : isSmallDevice ? 20 : 22),
     letterSpacing: -0.41,
     fontFamily: 'Montserrat-Bold',
     maxWidth: '100%',
@@ -266,46 +264,46 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 20,
+    gap: wp(isTablet ? 6.6 : isSmallDevice ? 4 : 5.3),
     paddingHorizontal: 0,
   },
   stayButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
+    paddingVertical: hp(isTablet ? 2.5 : 2),
+    paddingHorizontal: wp(isTablet ? 10.6 : 8.5),
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 120,
-    height: 56,
+    minWidth: wp(isTablet ? 40 : isSmallDevice ? 28 : 32),
+    height: hp(isTablet ? 8.6 : 6.9),
     flex: 1,
   },
   stayButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
-    lineHeight: 19.2,
+    lineHeight: fs(isTablet ? 22 : isSmallDevice ? 17 : 19.2),
   },
   signOutButton: {
     backgroundColor: 'transparent',
     borderRadius: 100,
     borderWidth: 1,
     borderColor: '#e4e4e4',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingVertical: hp(isTablet ? 2.5 : 2),
+    paddingHorizontal: wp(isTablet ? 6.6 : 5.3),
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 120,
-    height: 56,
+    minWidth: wp(isTablet ? 40 : isSmallDevice ? 28 : 32),
+    height: hp(isTablet ? 8.6 : 6.9),
     flex: 1,
   },
   signOutButtonText: {
     color: '#000000',
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
-    lineHeight: 19.2,
+    lineHeight: fs(isTablet ? 22 : isSmallDevice ? 17 : 19.2),
   },
 });
 

@@ -1,7 +1,8 @@
 import React, { forwardRef, useImperativeHandle, useState, useRef, useEffect } from "react";
-import { Modal, View, Text, TouchableOpacity, Dimensions, Animated, PanResponder, ActivityIndicator, Alert } from "react-native";
-import { FontFamilies, FontSizes } from "../constants/styles";
+import { Modal, View, Text, TouchableOpacity, Dimensions, Animated, PanResponder, ActivityIndicator, Alert, StyleSheet } from "react-native";
+import { FontFamilies } from "../constants/styles";
 import shiprocketService from "../services/shiprocketService";
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 const DEVICE_HEIGHT = Dimensions.get("window").height;
 
@@ -11,23 +12,15 @@ const FONT_FAMILY = {
   BOLD: FontFamilies.bold,
 };
 
-const FONT_SIZE = {
-  XS: FontSizes.xs,
-  S: FontSizes.sm,
-  LARGE: FontSizes.xl,
-};
-
 // Simple cross icon component since Vector 2.svg is not available
 const CrossIcon = ({ width, height }) => (
   <View
-    style={{
-      width: width,
-      height: height,
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
+    style={[
+      styles.crossIconContainer,
+      { width, height }
+    ]}
   >
-    <Text style={{ fontSize: width * 0.8, color: '#000', fontWeight: 'bold' }}>×</Text>
+    <Text style={[styles.crossIconText, { fontSize: width * 0.8 }]}>×</Text>
   </View>
 );
 
@@ -290,167 +283,102 @@ const TrackingModal = forwardRef((props, ref) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={handleClose}
-        style={{
-          flex: 1,
-          justifyContent: "flex-end",
-          backgroundColor: "rgba(0,0,0,0.4)",
-        }}
+        style={styles.overlay}
       >
         <Animated.View
-          style={{
-            backgroundColor: "#fff",
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            maxHeight: DEVICE_HEIGHT * 0.7,
-            transform: [{ translateY }],
-          }}
+          style={[
+            styles.modalContainer,
+            {
+              maxHeight: DEVICE_HEIGHT * 0.7,
+              transform: [{ translateY }],
+            }
+          ]}
           {...contentPanResponder.panHandlers}
         >
           <TouchableOpacity activeOpacity={1}>
-            {/* Drag Handle */}
             <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "center",
-                paddingVertical: 10,
-              }}
+              style={styles.dragHandleContainer}
               {...dragHandlePanResponder.panHandlers}
             >
-              <View
-                style={{
-                  width: 40,
-                  height: 4,
-                  backgroundColor: "#ccc",
-                  borderRadius: 2,
-                }}
-              />
+              <View style={styles.dragHandle} />
             </View>
 
-            {/* Content */}
-            <View style={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 20 }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: FONT_SIZE.LARGE,
-                    fontFamily: FONT_FAMILY.BOLD,
-                  }}
-                >
+            <View style={styles.contentContainer}>
+              <View style={styles.header}>
+                <Text style={styles.title}>
                   Order Status
                 </Text>
                 <TouchableOpacity onPress={handleClose}>
                   <CrossIcon
-                    width={DEVICE_HEIGHT * 0.02}
-                    height={DEVICE_HEIGHT * 0.02}
+                    width={isTablet ? hp(2.5) : hp(2)}
+                    height={isTablet ? hp(2.5) : hp(2)}
                   />
                 </TouchableOpacity>
               </View>
 
-              {/* Loading indicator */}
               {loading && (
-                <View style={{ padding: 20, alignItems: 'center' }}>
+                <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color="#000" />
-                  <Text style={{ marginTop: 10, fontSize: FONT_SIZE.S, color: '#666' }}>
+                  <Text style={styles.loadingText}>
                     Fetching real-time tracking...
                   </Text>
                 </View>
               )}
 
-              {/* Error message */}
               {error && !loading && (
-                <View style={{ padding: 20, alignItems: 'center' }}>
-                  <Text style={{ fontSize: FONT_SIZE.S, color: '#E53E3E', textAlign: 'center' }}>
+                <View style={styles.errorContainer}>
+                  <Text style={styles.errorText}>
                     {error}
                   </Text>
-                  <Text style={{ marginTop: 10, fontSize: FONT_SIZE.XS, color: '#666', textAlign: 'center' }}>
+                  <Text style={styles.errorSubtext}>
                     Showing basic order status
                   </Text>
                 </View>
               )}
 
-              {/* Tracking steps */}
               {!loading && masterSteps.map((step, index) => {
                 const isFilled = isStatusCompleted(step.status, step.shiprocketStatus);
                 const stepData = getStepDetails(step.status, step.shiprocketStatus);
                 const isLast = index === masterSteps.length - 1;
 
                 return (
-                  <View key={index} style={{ flexDirection: "row", gap: 10 }}>
-                    {/* Dot & Line */}
-                    <View style={{ alignItems: "center", alignSelf: "flex-start" }}>
-                      {/* Dot */}
+                  <View key={index} style={styles.stepRow}>
+                    <View style={styles.stepIndicatorContainer}>
                       <View
-                        style={{
-                          width: DEVICE_HEIGHT * 0.02,
-                          height: DEVICE_HEIGHT * 0.02,
-                          borderRadius: DEVICE_HEIGHT * 0.01,
-                          borderColor: isFilled ? "black" : "gray",
-                          borderWidth: 1,
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
+                        style={[
+                          styles.stepDot,
+                          { borderColor: isFilled ? "black" : "gray" }
+                        ]}
                       >
                         {isFilled && (
-                          <View
-                            style={{
-                              width: DEVICE_HEIGHT * 0.01,
-                              height: DEVICE_HEIGHT * 0.01,
-                              borderRadius: DEVICE_HEIGHT * 0.005,
-                              backgroundColor: "black",
-                            }}
-                          />
+                          <View style={styles.stepDotFilled} />
                         )}
                       </View>
 
-                      {/* Line below dot */}
                       {!isLast && (
                         <View
-                          style={{
-                            height: DEVICE_HEIGHT * 0.04,
-                            width: DEVICE_HEIGHT * 0.002,
-                            backgroundColor: isFilled ? "black" : "gray",
-                          }}
+                          style={[
+                            styles.stepLine,
+                            { backgroundColor: isFilled ? "black" : "gray" }
+                          ]}
                         />
                       )}
                     </View>
 
-                    {/* Text Info */}
-                    <View style={{ flex: 1 }}>
-                      <Text
-                        style={{
-                          fontSize: FONT_SIZE.S,
-                          fontFamily: FONT_FAMILY.REGULAR,
-                          color: "#000",
-                        }}
-                      >
+                    <View style={styles.stepContent}>
+                      <Text style={styles.stepStatus}>
                         {step.status}
                       </Text>
                       {stepData.location && (
                         <Text
-                          style={{
-                            fontSize: FONT_SIZE.XS,
-                            fontFamily: FONT_FAMILY.REGULAR,
-                            color: "gray",
-                          }}
+                          style={styles.stepLocation}
                           numberOfLines={1}
                         >
                           {stepData.location}
                         </Text>
                       )}
                       {stepData.timestamp && (
-                        <Text
-                          style={{
-                            fontSize: FONT_SIZE.XS,
-                            fontFamily: FONT_FAMILY.REGULAR,
-                            color: "gray",
-                            marginTop: 2,
-                          }}
-                        >
+                        <Text style={styles.stepTimestamp}>
                           {new Date(stepData.timestamp).toLocaleString('en-IN', {
                             dateStyle: 'medium',
                             timeStyle: 'short'
@@ -462,36 +390,17 @@ const TrackingModal = forwardRef((props, ref) => {
                 );
               })}
 
-              {/* Cancel Order Button */}
               {!loading && canCancelOrder() && (
-                <View style={{ marginTop: 20, paddingTop: 15, borderTopWidth: 1, borderTopColor: '#E4E4E4' }}>
+                <View style={styles.cancelSection}>
                   <TouchableOpacity
                     onPress={handleCancelOrder}
-                    style={{
-                      backgroundColor: '#FFFFFF',
-                      borderWidth: 1,
-                      borderColor: '#E53E3E',
-                      paddingVertical: 14,
-                      paddingHorizontal: 20,
-                      borderRadius: 8,
-                      alignItems: 'center',
-                    }}
+                    style={styles.cancelButton}
                   >
-                    <Text style={{
-                      fontSize: FONT_SIZE.S,
-                      fontFamily: FONT_FAMILY.BOLD,
-                      color: '#E53E3E',
-                    }}>
+                    <Text style={styles.cancelButtonText}>
                       Cancel Order
                     </Text>
                   </TouchableOpacity>
-                  <Text style={{
-                    fontSize: FONT_SIZE.XS,
-                    fontFamily: FONT_FAMILY.REGULAR,
-                    color: '#999',
-                    textAlign: 'center',
-                    marginTop: 8,
-                  }}>
+                  <Text style={styles.cancelNote}>
                     You can cancel orders before delivery
                   </Text>
                 </View>
@@ -502,6 +411,148 @@ const TrackingModal = forwardRef((props, ref) => {
       </TouchableOpacity>
     </Modal>
   );
+});
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  modalContainer: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  dragHandleContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    paddingVertical: isTablet ? hp(1.5) : hp(1.25),
+  },
+  dragHandle: {
+    width: isTablet ? wp(8) : isSmallDevice ? wp(9) : wp(10.5),
+    height: isTablet ? hp(0.6) : hp(0.5),
+    backgroundColor: "#ccc",
+    borderRadius: 2,
+  },
+  contentContainer: {
+    paddingHorizontal: isTablet ? wp(6) : isSmallDevice ? wp(4) : wp(5.3),
+    paddingTop: isTablet ? hp(1.5) : hp(1.25),
+    paddingBottom: isTablet ? hp(3) : isSmallDevice ? hp(2) : hp(2.5),
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  title: {
+    fontSize: isTablet ? fs(22) : isSmallDevice ? fs(18) : fs(20),
+    fontFamily: FONT_FAMILY.BOLD,
+  },
+  crossIconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  crossIconText: {
+    color: '#000',
+    fontWeight: 'bold',
+  },
+  loadingContainer: {
+    padding: isTablet ? hp(3) : isSmallDevice ? hp(2) : hp(2.5),
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: isTablet ? hp(1.5) : hp(1.25),
+    fontSize: isTablet ? fs(15) : isSmallDevice ? fs(12) : fs(14),
+    color: '#666',
+  },
+  errorContainer: {
+    padding: isTablet ? hp(3) : isSmallDevice ? hp(2) : hp(2.5),
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: isTablet ? fs(15) : isSmallDevice ? fs(12) : fs(14),
+    color: '#E53E3E',
+    textAlign: 'center',
+  },
+  errorSubtext: {
+    marginTop: isTablet ? hp(1.5) : hp(1.25),
+    fontSize: isTablet ? fs(13) : isSmallDevice ? fs(10) : fs(12),
+    color: '#666',
+    textAlign: 'center',
+  },
+  stepRow: {
+    flexDirection: "row",
+    gap: isTablet ? wp(2.5) : wp(2.7),
+  },
+  stepIndicatorContainer: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+  },
+  stepDot: {
+    width: isTablet ? hp(2.5) : isSmallDevice ? hp(1.8) : hp(2),
+    height: isTablet ? hp(2.5) : isSmallDevice ? hp(1.8) : hp(2),
+    borderRadius: isTablet ? hp(1.25) : isSmallDevice ? hp(0.9) : hp(1),
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  stepDotFilled: {
+    width: isTablet ? hp(1.3) : isSmallDevice ? hp(0.9) : hp(1),
+    height: isTablet ? hp(1.3) : isSmallDevice ? hp(0.9) : hp(1),
+    borderRadius: isTablet ? hp(0.65) : isSmallDevice ? hp(0.45) : hp(0.5),
+    backgroundColor: "black",
+  },
+  stepLine: {
+    height: isTablet ? hp(5) : isSmallDevice ? hp(3.5) : hp(4),
+    width: isTablet ? hp(0.3) : hp(0.25),
+  },
+  stepContent: {
+    flex: 1,
+  },
+  stepStatus: {
+    fontSize: isTablet ? fs(15) : isSmallDevice ? fs(12) : fs(14),
+    fontFamily: FONT_FAMILY.REGULAR,
+    color: "#000",
+  },
+  stepLocation: {
+    fontSize: isTablet ? fs(13) : isSmallDevice ? fs(10) : fs(12),
+    fontFamily: FONT_FAMILY.REGULAR,
+    color: "gray",
+  },
+  stepTimestamp: {
+    fontSize: isTablet ? fs(13) : isSmallDevice ? fs(10) : fs(12),
+    fontFamily: FONT_FAMILY.REGULAR,
+    color: "gray",
+    marginTop: hp(0.25),
+  },
+  cancelSection: {
+    marginTop: isTablet ? hp(3) : isSmallDevice ? hp(2) : hp(2.5),
+    paddingTop: isTablet ? hp(2.2) : isSmallDevice ? hp(1.6) : hp(1.9),
+    borderTopWidth: 1,
+    borderTopColor: '#E4E4E4',
+  },
+  cancelButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E53E3E',
+    paddingVertical: isTablet ? hp(2) : isSmallDevice ? hp(1.5) : hp(1.75),
+    paddingHorizontal: isTablet ? wp(6) : isSmallDevice ? wp(4) : wp(5.3),
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: isTablet ? fs(15) : isSmallDevice ? fs(12) : fs(14),
+    fontFamily: FONT_FAMILY.BOLD,
+    color: '#E53E3E',
+  },
+  cancelNote: {
+    fontSize: isTablet ? fs(13) : isSmallDevice ? fs(10) : fs(12),
+    fontFamily: FONT_FAMILY.REGULAR,
+    color: '#999',
+    textAlign: 'center',
+    marginTop: isTablet ? hp(1.2) : hp(1),
+  },
 });
 
 export default TrackingModal;

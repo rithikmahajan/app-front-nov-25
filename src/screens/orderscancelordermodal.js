@@ -8,15 +8,15 @@ import {
   PanResponder,
   View,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
-import { FontFamilies } from "../constants/styles";
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 const DEVICE_HEIGHT = Dimensions.get("window").height;
 
-// Font constants to match your app structure
 const FONT_FAMILY = {
-  REGULAR: FontFamilies.regular,
-  BOLD: FontFamilies.bold,
+  REGULAR: 'Montserrat-Regular',
+  BOLD: 'Montserrat-Bold',
 };
 
 const CancelOrderRequest = forwardRef((props, ref) => {
@@ -27,7 +27,6 @@ const CancelOrderRequest = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (visible) {
-      // Animate modal up
       Animated.spring(translateY, {
         toValue: 0,
         useNativeDriver: true,
@@ -41,8 +40,8 @@ const CancelOrderRequest = forwardRef((props, ref) => {
     Animated.spring(translateY, {
       toValue: DEVICE_HEIGHT,
       useNativeDriver: true,
-      tension: 150, // Increased tension for faster animation
-      friction: 6,  // Reduced friction for faster animation
+      tension: 150,
+      friction: 6,
     }).start(() => {
       setVisible(false);
     });
@@ -54,12 +53,10 @@ const CancelOrderRequest = forwardRef((props, ref) => {
     setVisible(true);
   };
 
-  // Pan responder for drag handle - always allows drag to close (following bagsizeselectormodaloverlay pattern)
   const dragHandlePanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Always respond to any movement on the drag handle
         return Math.abs(gestureState.dy) > 5;
       },
       onPanResponderMove: (evt, gestureState) => {
@@ -69,10 +66,8 @@ const CancelOrderRequest = forwardRef((props, ref) => {
       },
       onPanResponderRelease: (evt, gestureState) => {
         if (gestureState.dy > 50 || gestureState.vy > 0.3) {
-          // Lower threshold for drag handle
           handleClose();
         } else {
-          // Snap back to original position
           Animated.spring(translateY, {
             toValue: 0,
             useNativeDriver: true,
@@ -84,11 +79,9 @@ const CancelOrderRequest = forwardRef((props, ref) => {
     }),
   ).current;
 
-  // Pan responder for content area - only for downward swipes (following bagsizeselectormodaloverlay pattern)
   const contentPanResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Only respond to significant downward swipes
         return gestureState.dy > 15 && Math.abs(gestureState.dx) < Math.abs(gestureState.dy);
       },
       onPanResponderMove: (evt, gestureState) => {
@@ -98,10 +91,8 @@ const CancelOrderRequest = forwardRef((props, ref) => {
       },
       onPanResponderRelease: (evt, gestureState) => {
         if (gestureState.dy > 100 || gestureState.vy > 0.5) {
-          // Higher threshold for content area
           handleClose();
         } else {
-          // Snap back to original position
           Animated.spring(translateY, {
             toValue: 0,
             useNativeDriver: true,
@@ -124,123 +115,55 @@ const CancelOrderRequest = forwardRef((props, ref) => {
 
   return (
     <Modal transparent visible={visible} animationType="none">
-      <View style={{
-        flex: 1,
-        justifyContent: "flex-end",
-        backgroundColor: "rgba(0,0,0,0.4)",
-      }}>
+      <View style={styles.modalOverlay}>
         <TouchableOpacity 
-          style={{ flex: 1 }}
+          style={styles.dismissArea}
           activeOpacity={1}
           onPress={handleClose}
         />
         
         <Animated.View
-          style={{
-            backgroundColor: "white",
-            borderTopLeftRadius: 10,
-            borderTopRightRadius: 10,
-            paddingBottom: 50,
-            maxHeight: DEVICE_HEIGHT * 0.6,
-            transform: [{ translateY }],
-          }}
+          style={[
+            styles.modalContainer,
+            { transform: [{ translateY }] }
+          ]}
         >
-          {/* Drag Handle - draggable area */}
           <View 
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 30,
-              justifyContent: 'center',
-              alignItems: 'center',
-              zIndex: 10,
-            }}
+            style={styles.dragHandleArea}
             {...dragHandlePanResponder.panHandlers}
           >
-            <View style={{
-              width: 64,
-              height: 6,
-              backgroundColor: '#E6E6E6',
-              borderRadius: 40,
-              marginTop: 10,
-            }} />
+            <View style={styles.dragHandle} />
           </View>
 
-          {/* Content Container with swipe down capability */}
           <View 
-            style={{
-              paddingHorizontal: 24,
-              paddingTop: 24,
-              gap: 12,
-            }}
+            style={styles.contentContainer}
             {...contentPanResponder.panHandlers}
           >
-            {/* Heading */}
-            <Text
-              style={{
-                fontSize: 24,
-                fontFamily: FONT_FAMILY.BOLD,
-                textAlign: "left",
-                color: '#000000',
-                letterSpacing: -0.96,
-                lineHeight: 28.8,
-              }}
-            >
+            <Text style={styles.heading}>
               Want to cancel your order?
             </Text>
 
-            {/* Subtext */}
-            <Text
-              style={{
-                fontSize: 16,
-                fontFamily: FONT_FAMILY.REGULAR,
-                color: "#767676",
-                letterSpacing: -0.384,
-                lineHeight: 24,
-              }}
-            >
+            <Text style={styles.subtext}>
               You can cancel orders for a short time after they are placed - free of charge.
             </Text>
           </View>
 
-          {/* Button Container - separate from content pan responder */}
-          <View style={{
-            paddingHorizontal: 20,
-            paddingTop: 16,
-            gap: 14,
-          }}>
-            {/* Go Back Button (Black CTA) */}
+          <View style={styles.buttonContainer}>
             <TouchableOpacity
               onPress={handleClose}
-              style={{
-                backgroundColor: "#000000",
-                width: "100%",
-                paddingVertical: 16,
-                paddingHorizontal: 51,
-                borderRadius: 100,
-                alignItems: "center",
-              }}
+              style={styles.goBackButton}
             >
-              <Text style={{ 
-                color: "#FFFFFF", 
-                fontFamily: FONT_FAMILY.BOLD,
-                fontSize: 16,
-                lineHeight: 19.2,
-              }}>
+              <Text style={styles.goBackButtonText}>
                 Go Back
               </Text>
             </TouchableOpacity>
             
-            {/* Cancel Order Button (Outlined) */}
             <TouchableOpacity
               onPress={async () => {
                 if (isSubmitting) return;
                 
                 setIsSubmitting(true);
                 try {
-                  // Close modal first
                   Animated.spring(translateY, {
                     toValue: DEVICE_HEIGHT,
                     useNativeDriver: true,
@@ -249,7 +172,6 @@ const CancelOrderRequest = forwardRef((props, ref) => {
                   }).start(() => {
                     setVisible(false);
                     setIsSubmitting(false);
-                    // Pass order data to parent component
                     props.onRequestConfirmed?.(orderData);
                   });
                 } catch (error) {
@@ -257,27 +179,13 @@ const CancelOrderRequest = forwardRef((props, ref) => {
                   setIsSubmitting(false);
                 }
               }}
-              style={{
-                backgroundColor: "white",
-                borderWidth: 1,
-                borderColor: "#E4E4E4",
-                width: "100%",
-                paddingVertical: 16,
-                paddingHorizontal: 51,
-                borderRadius: 100,
-                alignItems: "center",
-              }}
+              style={styles.cancelButton}
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <ActivityIndicator color="#000000" />
               ) : (
-                <Text style={{ 
-                  color: "#000000",  
-                  fontFamily: FONT_FAMILY.BOLD,
-                  fontSize: 16,
-                  lineHeight: 19.2,
-                }}>
+                <Text style={styles.cancelButtonText}>
                   Cancel Order
                 </Text>
               )}
@@ -287,6 +195,96 @@ const CancelOrderRequest = forwardRef((props, ref) => {
       </View>
     </Modal>
   );
+});
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  dismissArea: {
+    flex: 1,
+  },
+  modalContainer: {
+    backgroundColor: "white",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    paddingBottom: isTablet ? hp(6.6) : isSmallDevice ? hp(5.5) : hp(6.2),
+    maxHeight: DEVICE_HEIGHT * 0.6,
+  },
+  dragHandleArea: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: isTablet ? hp(4) : isSmallDevice ? hp(3.3) : hp(3.7),
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  dragHandle: {
+    width: isTablet ? wp(21.3) : isSmallDevice ? wp(17.1) : wp(17.1),
+    height: isTablet ? hp(0.8) : isSmallDevice ? hp(0.7) : hp(0.74),
+    backgroundColor: '#E6E6E6',
+    borderRadius: 40,
+    marginTop: isTablet ? hp(1.3) : isSmallDevice ? hp(1.1) : hp(1.2),
+  },
+  contentContainer: {
+    paddingHorizontal: isTablet ? wp(8) : isSmallDevice ? wp(5.3) : wp(6.4),
+    paddingTop: isTablet ? hp(3.1) : isSmallDevice ? hp(2.6) : hp(3),
+    gap: isTablet ? hp(1.6) : isSmallDevice ? hp(1.3) : hp(1.5),
+  },
+  heading: {
+    fontSize: isTablet ? fs(28) : isSmallDevice ? fs(20) : fs(24),
+    fontFamily: FONT_FAMILY.BOLD,
+    textAlign: "left",
+    color: '#000000',
+    letterSpacing: -0.96,
+    lineHeight: isTablet ? fs(33.6) : isSmallDevice ? fs(24) : fs(28.8),
+  },
+  subtext: {
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
+    fontFamily: FONT_FAMILY.REGULAR,
+    color: "#767676",
+    letterSpacing: -0.384,
+    lineHeight: isTablet ? fs(28) : isSmallDevice ? fs(21) : fs(24),
+  },
+  buttonContainer: {
+    paddingHorizontal: isTablet ? wp(6.7) : isSmallDevice ? wp(4.3) : wp(5.3),
+    paddingTop: isTablet ? hp(2.1) : isSmallDevice ? hp(1.7) : hp(2),
+    gap: isTablet ? hp(1.8) : isSmallDevice ? hp(1.5) : hp(1.7),
+  },
+  goBackButton: {
+    backgroundColor: "#000000",
+    width: "100%",
+    paddingVertical: isTablet ? hp(2.1) : isSmallDevice ? hp(1.7) : hp(2),
+    paddingHorizontal: isTablet ? wp(17.1) : isSmallDevice ? wp(10.7) : wp(13.6),
+    borderRadius: 100,
+    alignItems: "center",
+  },
+  goBackButtonText: {
+    color: "#FFFFFF",
+    fontFamily: FONT_FAMILY.BOLD,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
+    lineHeight: isTablet ? fs(21.6) : isSmallDevice ? fs(16.8) : fs(19.2),
+  },
+  cancelButton: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#E4E4E4",
+    width: "100%",
+    paddingVertical: isTablet ? hp(2.1) : isSmallDevice ? hp(1.7) : hp(2),
+    paddingHorizontal: isTablet ? wp(17.1) : isSmallDevice ? wp(10.7) : wp(13.6),
+    borderRadius: 100,
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    color: "#000000",
+    fontFamily: FONT_FAMILY.BOLD,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
+    lineHeight: isTablet ? fs(21.6) : isSmallDevice ? fs(16.8) : fs(19.2),
+  },
 });
 
 export default CancelOrderRequest;

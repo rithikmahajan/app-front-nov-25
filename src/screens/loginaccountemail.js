@@ -18,6 +18,7 @@ import appleAuthService from '../services/appleAuthService';
 import googleAuthService from '../services/googleAuthService';
 import sessionManager from '../services/sessionManager';
 import yoraaAPI from '../services/yoraaAPI';
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 // Eye Icon Component
 const EyeIcon = ({ width = 22, height = 16, color = "#979797" }) => (
@@ -517,30 +518,30 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    paddingHorizontal: 32,
-    paddingTop: 20,
+    paddingHorizontal: wp(isTablet ? 10.6 : 8.5),
+    paddingTop: hp(isTablet ? 3.1 : 2.5),
   },
   titleContainer: {
-    paddingHorizontal: 33,
-    marginTop: 40,
+    paddingHorizontal: wp(isTablet ? 11 : 8.8),
+    marginTop: hp(isTablet ? 6.2 : 5),
   },
   title: {
-    fontSize: 24,
+    fontSize: fs(isTablet ? 28 : isSmallDevice ? 20 : 24),
     fontFamily: 'Montserrat-Bold',
     fontWeight: 'bold',
     color: '#000000',
-    lineHeight: 48,
+    lineHeight: fs(isTablet ? 56 : isSmallDevice ? 40 : 48),
   },
   toggleContainer: {
     alignItems: 'center',
-    marginTop: 66,
+    marginTop: hp(isTablet ? 10.2 : 8.2),
   },
   toggleBackground: {
     flexDirection: 'row',
     backgroundColor: '#ededed',
     borderRadius: 15,
-    height: 30,
-    width: 124,
+    height: hp(isTablet ? 4.6 : 3.7),
+    width: wp(isTablet ? 41 : 33),
   },
   toggleOption: {
     flex: 1,
@@ -552,7 +553,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
   },
   toggleText: {
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 11 : 12),
     fontFamily: 'Montserrat-Regular',
     color: '#000000',
   },
@@ -562,20 +563,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   formContainer: {
-    paddingHorizontal: 33,
-    marginTop: 48,
+    paddingHorizontal: wp(isTablet ? 11 : 8.8),
+    marginTop: hp(isTablet ? 7.4 : 6),
   },
   inputField: {
-    marginBottom: 20,
-    height: 50,
+    marginBottom: hp(isTablet ? 3.1 : 2.5),
+    height: hp(isTablet ? 7.7 : 6.2),
   },
   textInput: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontFamily: 'Mulish-Regular',
     color: '#000000',
     paddingVertical: 0,
-    paddingBottom: 12,
-    height: 30,
+    paddingBottom: hp(isTablet ? 1.8 : 1.5),
+    height: hp(isTablet ? 4.6 : 3.7),
     letterSpacing: 0.32,
   },
   passwordContainer: {
@@ -586,31 +587,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   eyeIcon: {
-    padding: 5,
+    padding: wp(isTablet ? 1.6 : 1.3),
   },
   underline: {
     height: 1,
     backgroundColor: '#D6D6D6',
-    marginTop: 8,
+    marginTop: hp(isTablet ? 1.2 : 1),
   },
   forgotPasswordContainer: {
     alignItems: 'flex-end',
-    paddingHorizontal: 33,
-    marginTop: 10,
+    paddingHorizontal: wp(isTablet ? 11 : 8.8),
+    marginTop: hp(isTablet ? 1.5 : 1.2),
   },
   forgotPasswordText: {
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 11 : 12),
     fontFamily: 'Montserrat-Regular',
     color: '#000000',
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: fs(isTablet ? 28 : isSmallDevice ? 20 : 24),
   },
   loginButton: {
-    marginHorizontal: 33,
-    marginTop: 40,
+    marginHorizontal: wp(isTablet ? 11 : 8.8),
+    marginTop: hp(isTablet ? 6.2 : 5),
     backgroundColor: '#000000',
     borderRadius: 26.5,
-    height: 51,
+    height: hp(isTablet ? 7.9 : 6.3),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -618,12 +619,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#CCCCCC',
   },
   loginButtonText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontFamily: 'Montserrat-Bold',
     fontWeight: 'bold',
     color: '#ffffff',
     textTransform: 'uppercase',
-    lineHeight: 24,
+    lineHeight: fs(isTablet ? 28 : isSmallDevice ? 20 : 24),
   },
   loginButtonTextDisabled: {
     color: '#999999',
@@ -631,8 +632,8 @@ const styles = StyleSheet.create({
   dividerSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 33,
-    marginTop: 40,
+    marginHorizontal: wp(isTablet ? 11 : 8.8),
+    marginTop: hp(isTablet ? 6.2 : 5),
   },
   dividerLine: {
     flex: 1,
@@ -640,24 +641,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#E9E9E9',
   },
   dividerText: {
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 11 : 12),
     fontFamily: 'Montserrat-Regular',
     color: '#000000',
     opacity: 0.6,
-    marginHorizontal: 16,
+    marginHorizontal: wp(isTablet ? 5.3 : 4.3),
     letterSpacing: 0.24,
-    lineHeight: 24,
+    lineHeight: fs(isTablet ? 28 : isSmallDevice ? 20 : 24),
   },
   socialButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 36,
-    gap: 20,
+    marginTop: hp(isTablet ? 5.6 : 4.5),
+    gap: wp(isTablet ? 6.6 : 5.3),
   },
   socialButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: wp(isTablet ? 14 : 11.2),
+    height: wp(isTablet ? 14 : 11.2),
+    borderRadius: wp(isTablet ? 7 : 5.6),
     backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
@@ -667,15 +668,15 @@ const styles = StyleSheet.create({
   },
   footer: {
     alignItems: 'center',
-    marginTop: 60,
-    marginBottom: 40,
-    paddingHorizontal: 33,
+    marginTop: hp(isTablet ? 9.3 : 7.5),
+    marginBottom: hp(isTablet ? 6.2 : 5),
+    paddingHorizontal: wp(isTablet ? 11 : 8.8),
   },
   footerText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     fontFamily: 'Montserrat-Regular',
     color: '#000000',
-    lineHeight: 20,
+    lineHeight: fs(isTablet ? 24 : isSmallDevice ? 18 : 20),
   },
   footerLink: {
     textDecorationLine: 'underline',

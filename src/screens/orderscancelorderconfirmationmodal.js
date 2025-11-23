@@ -7,37 +7,31 @@ import {
   Animated,
   View,
   PanResponder,
+  StyleSheet,
 } from "react-native";
 import { FontFamilies } from "../constants/styles";
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 const DEVICE_HEIGHT = Dimensions.get("window").height;
 
-// Font constants to match your app structure
 const FONT_FAMILY = {
   REGULAR: FontFamilies.regular,
   BOLD: FontFamilies.bold,
-  MEDIUM: FontFamilies.medium || FontFamilies.bold, // Fallback to bold if medium not available
+  MEDIUM: FontFamilies.medium || FontFamilies.bold,
 };
 
 const CancelledOrderConfirm = forwardRef((props, ref) => {
   const [visible, setVisible] = useState(false);
   const translateY = useRef(new Animated.Value(DEVICE_HEIGHT)).current;
 
-  // Debug logging
-  useEffect(() => {
-    console.log('CancelledOrderConfirm mounted');
-  }, []);
-
   useEffect(() => {
     if (visible) {
-      // Reset translateY to starting position first
       translateY.setValue(DEVICE_HEIGHT);
-      // Animate modal up with faster, more responsive animation
       Animated.spring(translateY, {
         toValue: 0,
         useNativeDriver: true,
-        tension: 200, // Higher tension for faster response
-        friction: 7,  // Lower friction for quicker animation
+        tension: 200,
+        friction: 7,
       }).start();
     }
   }, [visible, translateY]);
@@ -46,25 +40,22 @@ const CancelledOrderConfirm = forwardRef((props, ref) => {
     Animated.spring(translateY, {
       toValue: DEVICE_HEIGHT,
       useNativeDriver: true,
-      tension: 200, // Higher tension for faster close
-      friction: 7,  // Lower friction for quicker animation
+      tension: 200,
+      friction: 7,
     }).start(() => {
       setVisible(false);
     });
   };
 
   const handleOpen = () => {
-    // Ensure the modal starts from the bottom
     translateY.setValue(DEVICE_HEIGHT);
     setVisible(true);
   };
 
-  // Pan responder for drag handle - always allows drag to close (following orderscancelordermodal pattern)
   const dragHandlePanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Always respond to any movement on the drag handle
         return Math.abs(gestureState.dy) > 5;
       },
       onPanResponderMove: (evt, gestureState) => {
@@ -74,10 +65,8 @@ const CancelledOrderConfirm = forwardRef((props, ref) => {
       },
       onPanResponderRelease: (evt, gestureState) => {
         if (gestureState.dy > 50 || gestureState.vy > 0.3) {
-          // Lower threshold for drag handle
           handleClose();
         } else {
-          // Snap back to original position
           Animated.spring(translateY, {
             toValue: 0,
             useNativeDriver: true,
@@ -89,11 +78,9 @@ const CancelledOrderConfirm = forwardRef((props, ref) => {
     }),
   ).current;
 
-  // Pan responder for content area - only for downward swipes (following orderscancelordermodal pattern)
   const contentPanResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Only respond to significant downward swipes
         return gestureState.dy > 15 && Math.abs(gestureState.dx) < Math.abs(gestureState.dy);
       },
       onPanResponderMove: (evt, gestureState) => {
@@ -103,10 +90,8 @@ const CancelledOrderConfirm = forwardRef((props, ref) => {
       },
       onPanResponderRelease: (evt, gestureState) => {
         if (gestureState.dy > 100 || gestureState.vy > 0.5) {
-          // Higher threshold for content area
           handleClose();
         } else {
-          // Snap back to original position
           Animated.spring(translateY, {
             toValue: 0,
             useNativeDriver: true,
@@ -129,114 +114,45 @@ const CancelledOrderConfirm = forwardRef((props, ref) => {
 
   return (
     <Modal transparent visible={visible} animationType="none">
-      <View style={{
-        flex: 1,
-        justifyContent: "flex-end",
-        backgroundColor: "rgba(0,0,0,0.4)",
-      }}>
+      <View style={styles.modalOverlay}>
         <TouchableOpacity 
-          style={{ flex: 1 }}
+          style={styles.dismissArea}
           activeOpacity={1}
           onPress={handleClose}
         />
         
         <Animated.View
-          style={{
-            backgroundColor: "white",
-            borderTopLeftRadius: 10,
-            borderTopRightRadius: 10,
-            paddingBottom: 50,
-            maxHeight: DEVICE_HEIGHT * 0.6,
-            transform: [{ translateY }],
-          }}
+          style={[
+            styles.modalContainer,
+            { transform: [{ translateY }] }
+          ]}
         >
-          {/* Drag Handle - draggable area */}
           <View 
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 30,
-              justifyContent: 'center',
-              alignItems: 'center',
-              zIndex: 10,
-            }}
+            style={styles.dragHandleContainer}
             {...dragHandlePanResponder.panHandlers}
           >
-            <View style={{
-              width: 64,
-              height: 6,
-              backgroundColor: '#E6E6E6',
-              borderRadius: 40,
-              marginTop: 10,
-            }} />
+            <View style={styles.dragHandle} />
           </View>
 
-          {/* Content Container with swipe down capability */}
           <View 
-            style={{
-              paddingHorizontal: 24,
-              paddingTop: 24,
-              alignItems: 'center',
-            }}
+            style={styles.contentContainer}
             {...contentPanResponder.panHandlers}
           >
-            {/* Heading */}
-            <Text
-              style={{
-                fontSize: 24,
-                fontFamily: FONT_FAMILY.MEDIUM,
-                textAlign: "center",
-                color: '#000000',
-                marginBottom: 16,
-                lineHeight: 28.8,
-                letterSpacing: -0.96,
-              }}
-            >
+            <Text style={styles.heading}>
               Your order has been cancelled
             </Text>
 
-            {/* Subtext */}
-            <Text
-              style={{
-                textAlign: "center",
-                fontSize: 16,
-                fontFamily: FONT_FAMILY.REGULAR,
-                color: "#767676",
-                marginBottom: 32,
-                lineHeight: 24,
-                letterSpacing: -0.384,
-                paddingHorizontal: 8,
-              }}
-            >
+            <Text style={styles.subtext}>
               Your cancellation has been processed and you won't be charged. It can take a few minutes for this page to show your order's status updated.
             </Text>
           </View>
 
-          {/* Button Container - separate from content pan responder */}
-          <View style={{
-            paddingHorizontal: 24,
-            paddingTop: 16,
-          }}>
-            {/* Got It Button */}
+          <View style={styles.buttonContainer}>
             <TouchableOpacity
               onPress={handleClose}
-              style={{
-                backgroundColor: "#000000",
-                width: "100%",
-                paddingVertical: 16,
-                paddingHorizontal: 51,
-                borderRadius: 100,
-                alignItems: "center",
-              }}
+              style={styles.gotItButton}
             >
-              <Text style={{ 
-                color: "#FFFFFF", 
-                fontFamily: FONT_FAMILY.MEDIUM,
-                fontSize: 16,
-                lineHeight: 19.2,
-              }}>
+              <Text style={styles.gotItButtonText}>
                 Got It
               </Text>
             </TouchableOpacity>
@@ -245,6 +161,83 @@ const CancelledOrderConfirm = forwardRef((props, ref) => {
       </View>
     </Modal>
   );
+});
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  dismissArea: {
+    flex: 1,
+  },
+  modalContainer: {
+    backgroundColor: "white",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    paddingBottom: hp(isTablet ? 7.8 : 6.2),
+    maxHeight: DEVICE_HEIGHT * 0.6,
+  },
+  dragHandleContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: hp(isTablet ? 4.7 : 3.7),
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  dragHandle: {
+    width: wp(isTablet ? 21.3 : 17.1),
+    height: hp(isTablet ? 0.9 : 0.7),
+    backgroundColor: '#E6E6E6',
+    borderRadius: 40,
+    marginTop: hp(isTablet ? 1.6 : 1.2),
+  },
+  contentContainer: {
+    paddingHorizontal: wp(isTablet ? 8 : 6.4),
+    paddingTop: hp(isTablet ? 3.7 : 3),
+    alignItems: 'center',
+  },
+  heading: {
+    fontSize: fs(isTablet ? 28 : isSmallDevice ? 20 : 24),
+    fontFamily: FONT_FAMILY.MEDIUM,
+    textAlign: "center",
+    color: '#000000',
+    marginBottom: hp(isTablet ? 2.5 : 2),
+    lineHeight: fs(isTablet ? 34 : isSmallDevice ? 24 : 28.8),
+    letterSpacing: -0.96,
+  },
+  subtext: {
+    textAlign: "center",
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
+    fontFamily: FONT_FAMILY.REGULAR,
+    color: "#767676",
+    marginBottom: hp(isTablet ? 5 : 4),
+    lineHeight: fs(isTablet ? 28 : isSmallDevice ? 20 : 24),
+    letterSpacing: -0.384,
+    paddingHorizontal: wp(isTablet ? 2.7 : 2.1),
+  },
+  buttonContainer: {
+    paddingHorizontal: wp(isTablet ? 8 : 6.4),
+    paddingTop: hp(isTablet ? 2.5 : 2),
+  },
+  gotItButton: {
+    backgroundColor: "#000000",
+    width: "100%",
+    paddingVertical: hp(isTablet ? 2.5 : 2),
+    paddingHorizontal: wp(isTablet ? 17 : 13.6),
+    borderRadius: 100,
+    alignItems: "center",
+  },
+  gotItButtonText: {
+    color: "#FFFFFF",
+    fontFamily: FONT_FAMILY.MEDIUM,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
+    lineHeight: fs(isTablet ? 22 : isSmallDevice ? 17 : 19.2),
+  },
 });
 
 export default CancelledOrderConfirm;

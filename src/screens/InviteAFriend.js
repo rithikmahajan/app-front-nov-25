@@ -9,10 +9,14 @@ import {
   Share,
   ActivityIndicator,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import { Svg, Path, G, Defs, ClipPath, Rect, Line } from 'react-native-svg';
 import { GlobalBackButton } from '../components';
 import yoraaAPI from '../services/yoraaAPI';
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const CopyIcon = () => (
   <Svg width="13" height="13" viewBox="0 0 13 13" fill="none">
@@ -39,13 +43,17 @@ const CopyIcon = () => (
 );
 
 const VoucherShape = ({ children }) => {
+  const voucherWidth = isTablet ? SCREEN_WIDTH * 0.75 : SCREEN_WIDTH * 0.92;
+  const voucherHeight = isTablet ? hp(22) : hp(22.5);
+  
   return (
-    <View style={styles.voucherContainer}>
+    <View style={[styles.voucherContainer, { width: voucherWidth, height: voucherHeight }]}>
       <Svg 
-        width={450} 
-        height={180} 
+        width={voucherWidth} 
+        height={voucherHeight} 
         viewBox="0 0 450 180" 
         style={styles.voucherSvg}
+        preserveAspectRatio="none"
       >
         <Defs>
           <ClipPath id="voucher-clip">
@@ -64,7 +72,9 @@ const VoucherShape = ({ children }) => {
           strokeLinecap="round"
         />
       </Svg>
-      {children}
+      <View style={[styles.voucherContent, { width: voucherWidth, height: voucherHeight }]}>
+        {children}
+      </View>
     </View>
   );
 };
@@ -215,10 +225,13 @@ const InviteAFriend = ({ navigation, route }) => {
           >
             <Text style={styles.myCodeLabel}>Available Codes</Text>
 
-            {inviteCodes.map((code, index) => (
+            {inviteCodes.map((code, index) => {
+              const voucherWidth = isTablet ? SCREEN_WIDTH * 0.75 : SCREEN_WIDTH * 0.92;
+              const dashedLineWidth = voucherWidth * 0.88;
+              
+              return (
               <View key={code.id || index} style={styles.voucherWrapper}>
                 <VoucherShape>
-                  <View style={styles.voucherContent}>
                     <Text style={styles.codeName}>{code.code}</Text>
                     
                     <View style={styles.codeContainer}>
@@ -234,7 +247,7 @@ const InviteAFriend = ({ navigation, route }) => {
                     </View>
                     
                     <View style={styles.dashedLineContainer}>
-                      <Svg width={400} height={1} viewBox="0 0 400 1" style={styles.dashedLineSvg}>
+                      <Svg width={dashedLineWidth} height={1} viewBox="0 0 400 1" style={styles.dashedLineSvg} preserveAspectRatio="none">
                         <Line
                           x1="0.5"
                           y1="0.5"
@@ -257,7 +270,6 @@ const InviteAFriend = ({ navigation, route }) => {
                         Min order: ₹{code.minOrderValue}
                       </Text>
                     )}
-                  </View>
                 </VoucherShape>
 
                 <TouchableOpacity 
@@ -267,7 +279,7 @@ const InviteAFriend = ({ navigation, route }) => {
                   <Text style={styles.inviteButtonText}>Share Code</Text>
                 </TouchableOpacity>
               </View>
-            ))}
+            )})}
           </ScrollView>
         )}
       </View>
@@ -283,14 +295,14 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingHorizontal: wp(isTablet ? 5.3 : 4.3),
+    paddingTop: hp(isTablet ? 2.5 : 2),
+    paddingBottom: hp(isTablet ? 1.8 : 1.5),
     backgroundColor: '#FFFFFF',
   },
   headerTitle: {
     flex: 1,
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '500',
     color: '#000000',
     textAlign: 'center',
@@ -298,76 +310,74 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
   },
   headerSpacer: {
-    width: 24,
+    width: wp(isTablet ? 8 : 6.4),
   },
   content: {
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '600',
     color: '#000000',
     textAlign: 'center',
-    marginTop: 28, // top: 100px - header height
-    marginBottom: 22,
+    marginTop: hp(isTablet ? 4.3 : 3.5),
+    marginBottom: hp(isTablet ? 3.4 : 2.7),
     fontFamily: 'Montserrat-SemiBold',
-    lineHeight: 22,
-    paddingHorizontal: 16,
+    lineHeight: fs(isTablet ? 26 : isSmallDevice ? 20 : 22),
+    paddingHorizontal: wp(isTablet ? 5.3 : 4.3),
   },
   myCodeLabel: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '600',
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: hp(isTablet ? 3.1 : 2.5),
     fontFamily: 'Montserrat-SemiBold',
-    lineHeight: 22,
+    lineHeight: fs(isTablet ? 26 : isSmallDevice ? 20 : 22),
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: hp(isTablet ? 6.2 : 5),
   },
   voucherWrapper: {
     alignItems: 'center',
-    marginBottom: 32,
-    paddingHorizontal: 16,
+    marginBottom: hp(isTablet ? 5 : 4),
+    paddingHorizontal: wp(isTablet ? 5.3 : 4.3),
   },
   codeName: {
-    fontSize: 24,
+    fontSize: fs(isTablet ? 26 : isSmallDevice ? 20 : 24),
     fontWeight: '600',
     color: '#3E3E3E',
     fontFamily: 'Montserrat-SemiBold',
     textAlign: 'left',
-    lineHeight: 28,
+    lineHeight: fs(isTablet ? 32 : isSmallDevice ? 24 : 28),
     position: 'absolute',
-    left: 32,
-    top: 20,
+    left: wp(isTablet ? 8.5 : 8.5),
+    top: hp(isTablet ? 2.5 : 2.5),
   },
   discountText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '600',
     color: '#000000',
     fontFamily: 'Montserrat-SemiBold',
     textTransform: 'uppercase',
-    marginRight: 8,
-    lineHeight: 20,
+    marginRight: wp(isTablet ? 2.6 : 2.1),
+    lineHeight: fs(isTablet ? 24 : isSmallDevice ? 18 : 20),
   },
   minOrderText: {
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 11 : 12),
     fontWeight: 'normal',
     color: '#6C6C6C',
     fontFamily: 'Montserrat-Regular',
     textAlign: 'left',
     position: 'absolute',
-    left: 32,
-    bottom: 20,
+    left: wp(isTablet ? 8.5 : 8.5),
+    bottom: hp(isTablet ? 2.5 : 2.5),
   },
   voucherContainer: {
-    width: 450,
-    height: 180,
     position: 'relative',
   },
   voucherSvg: {
@@ -376,133 +386,128 @@ const styles = StyleSheet.create({
     left: 0,
   },
   voucherContent: {
-    width: 450,
-    height: 180,
     position: 'relative',
   },
   userName: {
-    fontSize: 24,
+    fontSize: fs(isTablet ? 26 : isSmallDevice ? 20 : 24),
     fontWeight: '600',
-    color: '#3E3E3E', // neutral-800 equivalent
+    color: '#3E3E3E',
     fontFamily: 'Montserrat-SemiBold',
     textAlign: 'left',
-    lineHeight: 28,
+    lineHeight: fs(isTablet ? 32 : isSmallDevice ? 24 : 28),
     position: 'absolute',
-    left: 32,
-    top: 20,
+    left: wp(isTablet ? 8.5 : 8.5),
+    top: hp(isTablet ? 2.5 : 2.5),
   },
   codeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     position: 'absolute',
-    left: 32,
-    top: 60,
+    left: wp(isTablet ? 8.5 : 8.5),
+    top: hp(isTablet ? 7.5 : 7.5),
   },
   referralCode: {
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 11 : 12),
     fontWeight: 'normal',
     color: '#6C6C6C',
     fontFamily: 'Montserrat-Regular',
     textTransform: 'uppercase',
-    marginRight: 8,
-    lineHeight: 14,
+    marginRight: wp(isTablet ? 2.6 : 2.1),
+    lineHeight: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
   },
   copyButton: {
-    padding: 2,
-    marginLeft: 8,
+    padding: wp(isTablet ? 0.6 : 0.5),
+    marginLeft: wp(isTablet ? 2.6 : 2.1),
   },
   dashedLineContainer: {
     position: 'absolute',
-    width: 400,
     height: 1,
-    left: 25,
-    top: 110,
+    left: wp(isTablet ? 6.6 : 6.6),
+    top: hp(isTablet ? 13.7 : 13.7),
     alignItems: 'center',
     justifyContent: 'center',
   },
   dashedLineSvg: {
-    transform: [{ rotate: '359.798deg' }], // matching Figma rotation
+    transform: [{ rotate: '359.798deg' }],
   },
   benefitText: {
-    fontSize: 13,
+    fontSize: fs(isTablet ? 15 : isSmallDevice ? 12 : 13),
     fontWeight: 'normal',
     color: '#6C6C6C',
     fontFamily: 'Montserrat-Regular',
     textAlign: 'left',
-    lineHeight: 18,
+    lineHeight: fs(isTablet ? 21 : isSmallDevice ? 16 : 18),
     position: 'absolute',
-    left: 32,
-    top: 125,
-    width: 380,
+    left: wp(isTablet ? 8.5 : 8.5),
+    top: hp(isTablet ? 15.6 : 15.6),
+    width: '84%',
   },
   inviteButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    paddingVertical: 18,
-    paddingHorizontal: 60,
-    marginHorizontal: 20,
-    marginTop: 24,
-    minWidth: 200,
+    paddingVertical: hp(isTablet ? 2.8 : 2.2),
+    paddingHorizontal: wp(isTablet ? 20 : 16),
+    marginHorizontal: wp(isTablet ? 6.6 : 5.3),
+    marginTop: hp(isTablet ? 3.7 : 3),
+    minWidth: wp(isTablet ? 66 : 53),
   },
   inviteButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
     textAlign: 'center',
-    lineHeight: 19.2,
+    lineHeight: fs(isTablet ? 23 : isSmallDevice ? 17 : 19),
   },
-  // Loading state styles
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: hp(isTablet ? 9.3 : 7.5),
   },
   loadingText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     fontWeight: '400',
     color: '#6C6C6C',
     fontFamily: 'Montserrat-Regular',
-    marginTop: 16,
+    marginTop: hp(isTablet ? 2.5 : 2),
     textAlign: 'center',
   },
-  // Empty state styles
   emptyStateContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 32,
-    paddingVertical: 40,
+    paddingHorizontal: wp(isTablet ? 10.6 : 8.5),
+    paddingVertical: hp(isTablet ? 6.2 : 5),
   },
   emptyStateTitle: {
-    fontSize: 18,
+    fontSize: fs(isTablet ? 20 : isSmallDevice ? 16 : 18),
     fontWeight: '600',
     color: '#000000',
     fontFamily: 'Montserrat-SemiBold',
-    marginTop: 24,
-    marginBottom: 12,
+    marginTop: hp(isTablet ? 3.7 : 3),
+    marginBottom: hp(isTablet ? 1.8 : 1.5),
     textAlign: 'center',
   },
   emptyStateMessage: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     fontWeight: '400',
     color: '#6C6C6C',
     fontFamily: 'Montserrat-Regular',
     textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 32,
+    lineHeight: fs(isTablet ? 24 : isSmallDevice ? 18 : 20),
+    marginBottom: hp(isTablet ? 5 : 4),
   },
   retryButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    marginTop: 8,
+    paddingVertical: hp(isTablet ? 1.8 : 1.5),
+    paddingHorizontal: wp(isTablet ? 10.6 : 8.5),
+    marginTop: hp(isTablet ? 1.2 : 1),
   },
   retryButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
     textAlign: 'center',

@@ -16,6 +16,7 @@ import Svg, { Path } from 'react-native-svg';
 import GlobalBackButton from '../components/GlobalBackButton';
 import auth from '@react-native-firebase/auth';
 import { apiService } from '../services/apiService';
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 // User Icon Component
 const UserIcon = () => (
@@ -419,93 +420,88 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
 
-  // Header Styles
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: wp(isTablet ? 5.3 : 4.3),
+    paddingVertical: hp(isTablet ? 1.8 : 1.5),
     backgroundColor: '#FFFFFF',
-    paddingTop: 16,
+    paddingTop: hp(isTablet ? 2.5 : 2),
   },
   backButtonContainer: {
-    width: 68,
+    width: wp(isTablet ? 22 : 18),
     alignItems: 'flex-start',
   },
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.4,
     fontFamily: 'Montserrat-Medium',
   },
   headerSpacer: {
-    width: 68,
+    width: wp(isTablet ? 22 : 18),
   },
 
-  // Content Styles
   scrollContainer: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingHorizontal: wp(isTablet ? 6.6 : 5.3),
+    paddingVertical: hp(isTablet ? 3.1 : 2.5),
   },
 
-  // Order Header Styles
   orderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: hp(isTablet ? 1.5 : 1.2),
   },
   orderIdText: {
-    fontSize: 24,
+    fontSize: fs(isTablet ? 28 : isSmallDevice ? 20 : 24),
     fontWeight: '600',
     color: '#232321',
     fontFamily: 'Montserrat-SemiBold',
   },
   statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: wp(isTablet ? 4 : 3.2),
+    paddingVertical: hp(isTablet ? 1.2 : 1),
     borderRadius: 8,
   },
   statusBadgeText: {
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 11 : 12),
     fontWeight: '600',
     color: '#232321',
     fontFamily: 'OpenSans-SemiBold',
   },
 
-  // Date Styles
   dateContainer: {
     flexDirection: 'row',
-    marginBottom: 30,
+    marginBottom: hp(isTablet ? 4.6 : 3.7),
   },
   dateLabel: {
-    fontSize: 24,
+    fontSize: fs(isTablet ? 28 : isSmallDevice ? 20 : 24),
     fontWeight: '600',
     color: '#232321',
-    marginRight: 10,
+    marginRight: wp(isTablet ? 3.3 : 2.6),
     fontFamily: 'Montserrat-SemiBold',
   },
   dateValue: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '600',
     color: '#70706E',
     alignSelf: 'flex-end',
     fontFamily: 'Montserrat-SemiBold',
   },
 
-  // Product Image Styles
   productImageSection: {
-    marginBottom: 30,
+    marginBottom: hp(isTablet ? 4.6 : 3.7),
     backgroundColor: '#FFFFFF',
     borderRadius: 0,
-    padding: 20,
-    height: 465,
+    padding: wp(isTablet ? 6.6 : 5.3),
+    height: hp(isTablet ? 72 : isSmallDevice ? 52 : 58),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -515,8 +511,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 10,
-    fontSize: 14,
+    marginTop: hp(isTablet ? 1.5 : 1.2),
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     color: '#666',
     fontFamily: 'Montserrat-Regular',
   },
@@ -529,11 +525,11 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   productImageItem: {
-    width: 80,
-    height: 80,
+    width: wp(isTablet ? 26.6 : isSmallDevice ? 18 : 21.3),
+    height: wp(isTablet ? 26.6 : isSmallDevice ? 18 : 21.3),
     backgroundColor: '#F5F5F5',
     borderRadius: 8,
-    margin: 5,
+    margin: wp(isTablet ? 1.6 : 1.3),
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -541,13 +537,13 @@ const styles = StyleSheet.create({
   productImageItemSingle: {
     width: '90%',
     height: '95%',
-    maxWidth: 400,
-    maxHeight: 420,
+    maxWidth: wp(isTablet ? 133 : 106),
+    maxHeight: hp(isTablet ? 65 : 52),
     margin: 0,
     backgroundColor: 'transparent',
   },
   productImagePlaceholder: {
-    fontSize: 24,
+    fontSize: fs(isTablet ? 28 : isSmallDevice ? 20 : 24),
   },
   productImageThumb: {
     width: '100%',
@@ -562,7 +558,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8E8E8',
   },
   noImageText: {
-    fontSize: 10,
+    fontSize: fs(isTablet ? 12 : isSmallDevice ? 9 : 10),
     color: '#999',
     fontFamily: 'Montserrat-Regular',
   },
@@ -572,32 +568,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   noProductsText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     color: '#999',
     fontFamily: 'Montserrat-Regular',
   },
   imageIndicators: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: hp(isTablet ? 3.1 : 2.5),
   },
   indicator: {
-    width: 10,
-    height: 2,
+    width: wp(isTablet ? 3.3 : 2.6),
+    height: hp(isTablet ? 0.3 : 0.25),
     backgroundColor: '#848688',
-    marginHorizontal: 2,
+    marginHorizontal: wp(isTablet ? 0.6 : 0.5),
   },
   activeIndicator: {
     backgroundColor: '#000000',
-    width: 34,
+    width: wp(isTablet ? 11.3 : 9),
   },
 
-  // Action Section Styles
   actionSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 30,
-    gap: 20,
+    marginBottom: hp(isTablet ? 4.6 : 3.7),
+    gap: wp(isTablet ? 6.6 : 5.3),
   },
   downloadButton: {
     flex: 1,
@@ -605,19 +600,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E4E4E4',
     borderRadius: 100,
-    paddingVertical: 16,
+    paddingVertical: hp(isTablet ? 2.5 : 2),
     alignItems: 'center',
   },
   downloadButtonText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '500',
     color: '#000000',
     fontFamily: 'Montserrat-Medium',
   },
   shareButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: wp(isTablet ? 16 : 12.8),
+    height: wp(isTablet ? 16 : 12.8),
+    borderRadius: wp(isTablet ? 8 : 6.4),
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: '#E4E4E4',
@@ -625,94 +620,90 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // Info Section Styles
   infoSection: {
-    marginBottom: 20,
+    marginBottom: hp(isTablet ? 3.1 : 2.5),
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
   infoIcon: {
-    width: 48,
-    height: 48,
+    width: wp(isTablet ? 16 : 12.8),
+    height: wp(isTablet ? 16 : 12.8),
     backgroundColor: '#232321',
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: wp(isTablet ? 5.3 : 4.3),
   },
   iconContainer: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   iconText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     color: '#FFFFFF',
   },
   infoContent: {
     flex: 1,
   },
   infoTitle: {
-    fontSize: 20,
+    fontSize: fs(isTablet ? 24 : isSmallDevice ? 18 : 20),
     fontWeight: '600',
     color: '#232321',
-    marginBottom: 8,
+    marginBottom: hp(isTablet ? 1.2 : 1),
     fontFamily: 'Montserrat-SemiBold',
   },
   infoDetail: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '600',
     color: '#70706E',
-    marginBottom: 4,
-    lineHeight: 27.5,
+    marginBottom: hp(isTablet ? 0.6 : 0.5),
+    lineHeight: fs(isTablet ? 33 : isSmallDevice ? 24 : 28),
     fontFamily: 'Montserrat-SemiBold',
   },
 
-  // Delivery Section
   deliverySection: {
-    marginBottom: 30,
-    marginLeft: 64, // Offset to align with other content
+    marginBottom: hp(isTablet ? 4.6 : 3.7),
+    marginLeft: wp(isTablet ? 21.3 : 17),
   },
 
-  // Payment Section Styles
   paymentSection: {
-    marginBottom: 30,
+    marginBottom: hp(isTablet ? 4.6 : 3.7),
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: fs(isTablet ? 24 : isSmallDevice ? 18 : 20),
     fontWeight: '600',
     color: '#232321',
-    marginBottom: 16,
+    marginBottom: hp(isTablet ? 2.5 : 2),
     fontFamily: 'Montserrat-SemiBold',
   },
   paymentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: hp(isTablet ? 1.2 : 1),
   },
   cardIcon: {
-    width: 36,
-    height: 21,
+    width: wp(isTablet ? 12 : 9.6),
+    height: hp(isTablet ? 3.2 : 2.6),
     backgroundColor: '#F0F0F0',
     borderRadius: 4,
-    marginRight: 8,
+    marginRight: wp(isTablet ? 2.6 : 2.1),
   },
   paymentDetail: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '600',
     color: '#70706E',
-    marginBottom: 4,
+    marginBottom: hp(isTablet ? 0.6 : 0.5),
     fontFamily: 'OpenSans-SemiBold',
   },
 
-  // Share Icon Styles
   shareIconContainer: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   shareIconText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     color: '#767676',
   },
 });

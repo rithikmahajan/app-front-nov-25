@@ -5,19 +5,13 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   Image,
 } from 'react-native';
 import { apiService } from '../services/apiService';
 import GlobalSearchIcon from '../assets/icons/GlobalSearchIcon';
 import RightArrowIcon from '../assets/icons/RightArrowIcon';
 import { CategoryCardSkeleton } from '../components/SkeletonLoader';
-import { 
-  getResponsiveValue, 
-  getResponsiveFontSize, 
-  getResponsiveSpacing,
-  DeviceSize 
-} from '../utils/responsive';
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 const HomeScreen = React.memo(({ navigation, route }) => {
   const [activeTab, setActiveTab] = useState('');
@@ -377,73 +371,70 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingTop: getResponsiveSpacing(16),
+    paddingTop: hp(isTablet ? 2.5 : 2),
   },
   
-  // Header Styles
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: getResponsiveSpacing(16),
-    paddingTop: getResponsiveSpacing(16),
-    paddingBottom: getResponsiveSpacing(12),
+    paddingHorizontal: wp(isTablet ? 5.3 : 4.3),
+    paddingTop: hp(isTablet ? 2.5 : 2),
+    paddingBottom: hp(isTablet ? 1.8 : 1.5),
     backgroundColor: '#FFFFFF',
   },
   shopTitle: {
-    fontSize: getResponsiveFontSize(28),
+    fontSize: fs(isTablet ? 32 : isSmallDevice ? 24 : 28),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.168,
-    lineHeight: getResponsiveFontSize(33.6),
+    lineHeight: fs(isTablet ? 38 : isSmallDevice ? 29 : 34),
     fontFamily: 'Montserrat-Medium',
   },
   headerIcons: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: getResponsiveSpacing(23),
+    gap: wp(isTablet ? 6 : 6.1),
   },
   iconButton: {
-    padding: getResponsiveSpacing(8),
-    minWidth: getResponsiveValue(40, 48, 56),
-    minHeight: getResponsiveValue(40, 48, 56),
+    padding: wp(isTablet ? 2.1 : 2.1),
+    minWidth: wp(isTablet ? 12 : 10.6),
+    minHeight: wp(isTablet ? 12 : 10.6),
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  // Tab Navigation Styles
   tabContainer: {
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#CDCDCD',
-    paddingTop: getResponsiveSpacing(12),
+    paddingTop: hp(isTablet ? 1.8 : 1.5),
     flexDirection: 'row',
     position: 'relative',
   },
   tabWrapper: {
     flexDirection: 'row',
-    paddingHorizontal: getResponsiveSpacing(16),
-    paddingBottom: getResponsiveSpacing(4),
+    paddingHorizontal: wp(isTablet ? 5.3 : 4.3),
+    paddingBottom: hp(isTablet ? 0.6 : 0.5),
     flex: 1,
   },
   tab: {
-    paddingHorizontal: getResponsiveSpacing(16),
+    paddingHorizontal: wp(isTablet ? 5.3 : 4.3),
     paddingTop: 0,
-    paddingBottom: getResponsiveSpacing(16),
+    paddingBottom: hp(isTablet ? 2.5 : 2),
     position: 'relative',
   },
   firstTab: {
-    paddingLeft: getResponsiveSpacing(16),
+    paddingLeft: wp(isTablet ? 5.3 : 4.3),
   },
   tabContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   activeTab: {
-    // Active tab styling handled by indicator
   },
   tabText: {
-    fontSize: getResponsiveFontSize(16),
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '500',
     color: '#767676',
     letterSpacing: -0.4,
@@ -461,21 +452,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
   },
 
-  // Content Styles
   content: {
     flex: 1,
-    marginTop: getResponsiveSpacing(6),
+    marginTop: hp(isTablet ? 0.9 : 0.7),
   },
   categoriesContainer: {
     paddingTop: 0,
   },
 
-  // Category Item Styles
   categoryItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: getResponsiveSpacing(16),
-    paddingVertical: getResponsiveSpacing(16),
+    paddingHorizontal: wp(isTablet ? 5.3 : 4.3),
+    paddingVertical: hp(isTablet ? 2.5 : 2),
     borderBottomWidth: 1,
     borderBottomColor: '#E4E4E4',
   },
@@ -483,28 +472,28 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   categoryImageContainer: {
-    marginRight: getResponsiveSpacing(16),
+    marginRight: wp(isTablet ? 5.3 : 4.3),
   },
   categoryImage: {
-    width: getResponsiveValue(70, 90, 110),
-    height: getResponsiveValue(70, 90, 110),
-    borderRadius: getResponsiveSpacing(8),
+    width: wp(isTablet ? 23 : isSmallDevice ? 18.5 : 18.6),
+    height: wp(isTablet ? 23 : isSmallDevice ? 18.5 : 18.6),
+    borderRadius: 8,
   },
   categoryImagePlaceholder: {
-    width: getResponsiveValue(70, 90, 110),
-    height: getResponsiveValue(70, 90, 110),
+    width: wp(isTablet ? 23 : isSmallDevice ? 18.5 : 18.6),
+    height: wp(isTablet ? 23 : isSmallDevice ? 18.5 : 18.6),
     backgroundColor: '#EEEEEE',
-    borderRadius: getResponsiveSpacing(8),
+    borderRadius: 8,
   },
   categoryInfo: {
     flex: 1,
   },
   categoryName: {
-    fontSize: getResponsiveFontSize(14),
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     fontWeight: '400',
     color: '#000000',
     letterSpacing: -0.14,
-    lineHeight: getResponsiveFontSize(16.8),
+    lineHeight: fs(isTablet ? 19 : isSmallDevice ? 16 : 17),
     fontFamily: 'Montserrat-Regular',
   },
   saleText: {
@@ -513,16 +502,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-SemiBold',
   },
 
-  // Loading and Error States
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: getResponsiveSpacing(40),
+    paddingVertical: hp(isTablet ? 6.2 : 5),
   },
   loadingText: {
-    marginTop: getResponsiveSpacing(12),
-    fontSize: getResponsiveFontSize(14),
+    marginTop: hp(isTablet ? 1.8 : 1.5),
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     color: '#767676',
     fontFamily: 'Montserrat-Regular',
   },
@@ -530,80 +518,85 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    paddingHorizontal: getResponsiveSpacing(8),
+    paddingHorizontal: wp(isTablet ? 2.6 : 2.1),
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: getResponsiveSpacing(40),
-    paddingHorizontal: getResponsiveSpacing(20),
+    paddingVertical: hp(isTablet ? 6.2 : 5),
+    paddingHorizontal: wp(isTablet ? 6.6 : 5.3),
   },
   errorText: {
-    fontSize: getResponsiveFontSize(14),
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     color: '#CA3327',
     textAlign: 'center',
-    marginBottom: getResponsiveSpacing(16),
+    marginBottom: hp(isTablet ? 2.5 : 2),
     fontFamily: 'Montserrat-Regular',
   },
   retryButton: {
-    paddingHorizontal: getResponsiveSpacing(20),
-    paddingVertical: getResponsiveSpacing(10),
+    paddingHorizontal: wp(isTablet ? 6.6 : 5.3),
+    paddingVertical: hp(isTablet ? 1.5 : 1.2),
     backgroundColor: '#000000',
-    borderRadius: getResponsiveSpacing(6),
+    borderRadius: 6,
   },
   retryButtonText: {
     color: '#FFFFFF',
-    fontSize: getResponsiveFontSize(14),
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
   },
   
-  // Error Banner (subtle)
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#FFF3CD',
-    paddingHorizontal: getResponsiveSpacing(16),
-    paddingVertical: getResponsiveSpacing(12),
-    marginHorizontal: getResponsiveSpacing(16),
-    marginBottom: getResponsiveSpacing(8),
-    borderRadius: getResponsiveSpacing(8),
+    paddingHorizontal: wp(isTablet ? 5.3 : 4.3),
+    paddingVertical: hp(isTablet ? 1.8 : 1.5),
+    marginHorizontal: wp(isTablet ? 5.3 : 4.3),
+    marginBottom: hp(isTablet ? 1.2 : 1),
+    borderRadius: 8,
     borderLeftWidth: 4,
     borderLeftColor: '#FF9800',
   },
   errorBannerText: {
     flex: 1,
-    fontSize: getResponsiveFontSize(12),
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 11 : 12),
     color: '#856404',
     fontFamily: 'Montserrat-Regular',
-    marginRight: getResponsiveSpacing(12),
+    marginRight: wp(isTablet ? 4 : 3.2),
   },
   retryBannerButton: {
-    paddingHorizontal: getResponsiveSpacing(12),
-    paddingVertical: getResponsiveSpacing(6),
+    paddingHorizontal: wp(isTablet ? 4 : 3.2),
+    paddingVertical: hp(isTablet ? 0.9 : 0.7),
     backgroundColor: '#FF9800',
-    borderRadius: getResponsiveSpacing(4),
+    borderRadius: 4,
   },
   retryBannerButtonText: {
     color: '#FFFFFF',
-    fontSize: getResponsiveFontSize(12),
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 11 : 12),
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
   },
   
-  // Empty State
-  emptyStateContainer: {
+  emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: getResponsiveSpacing(60),
-    paddingHorizontal: getResponsiveSpacing(32),
+    paddingVertical: hp(isTablet ? 9.3 : 7.5),
+    paddingHorizontal: wp(isTablet ? 10.6 : 8.5),
   },
   emptyStateText: {
-    fontSize: getResponsiveFontSize(14),
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     color: '#666666',
+    fontFamily: 'Montserrat-Regular',
+    textAlign: 'center',
+    marginBottom: hp(isTablet ? 1.2 : 1),
+  },
+  emptyStateSubText: {
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 12 : 13),
+    color: '#999999',
     fontFamily: 'Montserrat-Regular',
     textAlign: 'center',
   },

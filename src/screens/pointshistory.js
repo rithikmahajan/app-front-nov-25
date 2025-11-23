@@ -9,6 +9,7 @@ import {
   Animated,
 } from 'react-native';
 import GlobalBackButton from '../components/GlobalBackButton';
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 // Sample points history data
 const POINTS_RECEIVED_DATA = [
@@ -193,20 +194,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingHorizontal: wp(4.3),
+    paddingTop: hp(2),
+    paddingBottom: hp(1.5),
     backgroundColor: '#FFFFFF',
   },
   backButton: {
-    width: 68,
-    height: 24,
+    width: isTablet ? wp(10) : wp(18),
+    height: isTablet ? hp(3.5) : hp(3),
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
   headerTitle: {
     fontFamily: 'System',
-    fontSize: 13,
+    fontSize: isTablet ? fs(15) : isSmallDevice ? fs(11) : fs(13),
     fontWeight: '700',
     color: '#0F0F0F',
     textAlign: 'center',
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     backgroundColor: '#FFFFFF',
-    paddingTop: 24,
+    paddingTop: isTablet ? hp(3) : isSmallDevice ? hp(2) : hp(2.5),
   },
   tabList: {
     flexDirection: 'row',
@@ -226,10 +227,10 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontFamily: 'System',
-    fontSize: 15,
+    fontSize: isTablet ? fs(17) : isSmallDevice ? fs(13) : fs(15),
     fontWeight: '500',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: isTablet ? hp(1.8) : isSmallDevice ? hp(1.2) : hp(1.5),
+    paddingHorizontal: isTablet ? wp(5) : wp(4.3),
     textAlign: 'center',
   },
   activeTabText: {
@@ -239,7 +240,7 @@ const styles = StyleSheet.create({
     color: '#6F6F6F',
   },
   activeTabLine: {
-    height: 2,
+    height: isTablet ? hp(0.3) : hp(0.25),
     backgroundColor: '#000000',
     width: '100%',
   },
@@ -259,12 +260,12 @@ const styles = StyleSheet.create({
   },
   dateHeader: {
     backgroundColor: '#000000',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingVertical: isTablet ? hp(2.2) : isSmallDevice ? hp(1.6) : hp(2),
+    paddingHorizontal: wp(4.3),
   },
   dateText: {
     fontFamily: 'System',
-    fontSize: 13,
+    fontSize: isTablet ? fs(15) : isSmallDevice ? fs(11) : fs(13),
     fontWeight: '700',
     color: '#FFFFFF',
     letterSpacing: 0.65,
@@ -273,32 +274,33 @@ const styles = StyleSheet.create({
   transactionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: wp(4.3),
+    paddingVertical: isTablet ? hp(2.2) : isSmallDevice ? hp(1.6) : hp(2),
     backgroundColor: '#FFFFFF',
   },
   transactionText: {
     flex: 1,
+    paddingRight: wp(2),
   },
   orderId: {
     fontFamily: 'System',
-    fontSize: 15,
+    fontSize: isTablet ? fs(17) : isSmallDevice ? fs(13) : fs(15),
     fontWeight: '700',
     color: '#0F0F0F',
-    lineHeight: 24,
+    lineHeight: isTablet ? fs(26) : isSmallDevice ? fs(20) : fs(24),
   },
   transactionType: {
     fontFamily: 'System',
-    fontSize: 13,
+    fontSize: isTablet ? fs(15) : isSmallDevice ? fs(11) : fs(13),
     fontWeight: '400',
     color: '#6F6F6F',
-    lineHeight: 20,
+    lineHeight: isTablet ? fs(22) : isSmallDevice ? fs(18) : fs(20),
   },
   pointsValue: {
     fontFamily: 'System',
-    fontSize: 15,
+    fontSize: isTablet ? fs(17) : isSmallDevice ? fs(13) : fs(15),
     fontWeight: '700',
-    lineHeight: 24,
+    lineHeight: isTablet ? fs(26) : isSmallDevice ? fs(20) : fs(24),
   },
   pointsPositive: {
     color: '#23BC60',
@@ -309,16 +311,16 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: '#F3F3F3',
-    marginLeft: 16,
-    width: 351,
+    marginLeft: wp(4.3),
+    width: isTablet ? wp(85) : wp(87),
   },
   homeIndicator: {
     position: 'absolute',
-    bottom: 8,
+    bottom: hp(1),
     left: '50%',
-    marginLeft: -67.5,
-    width: 135,
-    height: 5,
+    marginLeft: isTablet ? wp(-9) : isSmallDevice ? wp(-16) : wp(-18),
+    width: isTablet ? wp(18) : isSmallDevice ? wp(32) : wp(36),
+    height: isTablet ? hp(0.7) : hp(0.6),
     backgroundColor: '#000000',
     borderRadius: 100,
   },

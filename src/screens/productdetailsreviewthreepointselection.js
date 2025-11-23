@@ -10,6 +10,7 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 import GlobalBackButton from '../components/GlobalBackButton';
 import { yoraaAPI } from '../services/yoraaAPI';
 
@@ -327,19 +328,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 54,
-    paddingBottom: 10,
+    paddingHorizontal: wp(5),
+    paddingTop: hp(6.5),
+    paddingBottom: hp(1.2),
     backgroundColor: '#F5F5F5',
   },
   headerButton: {
-    width: 24,
-    height: 24,
+    width: isTablet ? wp(4) : wp(6),
+    height: isTablet ? hp(3) : hp(3),
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
     fontWeight: '500',
     color: '#000000',
     textAlign: 'center',
@@ -353,21 +354,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollViewContent: {
-    paddingBottom: 30,
+    paddingBottom: hp(3.6),
     flexGrow: 1,
   },
 
   // Product Image
   productImageContainer: {
     alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 40,
+    marginTop: hp(3.6),
+    marginBottom: hp(4.8),
   },
   productImage: {
-    width: 122,
-    height: 123,
+    width: isTablet ? wp(20) : wp(30.5),
+    height: isTablet ? wp(20) : wp(30.75),
     backgroundColor: '#E5E5E5',
-    borderRadius: 8,
+    borderRadius: wp(2),
     overflow: 'hidden',
   },
   productImageActual: {
@@ -382,22 +383,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E5E5',
   },
   noImageText: {
-    fontSize: 12,
+    fontSize: isTablet ? fs(14) : isSmallDevice ? fs(10) : fs(12),
     color: '#999999',
     fontFamily: 'Montserrat-Regular',
   },
 
   // Rating Container
   ratingContainer: {
-    paddingHorizontal: 31,
-    marginBottom: 35,
+    paddingHorizontal: wp(7.75),
+    marginBottom: hp(4.2),
   },
   ratingTitle: {
-    fontSize: 16,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
     fontWeight: '600',
     color: '#121420',
     textAlign: 'center',
-    marginBottom: 22,
+    marginBottom: hp(2.6),
     letterSpacing: -0.08,
     fontFamily: 'Montserrat-SemiBold',
   },
@@ -410,18 +411,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 14,
+    marginBottom: hp(1.7),
     paddingHorizontal: 0,
-    width: 313,
+    width: isTablet ? wp(60) : wp(78.25),
   },
   ratingDotContainer: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   ratingDot: {
-    width: 17,
-    height: 17,
-    borderRadius: 8.5,
+    width: isTablet ? wp(3) : wp(4.25),
+    height: isTablet ? wp(3) : wp(4.25),
+    borderRadius: isTablet ? wp(1.5) : wp(2.125),
     borderWidth: 1,
     borderColor: '#000000',
     backgroundColor: 'transparent',
@@ -432,48 +433,48 @@ const styles = StyleSheet.create({
   ratingLine: {
     height: 1,
     backgroundColor: '#000000',
-    width: 51,
+    width: isTablet ? wp(10) : wp(12.75),
     flex: 0,
   },
   ratingLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: 313,
-    paddingTop: 10,
+    width: isTablet ? wp(60) : wp(78.25),
+    paddingTop: hp(1.2),
   },
   ratingLabelLeft: {
-    fontSize: 12,
+    fontSize: isTablet ? fs(14) : isSmallDevice ? fs(10) : fs(12),
     fontWeight: '400',
     color: '#000000',
     letterSpacing: -0.06,
     fontFamily: 'Montserrat-Regular',
   },
   ratingLabelCenter: {
-    fontSize: 12,
+    fontSize: isTablet ? fs(14) : isSmallDevice ? fs(10) : fs(12),
     fontWeight: '400',
     color: '#000000',
     position: 'absolute',
     left: '50%',
-    transform: [{ translateX: -25 }],
+    transform: [{ translateX: isTablet ? wp(-4) : wp(-6.25) }],
     letterSpacing: -0.06,
     fontFamily: 'Montserrat-Regular',
   },
   ratingLabelRight: {
-    fontSize: 12,
+    fontSize: isTablet ? fs(14) : isSmallDevice ? fs(10) : fs(12),
     fontWeight: '400',
     color: '#000000',
     letterSpacing: -0.06,
     fontFamily: 'Montserrat-Regular',
   },
 
-    // Next Button
+  // Next Button
   nextButton: {
-    marginHorizontal: 30,
-    marginTop: 40,
-    marginBottom: 20,
-    height: 48,
+    marginHorizontal: wp(7.5),
+    marginTop: hp(4.8),
+    marginBottom: hp(2.4),
+    height: hp(5.8),
     backgroundColor: '#000000',
-    borderRadius: 24,
+    borderRadius: wp(6),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -481,7 +482,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#CCCCCC',
   },
   nextButtonText: {
-    fontSize: 16,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
     fontWeight: '600',
     color: '#FFFFFF',
     letterSpacing: 0,

@@ -16,6 +16,7 @@ import { Svg, Path } from 'react-native-svg';
 import GlobalBackButton from '../components/GlobalBackButton';
 import yoraaAPI from '../services/yoraaBackendAPI';
 import authStorageService from '../services/authStorageService';
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 // Star Rating Component with exact Figma design
 const StarRating = ({ rating, onRatingPress }) => {
@@ -281,105 +282,101 @@ const LoveUsRateUs = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F6F6F6', // Figma background color
+    backgroundColor: '#F6F6F6',
   },
   content: {
     flex: 1,
   },
   
-  // Header Styles
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 16,
-    paddingBottom: 12,
-    paddingHorizontal: 17,
+    paddingTop: hp(isTablet ? 2.5 : 2),
+    paddingBottom: hp(isTablet ? 1.9 : 1.5),
+    paddingHorizontal: wp(isTablet ? 5.7 : 4.5),
     backgroundColor: '#F6F6F6',
   },
   backButtonContainer: {
-    width: 68,
+    width: wp(isTablet ? 22.6 : 18.1),
     alignItems: 'flex-start',
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontFamily: 'Montserrat-Medium',
     color: '#000000',
     textAlign: 'center',
     letterSpacing: -0.4,
     flex: 1,
-    transform: [{ translateX: -34 }], // Offset for centering
+    transform: [{ translateX: wp(isTablet ? -11.3 : -9) }],
   },
 
-  // Rating Section
   ratingSection: {
     alignItems: 'center',
-    marginTop: 40,
-    marginBottom: 72,
+    marginTop: hp(isTablet ? 6.2 : 5),
+    marginBottom: hp(isTablet ? 11.2 : 9),
   },
   ratingTitle: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 13 : 14),
     fontFamily: 'Montserrat-Medium',
     color: '#121420',
-    marginBottom: 20,
+    marginBottom: hp(isTablet ? 3.1 : 2.5),
     letterSpacing: -0.07,
   },
   starContainer: {
     flexDirection: 'row',
-    gap: 10,
+    gap: wp(isTablet ? 3.3 : isSmallDevice ? 2 : 2.7),
   },
   starButton: {
     padding: 0,
   },
 
-  // Comment Box Styles
   commentBoxContainer: {
-    marginHorizontal: 29,
-    marginBottom: 30,
+    marginHorizontal: wp(isTablet ? 9.7 : 7.7),
+    marginBottom: hp(isTablet ? 4.7 : 3.7),
   },
   commentBox: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    height: 267,
-    paddingHorizontal: 26,
-    paddingTop: 26,
-    paddingBottom: 26,
+    height: hp(isTablet ? 41.4 : 33.1),
+    paddingHorizontal: wp(isTablet ? 8.7 : 6.9),
+    paddingTop: hp(isTablet ? 4 : 3.2),
+    paddingBottom: hp(isTablet ? 4 : 3.2),
   },
   commentInput: {
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 11 : 12),
     fontFamily: 'Montserrat-Regular',
     color: '#5A5A5A',
-    lineHeight: 16,
+    lineHeight: fs(isTablet ? 19 : isSmallDevice ? 14 : 16),
     flex: 1,
     textAlignVertical: 'top',
   },
   characterCount: {
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 11 : 12),
     fontFamily: 'Montserrat-Regular',
     color: '#5A5A5A',
     textAlign: 'right',
-    marginTop: 8,
-    marginRight: 4,
+    marginTop: hp(isTablet ? 1.2 : 1),
+    marginRight: wp(isTablet ? 1.3 : 1.1),
   },
 
-  // Send Button
   sendButton: {
     backgroundColor: '#000000',
     borderRadius: 24,
-    height: 48,
-    marginHorizontal: 30,
+    height: hp(isTablet ? 7.4 : 5.9),
+    marginHorizontal: wp(isTablet ? 10 : 8),
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: hp(isTablet ? 6.2 : 5),
   },
   sendButtonDisabled: {
     backgroundColor: '#999999',
     opacity: 0.6,
   },
   sendButtonText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontFamily: 'Montserrat-SemiBold',
     color: '#FFFFFF',
-    lineHeight: 22.5,
+    lineHeight: fs(isTablet ? 26 : isSmallDevice ? 20 : 22.5),
   },
 });
 
