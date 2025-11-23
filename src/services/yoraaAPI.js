@@ -579,6 +579,12 @@ class YoraaAPIService {
     this.signInPromise = (async () => {
       try {
         console.log('🔄 Authenticating with Yoraa backend...');
+        console.log('🔍 Firebase Login Debug Info:');
+        console.log('   - Base URL:', this.baseURL);
+        console.log('   - Endpoint:', '/api/auth/login/firebase');
+        console.log('   - Full URL:', `${this.baseURL}/api/auth/login/firebase`);
+        console.log('   - ID Token (first 50 chars):', idToken ? idToken.substring(0, 50) + '...' : 'NULL');
+        console.log('   - ID Token length:', idToken ? idToken.length : 0);
         
         const response = await this.makeRequest('/api/auth/login/firebase', 'POST', { idToken });
         
@@ -643,6 +649,9 @@ class YoraaAPIService {
         }
       } catch (error) {
         console.error('❌ Backend authentication failed:', error);
+        console.error('   - Error message:', error.message);
+        console.error('   - Error type:', error.constructor.name);
+        console.error('   - Full error:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
         if (!lockAlreadySet) {
           console.log('🔓 Sign-in lock released by firebaseLogin() (error)');
         }

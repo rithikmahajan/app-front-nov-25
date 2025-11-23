@@ -89,6 +89,7 @@ const ProductViewOne = ({ navigation, route }) => {
     if (navigation && navigation.navigate) {
       navigation.navigate('Filters', {
         previousScreen: 'ProductViewOne',
+        previousParams: routeParams, // Pass all route params back
         onApplyFilters: (items, filterParams) => {
           console.log('🔍 Filters applied from ProductViewOne:', filterParams);
           // Handle filtered results here if needed
@@ -99,7 +100,10 @@ const ProductViewOne = ({ navigation, route }) => {
 
   const handleSearchPress = () => {
     if (navigation && navigation.navigate) {
-      navigation.navigate('SearchScreen', { previousScreen: 'ProductViewOne' });
+      navigation.navigate('SearchScreen', { 
+        previousScreen: 'ProductViewOne',
+        previousParams: routeParams // Pass all route params back
+      });
     }
   };
 

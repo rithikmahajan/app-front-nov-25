@@ -1,179 +1,156 @@
 #!/bin/bash
 
-# Fix Phone Authentication Script
-# Project: yoraa-android-ios
+# 🚀 Quick Fix for Phone Authentication Issues
+# This script helps you fix both production and emulator phone auth errors
 
-echo "🚀 Phone Authentication Fix Script"
-echo "=================================="
+echo ""
+echo "╔═══════════════════════════════════════════════════════════════╗"
+echo "║        🚀 PHONE AUTHENTICATION QUICK FIX GUIDE               ║"
+echo "╚═══════════════════════════════════════════════════════════════╝"
 echo ""
 
 # Colors
-RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-PROJECT_DIR="/Users/rithikmahajan/Desktop/oct-7-appfront-main"
-cd "$PROJECT_DIR"
-
-echo -e "${BLUE}Project:${NC} yoraa-android-ios"
-echo -e "${BLUE}Bundle ID:${NC} com.yoraaapparelsprivatelimited.yoraa"
+echo -e "${CYAN}You are experiencing two different errors:${NC}"
+echo ""
+echo -e "${RED}Error 1 (Production):${NC} [auth/app-not-authorized]"
+echo "   → Your production SHA-256 certificate is not in Firebase Console"
+echo ""
+echo -e "${RED}Error 2 (Emulator):${NC} [auth/missing-recaptcha-token]"
+echo "   → reCAPTCHA token issue in debug/emulator builds"
+echo ""
+echo "════════════════════════════════════════════════════════════════"
 echo ""
 
-# Step 1: Check Firebase Console
-echo -e "${YELLOW}📋 Step 1: Enable Phone Authentication in Firebase Console${NC}"
-echo ""
-echo "Please complete this step manually:"
-echo "1. Open: https://console.firebase.google.com/project/yoraa-android-ios/authentication/providers"
-echo "2. Click on 'Phone' provider"
-echo "3. Toggle 'Enable' to ON"
-echo "4. Click 'Save'"
-echo ""
-read -p "Have you completed this step? (y/n): " firebase_enabled
+PS3='What would you like to do? '
+options=(
+    "Get Production SHA Certificates (Fix Error 1)"
+    "Test Debug/Emulator Build (Check Error 2)"
+    "Clean and Rebuild Production"
+    "View Complete Fix Documentation"
+    "Exit"
+)
 
-if [ "$firebase_enabled" != "y" ]; then
-    echo -e "${RED}❌ Please enable Phone authentication in Firebase Console first!${NC}"
-    echo "Open this link: https://console.firebase.google.com/project/yoraa-android-ios/authentication/providers"
-    exit 1
-fi
-
-echo -e "${GREEN}✅ Step 1 Complete${NC}"
-echo ""
-
-# Step 2: Enable reCAPTCHA Enterprise API
-echo -e "${YELLOW}📋 Step 2: Enable reCAPTCHA Enterprise API${NC}"
-echo ""
-echo "Please complete this step manually:"
-echo "1. Open: https://console.cloud.google.com/apis/library/recaptchaenterprise.googleapis.com?project=yoraa-android-ios"
-echo "2. Click 'Enable'"
-echo ""
-read -p "Have you completed this step? (y/n): " recaptcha_api_enabled
-
-if [ "$recaptcha_api_enabled" != "y" ]; then
-    echo -e "${RED}❌ Please enable reCAPTCHA Enterprise API first!${NC}"
-    exit 1
-fi
-
-echo -e "${GREEN}✅ Step 2 Complete${NC}"
-echo ""
-
-# Step 3: Create reCAPTCHA Key
-echo -e "${YELLOW}📋 Step 3: Create reCAPTCHA Key for iOS${NC}"
-echo ""
-echo "Please complete this step manually:"
-echo "1. Open: https://console.cloud.google.com/security/recaptcha?project=yoraa-android-ios"
-echo "2. Click 'Create Key'"
-echo "3. Display name: 'iOS Phone Auth - Yoraa'"
-echo "4. Platform type: 'iOS'"
-echo "5. Bundle ID: 'com.yoraaapparelsprivatelimited.yoraa'"
-echo "6. Click 'Create'"
-echo "7. COPY THE KEY ID (looks like: 6Lxxx...xxxxx)"
-echo ""
-read -p "Enter your reCAPTCHA Site Key: " recaptcha_key
-
-if [ -z "$recaptcha_key" ]; then
-    echo -e "${RED}❌ reCAPTCHA key is required!${NC}"
-    exit 1
-fi
-
-echo -e "${GREEN}✅ Step 3 Complete${NC}"
-echo ""
-
-# Step 4: Create config file
-echo -e "${YELLOW}📋 Step 4: Creating recaptcha config file...${NC}"
-
-mkdir -p src/config
-
-cat > src/config/recaptcha.config.js << EOF
-// reCAPTCHA Configuration for iOS
-// Generated on: $(date)
-
-export const RECAPTCHA_CONFIG = {
-  siteKey: '$recaptcha_key',
-};
-EOF
-
-echo -e "${GREEN}✅ Created src/config/recaptcha.config.js${NC}"
-echo ""
-
-# Step 5: Check for entitlements file
-echo -e "${YELLOW}📋 Step 5: Checking entitlements file...${NC}"
-
-ENTITLEMENTS_FILE="ios/YoraaApp/YoraaApp.entitlements"
-
-if [ ! -f "$ENTITLEMENTS_FILE" ]; then
-    echo "Creating entitlements file..."
-    cat > "$ENTITLEMENTS_FILE" << 'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>com.apple.developer.devicecheck.appattest-environment</key>
-    <string>production</string>
-</dict>
-</plist>
-EOF
-    echo -e "${GREEN}✅ Created entitlements file${NC}"
-else
-    echo -e "${GREEN}✅ Entitlements file exists${NC}"
-fi
-echo ""
-
-# Step 6: App Attest reminder
-echo -e "${YELLOW}📋 Step 6: Add App Attest Capability in Xcode${NC}"
-echo ""
-echo "⚠️  MANUAL STEP REQUIRED:"
-echo "1. Open: open ios/YoraaApp.xcworkspace"
-echo "2. Select 'YoraaApp' target"
-echo "3. Go to 'Signing & Capabilities' tab"
-echo "4. Click '+ Capability'"
-echo "5. Add 'App Attest'"
-echo ""
-read -p "Have you completed this step? (y/n): " app_attest_added
-
-# Step 7: Clean and rebuild
-echo ""
-echo -e "${YELLOW}📋 Step 7: Cleaning and rebuilding...${NC}"
-echo ""
-
-cd ios
-echo "Removing old pods..."
-rm -rf Pods Podfile.lock build
-
-echo "Installing pods..."
-pod install
-
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✅ Pods installed successfully${NC}"
-else
-    echo -e "${RED}❌ Pod install failed${NC}"
-    exit 1
-fi
-
-cd ..
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Get Production SHA Certificates (Fix Error 1)")
+            echo ""
+            echo -e "${BLUE}📋 Getting your production SHA certificates...${NC}"
+            echo ""
+            ./get-production-sha-certificates.sh
+            echo ""
+            echo -e "${YELLOW}⚠️  NEXT STEPS (CRITICAL):${NC}"
+            echo "1. Copy the SHA-1 and SHA-256 shown above"
+            echo "2. Go to: https://console.firebase.google.com/"
+            echo "3. Add them to Firebase Console (see instructions above)"
+            echo "4. Download updated google-services.json"
+            echo "5. Replace android/app/google-services.json"
+            echo "6. Wait 5-10 minutes"
+            echo "7. Rebuild your production app"
+            echo ""
+            break
+            ;;
+        "Test Debug/Emulator Build (Check Error 2)")
+            echo ""
+            echo -e "${BLUE}🧪 Testing debug build...${NC}"
+            echo ""
+            echo "Starting Metro bundler with cache reset..."
+            npm start -- --reset-cache &
+            METRO_PID=$!
+            
+            echo ""
+            echo "Waiting 5 seconds for Metro to start..."
+            sleep 5
+            
+            echo ""
+            echo "Running Android debug build..."
+            npx react-native run-android
+            
+            echo ""
+            echo -e "${GREEN}✅ Debug build launched!${NC}"
+            echo ""
+            echo "Test phone login now. You should see in logs:"
+            echo "  🧪 Development build detected - disabling app verification for testing..."
+            echo "  ✅ App verification DISABLED for development"
+            echo ""
+            echo "If you still see reCAPTCHA error, check:"
+            echo "  1. Make sure it's a debug build (not release)"
+            echo "  2. Check Metro logs for any errors"
+            echo "  3. Try using a test phone number from Firebase Console"
+            echo ""
+            break
+            ;;
+        "Clean and Rebuild Production")
+            echo ""
+            echo -e "${BLUE}🧹 Cleaning and rebuilding production build...${NC}"
+            echo ""
+            
+            echo "Step 1: Cleaning previous builds..."
+            cd android
+            ./gradlew clean
+            cd ..
+            
+            echo ""
+            echo "Step 2: Building release AAB..."
+            cd android
+            ./gradlew bundleRelease
+            cd ..
+            
+            echo ""
+            if [ -f "android/app/build/outputs/bundle/release/app-release.aab" ]; then
+                echo -e "${GREEN}✅ Production build successful!${NC}"
+                echo ""
+                echo "Your AAB is at:"
+                echo "  android/app/build/outputs/bundle/release/app-release.aab"
+                echo ""
+                echo -e "${YELLOW}⚠️  BEFORE UPLOADING TO PLAY STORE:${NC}"
+                echo "  1. Make sure you added SHA certificates to Firebase Console"
+                echo "  2. Make sure you downloaded updated google-services.json"
+                echo "  3. Wait 5-10 minutes after adding certificates"
+                echo ""
+            else
+                echo -e "${RED}❌ Build failed!${NC}"
+                echo "Check the error messages above."
+                echo ""
+            fi
+            break
+            ;;
+        "View Complete Fix Documentation")
+            echo ""
+            echo -e "${BLUE}📖 Opening documentation...${NC}"
+            echo ""
+            cat PHONE_AUTH_FIX_NOV21_2025.md
+            echo ""
+            break
+            ;;
+        "Exit")
+            echo ""
+            echo -e "${GREEN}✅ Goodbye!${NC}"
+            echo ""
+            exit 0
+            ;;
+        *) 
+            echo -e "${RED}Invalid option $REPLY${NC}"
+            ;;
+    esac
+done
 
 echo ""
-echo -e "${GREEN}🎉 Setup Complete!${NC}"
+echo "════════════════════════════════════════════════════════════════"
 echo ""
-echo "=================================="
-echo "Next Steps:"
-echo "=================================="
+echo -e "${CYAN}📚 For complete documentation, read:${NC}"
+echo "   PHONE_AUTH_FIX_NOV21_2025.md"
 echo ""
-echo "1. Open Xcode and add App Attest capability (if not done yet):"
-echo "   open ios/YoraaApp.xcworkspace"
+echo -e "${CYAN}🆘 Need help?${NC}"
+echo "   1. Check Firebase Console for SHA certificates"
+echo "   2. Verify google-services.json is updated"
+echo "   3. Check logs when testing phone auth"
+echo "   4. Wait 5-10 minutes after Firebase Console changes"
 echo ""
-echo "2. Build and run the app:"
-echo "   npx react-native run-ios"
-echo ""
-echo "3. Test with phone number: +91 7006114695"
-echo ""
-echo -e "${BLUE}📝 Configuration saved to:${NC}"
-echo "   - src/config/recaptcha.config.js"
-echo "   - $ENTITLEMENTS_FILE"
-echo ""
-echo -e "${YELLOW}⚠️  Remember to:${NC}"
-echo "   - Add App Attest capability in Xcode"
-echo "   - Enable billing in Firebase for production SMS"
-echo ""
-echo "Good luck! 🚀"

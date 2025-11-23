@@ -4,6 +4,8 @@ import { Platform } from 'react-native';
 class FirebasePhoneAuthService {
   constructor() {
     this.confirmation = null;
+    this.verificationId = null;
+    this.phoneNumber = null;
   }
 
   /**
@@ -44,6 +46,18 @@ class FirebasePhoneAuthService {
         // PRODUCTION/RELEASE MODE: Enable verification for real devices
         console.log('🔐 Production mode - enabling app verification...');
         auth().settings.appVerificationDisabledForTesting = false;
+        
+        // ✅ NEW: Force auto-retrieval timeout to ensure SMS is retrieved quickly
+        if (Platform.OS === 'android') {
+          try {
+            // Set a longer timeout for auto-retrieval (in milliseconds)
+            auth().settings.autoRetrievedSmsCodeForPhoneNumber = null; // Clear any test number
+            console.log('✅ Cleared test phone number auto-retrieval');
+          } catch (settingsError) {
+            console.warn('⚠️ Could not configure auto-retrieval settings:', settingsError.message);
+          }
+        }
+        
         console.log('✅ App verification ENABLED (uses SafetyNet/Play Integrity on Android, APNs on iOS)');
         console.log('ℹ️  Real SMS will be sent to the phone number');
       }
@@ -65,11 +79,15 @@ class FirebasePhoneAuthService {
           hasConfirm: typeof confirmation.confirm === 'function'
         });
         
+        // ✅ CRITICAL FIX: Store confirmation object and verificationId in service instance
         this.confirmation = confirmation;
+        this.verificationId = confirmation.verificationId;
+        this.phoneNumber = phoneNumber;
+        console.log('✅ Confirmation stored in service instance');
         console.log(`⏰ End Time: ${new Date().toISOString()}`);
         console.log('╚═══════════════════════════════════════════════════════════════╝\n');
         
-        return { success: true, confirmation };
+        return { success: true, confirmation, verificationId: confirmation.verificationId };
       } else {
         // Android
         console.log('\n🔄 STEP 2: Android - Using signInWithPhoneNumber');
@@ -83,11 +101,15 @@ class FirebasePhoneAuthService {
           hasConfirm: typeof confirmation.confirm === 'function'
         });
         
+        // ✅ CRITICAL FIX: Store confirmation object and verificationId in service instance
         this.confirmation = confirmation;
+        this.verificationId = confirmation.verificationId;
+        this.phoneNumber = phoneNumber;
+        console.log('✅ Confirmation stored in service instance');
         console.log(`⏰ End Time: ${new Date().toISOString()}`);
         console.log('╚═══════════════════════════════════════════════════════════════╝\n');
         
-        return { success: true, confirmation };
+        return { success: true, confirmation, verificationId: confirmation.verificationId };
       }
     } catch (error) {
       console.log('\n╔═══════════════════════════════════════════════════════════════╗');
@@ -111,13 +133,22 @@ class FirebasePhoneAuthService {
         errorMessage = 'Network error. Please check your connection.';
       } else if (error.code === 'auth/operation-not-allowed') {
         errorMessage = 'Phone authentication error. Please ensure Phone Auth is enabled in Firebase Console and GoogleService-Info.plist is updated.';
-      } else if (error.code === 'auth/missing-recaptcha-token' || error.message?.includes('missing-recaptcha-token')) {
-        errorMessage = 'reCAPTCHA verification failed. This app requires a real device for phone authentication. Emulators are not fully supported.';
-        console.error('🚨 RECAPTCHA ERROR - TROUBLESHOOTING:');
-        console.error('   1. Use a real Android device instead of an emulator');
-        console.error('   2. Ensure SafetyNet/Play Integrity is enabled in Firebase Console');
-        console.error('   3. Check that google-services.json is up to date');
-        console.error('   4. For testing, add test phone numbers in Firebase Console');
+      } else if (error.code === 'auth/app-not-authorized') {
+        errorMessage = 'App not authorized. Please verify SHA-256 certificate is added to Firebase Console and google-services.json is updated.';
+        console.error('🚨 APP NOT AUTHORIZED ERROR - TROUBLESHOOTING:');
+        console.error('   1. Verify SHA-256 certificate is added to Firebase Console');
+        console.error('   2. Download and replace google-services.json');
+        console.error('   3. Rebuild the app after updating google-services.json');
+        console.error('   4. Check that package name matches in Firebase Console');
+      } else if (error.code === 'auth/missing-recaptcha-token' || error.message?.includes('missing-recaptcha-token') || error.message?.includes('missing initial state') || error.message?.includes('sessionStorage')) {
+        errorMessage = 'Verification failed. This may be due to SafetyNet/Play Integrity issues. Please try again or use a different device.';
+        console.error('🚨 RECAPTCHA/SESSION ERROR - TROUBLESHOOTING:');
+        console.error('   1. Ensure SHA-256 certificate is correctly added to Firebase Console');
+        console.error('   2. Verify google-services.json is up to date (downloaded after adding SHA-256)');
+        console.error('   3. Check that Google Play Services is up to date on device');
+        console.error('   4. Try restarting the app or device');
+        console.error('   5. Use a real Android device (not emulator) with Google Play Services');
+        console.error('   6. For testing, add test phone numbers in Firebase Console');
       }
       
       console.log('📱 User-Friendly Error:', errorMessage);
@@ -228,11 +259,71 @@ class FirebasePhoneAuthService {
     try {
       await auth().signOut();
       this.confirmation = null;
+      this.verificationId = null;
+      this.phoneNumber = null;
       console.log('[FirebasePhoneAuth] ✅ Signed out successfully');
       return { success: true };
     } catch (error) {
       console.error('[FirebasePhoneAuth] ❌ Error signing out:', error);
       return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Get stored confirmation object (for production builds where navigation may lose it)
+   */
+  getStoredConfirmation() {
+    console.log('[FirebasePhoneAuth] 📦 Getting stored confirmation:', {
+      hasConfirmation: !!this.confirmation,
+      hasVerificationId: !!this.verificationId,
+      phoneNumber: this.phoneNumber
+    });
+    return this.confirmation;
+  }
+
+  /**
+   * Get stored verification ID
+   */
+  getStoredVerificationId() {
+    console.log('[FirebasePhoneAuth] 🆔 Getting stored verificationId:', this.verificationId);
+    return this.verificationId;
+  }
+
+  /**
+   * Verify OTP using stored confirmation or verificationId
+   */
+  async verifyStoredOTP(otpCode) {
+    try {
+      console.log('[FirebasePhoneAuth] 🔐 Verifying OTP with stored confirmation');
+      
+      if (this.confirmation) {
+        console.log('[FirebasePhoneAuth] ✅ Using stored confirmation object');
+        return await this.verifyOTP(this.confirmation, otpCode);
+      } else if (this.verificationId) {
+        console.log('[FirebasePhoneAuth] ✅ Using stored verificationId');
+        const credential = auth.PhoneAuthProvider.credential(this.verificationId, otpCode);
+        const userCredential = await auth().signInWithCredential(credential);
+        
+        // Get Firebase ID token for backend authentication
+        const idToken = await userCredential.user.getIdToken(true);
+        
+        return {
+          success: true,
+          user: userCredential.user,
+          idToken,
+          phoneNumber: userCredential.user.phoneNumber,
+          uid: userCredential.user.uid,
+        };
+      } else {
+        throw new Error('No stored verification session found');
+      }
+    } catch (error) {
+      console.error('[FirebasePhoneAuth] ❌ Error verifying stored OTP:', error);
+      return {
+        success: false,
+        error: error.message,
+        errorCode: error.code,
+      };
     }
   }
 

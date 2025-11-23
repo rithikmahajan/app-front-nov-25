@@ -10,6 +10,11 @@ import {
 import GlobalBackButton from '../components/GlobalBackButton';
 import { useBag } from '../contexts/BagContext';
 import { GlobalCartIcon } from '../assets/icons';
+import { 
+  getResponsiveFontSize, 
+  getResponsiveSpacing, 
+  getResponsiveValue 
+} from '../utils/responsive';
 
 const BagContent = React.memo(({ navigation }) => {
   const { bagItems, removeFromBag, updateQuantity, getTotalPrice } = useBag();
@@ -124,9 +129,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingHorizontal: getResponsiveSpacing(16),
+    paddingTop: getResponsiveSpacing(16),
+    paddingBottom: getResponsiveSpacing(12),
     backgroundColor: '#FFFFFF',
   },
   backButton: {
@@ -134,7 +139,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.4,
@@ -149,12 +154,12 @@ const styles = StyleSheet.create({
   // Content Styles
   content: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: getResponsiveSpacing(16),
   },
 
   bagItem: {
     flexDirection: 'row',
-    paddingVertical: 16,
+    paddingVertical: getResponsiveSpacing(16),
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
@@ -163,45 +168,45 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     backgroundColor: '#F8F8F8',
-    borderRadius: 8,
+    borderRadius: getResponsiveSpacing(8),
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: getResponsiveSpacing(12),
   },
 
   productDetails: {
     flex: 1,
-    paddingRight: 12,
+    paddingRight: getResponsiveSpacing(12),
   },
 
   productName: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
     fontFamily: 'Montserrat-Medium',
-    marginBottom: 4,
+    marginBottom: getResponsiveSpacing(4),
   },
 
   productBrand: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     color: '#666666',
     fontFamily: 'Montserrat-Regular',
-    marginBottom: 4,
+    marginBottom: getResponsiveSpacing(4),
   },
 
   productSize: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     color: '#666666',
     fontFamily: 'Montserrat-Regular',
-    marginBottom: 8,
+    marginBottom: getResponsiveSpacing(8),
   },
 
   productPrice: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '600',
     color: '#000000',
     fontFamily: 'Montserrat-SemiBold',
-    marginBottom: 12,
+    marginBottom: getResponsiveSpacing(12),
   },
 
   quantityContainer: {
@@ -213,42 +218,42 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     backgroundColor: '#F0F0F0',
-    borderRadius: 16,
+    borderRadius: getResponsiveSpacing(16),
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   quantityButtonText: {
-    fontSize: 18,
+    fontSize: getResponsiveFontSize(18),
     fontWeight: '500',
     color: '#000000',
   },
 
   quantityText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
-    marginHorizontal: 16,
+    marginHorizontal: getResponsiveSpacing(16),
     minWidth: 20,
     textAlign: 'center',
   },
 
   removeButton: {
     alignSelf: 'flex-start',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: getResponsiveSpacing(8),
+    paddingHorizontal: getResponsiveSpacing(12),
   },
 
   removeButtonText: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     color: '#FF4444',
     fontFamily: 'Montserrat-Regular',
   },
 
   // Footer Styles
   footer: {
-    paddingHorizontal: 16,
-    paddingVertical: 20,
+    paddingHorizontal: getResponsiveSpacing(16),
+    paddingVertical: getResponsiveSpacing(20),
     borderTopWidth: 1,
     borderTopColor: '#F0F0F0',
     backgroundColor: '#FFFFFF',
@@ -258,18 +263,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: getResponsiveSpacing(16),
   },
 
   totalLabel: {
-    fontSize: 18,
+    fontSize: getResponsiveFontSize(18),
     fontWeight: '500',
     color: '#000000',
     fontFamily: 'Montserrat-Medium',
   },
 
   totalPrice: {
-    fontSize: 20,
+    fontSize: getResponsiveFontSize(20),
     fontWeight: '600',
     color: '#000000',
     fontFamily: 'Montserrat-SemiBold',
@@ -278,13 +283,13 @@ const styles = StyleSheet.create({
   checkoutButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    paddingVertical: 16,
+    paddingVertical: getResponsiveSpacing(16),
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   checkoutButtonText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#FFFFFF',
     fontFamily: 'Montserrat-Medium',

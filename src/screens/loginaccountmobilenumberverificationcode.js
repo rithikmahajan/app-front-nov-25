@@ -131,20 +131,43 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
     // ✅ CRITICAL FIX: Use confirmation from ref or state or try to get from service
     let activeConfirmation = confirmation || confirmationRef.current || route?.params?.confirmation;
     
+    console.log('🔍 Confirmation Object Status:');
+    console.log('   - State confirmation:', confirmation ? 'EXISTS' : 'MISSING');
+    console.log('   - Ref confirmation:', confirmationRef.current ? 'EXISTS' : 'MISSING');
+    console.log('   - Route params confirmation:', route?.params?.confirmation ? 'EXISTS' : 'MISSING');
+    console.log('   - Active confirmation (merged):', activeConfirmation ? 'EXISTS' : 'MISSING');
+    
+    // ✅ PRODUCTION FIX: Try to get stored confirmation from service (for production builds)
+    if (!activeConfirmation) {
+      console.log('⚠️ No confirmation object in state/ref/params');
+      console.log('🔄 Attempting to retrieve from firebasePhoneAuthService...');
+      activeConfirmation = firebasePhoneAuthService.getStoredConfirmation();
+      
+      if (activeConfirmation) {
+        console.log('✅ Retrieved confirmation from service instance');
+        console.log('📦 Service confirmation has confirm method:', typeof activeConfirmation?.confirm === 'function' ? 'YES' : 'NO');
+      } else {
+        console.log('❌ Service also has no confirmation stored');
+      }
+    }
+    
     // ✅ CRITICAL FIX: If no confirmation object, try to verify using verificationId directly
     if (!activeConfirmation) {
-      console.log('⚠️ No confirmation object found in state, ref, or params');
+      console.log('⚠️ No confirmation object found anywhere');
       console.log('🔄 Attempting alternative verification using verificationId...');
       
-      if (verificationId) {
+      // Try to get verificationId from state, params, or service
+      let activeVerificationId = verificationId || route?.params?.verificationId || firebasePhoneAuthService.getStoredVerificationId();
+      
+      if (activeVerificationId) {
         try {
           console.log('📝 Creating PhoneAuthCredential from verificationId...');
-          const credential = auth.PhoneAuthProvider.credential(verificationId, code);
+          const credential = auth.PhoneAuthProvider.credential(activeVerificationId, code);
           console.log('✅ Credential created, attempting sign-in...');
           
           // Create a mock confirmation object that works like the real one
           activeConfirmation = {
-            verificationId: verificationId,
+            verificationId: activeVerificationId,
             confirm: async (otp) => {
               console.log('🔐 Using credential-based verification...');
               return await auth().signInWithCredential(credential);
@@ -297,15 +320,78 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
         console.error('❌ Full Backend Error:', JSON.stringify(backendError, null, 2));
         console.error('❌ Stack Trace:', backendError.stack);
         
-        // Continue anyway - Firebase auth succeeded
-        console.warn('⚠️⚠️⚠️ CRITICAL: User logged in to Firebase but NOT authenticated with backend!');
-        console.warn('This WILL cause "not authenticated" status to display in the app');
-        
-        Alert.alert(
-          'Warning',
-          'Login successful but some features may be limited. Please try logging in again if you experience issues.',
-          [{ text: 'OK' }]
-        );
+        // ✅ CRITICAL FIX: Retry backend authentication
+        console.log('\n🔄 RETRY: Attempting backend authentication again...');
+        try {
+          // Wait a bit before retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          console.log('   - Getting fresh Firebase ID token...');
+          const retryIdToken = await user.getIdToken(/* forceRefresh */ true);
+          console.log(`   - Fresh Firebase ID Token obtained (${retryIdToken.length} chars)`);
+          
+          console.log('   - Retrying backend firebaseLogin API...');
+          const retryBackendResponse = await yoraaAPI.firebaseLogin(retryIdToken);
+          
+          if (retryBackendResponse && retryBackendResponse.token) {
+            console.log('✅ RETRY SUCCESS: Backend authentication successful on retry');
+            console.log('📦 Backend JWT token received and stored');
+            
+            // Store user data in auth storage service
+            if (retryBackendResponse.user) {
+              console.log('   - Storing user data in auth storage...');
+              await authStorageService.storeAuthData(retryBackendResponse.token, retryBackendResponse.user);
+              console.log('✅ User data stored in auth storage');
+            }
+            
+            // Verify token storage
+            const storedToken = await yoraaAPI.getUserToken();
+            console.log(`   - Token Storage After Retry: ${storedToken ? '✅ EXISTS' : '❌ MISSING'}`);
+            
+            const isAuth = yoraaAPI.isAuthenticated();
+            console.log(`🔐 Backend Authentication Status After Retry: ${isAuth ? '✅ AUTHENTICATED' : '❌ NOT AUTHENTICATED'}`);
+          } else {
+            throw new Error('Retry failed: No token received');
+          }
+        } catch (retryError) {
+          console.error('❌ RETRY FAILED:', retryError.message);
+          console.error('⚠️⚠️⚠️ CRITICAL: User logged in to Firebase but NOT authenticated with backend!');
+          console.error('This WILL cause "not authenticated" status to display in the app');
+          
+          // ✅ CRITICAL: Don't continue if backend auth failed - show detailed error
+          setIsLoading(false);
+          
+          // Determine specific error message based on error type
+          let errorTitle = 'Authentication Error';
+          let errorMessage = 'We could not complete your login. Please try again or contact support if the problem persists.';
+          
+          if (retryError.message.includes('Network request failed') || retryError.message.includes('timeout')) {
+            errorTitle = 'Network Error';
+            errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
+          } else if (retryError.message.includes('HTML response') || retryError.message.includes('Received HTML')) {
+            errorTitle = 'Server Error';
+            errorMessage = 'The server is temporarily unavailable. Please try again in a few moments.';
+          } else if (retryError.message.includes('No token received')) {
+            errorTitle = 'Server Error';
+            errorMessage = 'Authentication with our server failed. Please try again or contact support.';
+          }
+          
+          Alert.alert(
+            errorTitle,
+            errorMessage,
+            [
+              {
+                text: 'Try Again',
+                onPress: () => navigation.goBack()
+              },
+              {
+                text: 'Cancel',
+                style: 'cancel'
+              }
+            ]
+          );
+          return; // Stop execution - don't proceed without backend auth
+        }
       }
       
       // Step 4: Create session for phone login
@@ -456,7 +542,14 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
         console.log('✅ VerificationId updated:', newConfirmation.verificationId);
       }
       
-      console.log('✅ Confirmation state, ref, and verificationId all updated');
+      // ✅ PRODUCTION FIX: Also store in service for production builds
+      console.log('💾 Storing confirmation in firebasePhoneAuthService for production...');
+      firebasePhoneAuthService.confirmation = newConfirmation;
+      firebasePhoneAuthService.verificationId = newConfirmation.verificationId;
+      firebasePhoneAuthService.phoneNumber = phoneNumber;
+      console.log('✅ Service instance updated');
+      
+      console.log('✅ Confirmation state, ref, service, and verificationId all updated');
       
       // Reset verification code inputs
       setVerificationCode(['', '', '', '', '', '']);

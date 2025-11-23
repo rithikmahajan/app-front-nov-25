@@ -1,556 +1,516 @@
-# 📱 iOS Production Build Guide - Backend Connection
+# 📱 iOS Production Release Build Guide
 
-**Complete guide to connect iOS app to production backend and create TestFlight build**
+**Date:** November 23, 2025  
+**App:** YORAA  
+**Purpose:** Complete guide to build iOS production release with .env.production variables
 
 ---
 
 ## 🎯 Overview
 
-This guide will help you:
-1. ✅ Configure iOS app to use production backend (`https://api.yoraa.in.net/api`)
-2. ✅ Update Info.plist for production security
-3. ✅ Create production build for TestFlight
-4. ✅ Test backend connectivity
+This guide covers building a production-ready iOS app with production environment variables for App Store distribution.
 
 ---
 
-## 🔧 Current vs Production Configuration
+## 📋 Prerequisites
 
-### Development (Current)
-```
-iOS Simulator → http://localhost:8001/api
-```
+### Required Tools
+- ✅ **Xcode 15+** (latest version recommended)
+- ✅ **CocoaPods** installed (`sudo gem install cocoapods`)
+- ✅ **Node.js & npm** installed
+- ✅ **Active Apple Developer Account** ($99/year)
 
-### Production (Target)
-```
-iOS Device → https://api.yoraa.in.net/api → Cloudflare Tunnel → Backend (185.193.19.244:8080)
-```
+### Required Files
+- ✅ `.env.production` - Production environment variables
+- ✅ Valid **Signing Certificate** (Distribution)
+- ✅ Valid **Provisioning Profile** (App Store or Ad Hoc)
 
-**Same backend URL as web app uses!**
-
----
-
-## 📋 Step-by-Step Setup
-
-### Step 1: Environment Configuration
-
-Your app is already configured to read from `.env.production`:
-
-**File:** `.env.production`
+### Verify Prerequisites
 ```bash
-# Production Backend (Cloudflare Tunnel)
-API_BASE_URL=https://api.yoraa.in.net/api
-BACKEND_URL=https://api.yoraa.in.net/api
-SERVER_IP=api.yoraa.in.net
-SERVER_PORT=443
+# Check Xcode
+xcodebuild -version
 
-# Environment
-APP_ENV=production
-BUILD_TYPE=release
-DEBUG_MODE=false
+# Check CocoaPods
+pod --version
+
+# Check Node/npm
+node --version
+npm --version
+
+# Check signing identity
+security find-identity -v -p codesigning
 ```
-
-✅ **Already configured correctly!**
 
 ---
 
-### Step 2: Update Info.plist for Production
+## 🚀 Quick Start (Recommended Method)
 
-The current `Info.plist` has `NSAllowsArbitraryLoads=true` which allows HTTP.
-For production, we need to:
-
-1. **Keep HTTPS connections secure**
-2. **Allow only specific domains**
-3. **Remove development-only settings**
-
-**Action Required:** Run the provided script to update Info.plist
-
----
-
-### Step 3: Update API Configuration
-
-Your code structure:
-```
-src/config/environment.js → Reads .env files
-src/config/apiConfig.js → Uses environment.js
-src/services/* → Use apiConfig.js
-```
-
-The configuration automatically switches based on `__DEV__` flag:
-- **Development:** Uses `.env` or `.env.development`
-- **Production:** Uses `.env.production`
-
-✅ **Already configured correctly!**
-
----
-
-## 🚀 Building for Production
-
-### Method 1: Automated Script (Recommended)
-
-Run the production build script:
+### Method 1: Using Build Script (Easiest)
 
 ```bash
-chmod +x ios-production-build.sh
-./ios-production-build.sh
+# Make script executable
+chmod +x build-ios-production-release.sh
+
+# Run the script
+./build-ios-production-release.sh
 ```
 
-This script will:
-1. ✅ Update Info.plist for production
-2. ✅ Clean build environment
-3. ✅ Install dependencies
-4. ✅ Configure for production backend
-5. ✅ Open Xcode for archive creation
+The script will:
+1. ✅ Copy `.env.production` → `.env` and `ios/.env`
+2. ✅ Clean previous builds
+3. ✅ Install dependencies (npm & pods)
+4. ✅ Give you build options (Xcode or command-line)
 
 ---
 
-### Method 2: Manual Build
+## 📝 Manual Step-by-Step Process
 
-#### Step A: Update Info.plist
+### Step 1: Prepare Environment Variables
+
 ```bash
-chmod +x update-ios-info-plist.sh
-./update-ios-info-plist.sh
+# Copy production env to active .env
+cp .env.production .env
+
+# Also copy to iOS folder for native access
+cp .env.production ios/.env
+
+# Verify the file
+cat .env | grep API_BASE_URL
 ```
 
-#### Step B: Clean and Prepare
+**Expected output:**
+```
+API_BASE_URL=https://api.yoraa.in.net
+```
+
+### Step 2: Clean Previous Builds
+
 ```bash
+# Kill Metro bundler if running
+lsof -ti:8081 | xargs kill -9 2>/dev/null || true
+
+# Clean iOS builds
 cd ios
-rm -rf ~/Library/Developer/Xcode/DerivedData/*
-pod deintegrate
-pod install
+rm -rf Pods Podfile.lock build DerivedData
+rm -rf ~/Library/Developer/Xcode/DerivedData/Yoraa-*
 cd ..
 ```
 
-#### Step C: Open Xcode
+### Step 3: Install Dependencies
+
+```bash
+# Install npm packages
+npm install
+
+# Install CocoaPods
+cd ios
+pod install --repo-update
+cd ..
+```
+
+### Step 4: Configure Xcode Project
+
+Open Xcode:
 ```bash
 open ios/Yoraa.xcworkspace
 ```
 
-#### Step D: Configure Build Settings in Xcode
+**Important: Always open `.xcworkspace`, NOT `.xcodeproj`**
 
-1. **Select Scheme:**
-   - Click scheme selector (top-left)
-   - Choose "Yoraa"
-   - Edit Scheme → Run
-   - Build Configuration: **Release**
+### Step 5: Verify Build Settings
 
-2. **Select Device:**
-   - Click device selector
-   - Choose "Any iOS Device (arm64)"
+In Xcode:
 
-3. **Verify Bundle Identifier:**
-   - Select project → Target "Yoraa"
-   - General tab
-   - Bundle Identifier: `com.yoraaapparelsprivatelimited.yoraa`
-
-4. **Signing & Capabilities:**
-   - Select "Automatically manage signing"
-   - Team: Your Apple Developer Team
-   - Provisioning Profile: Automatic
-
-#### Step E: Create Archive
-
-1. Clean build folder:
-   ```
-   Menu: Product → Clean Build Folder (⌘⇧K)
-   ```
-
-2. Create archive:
-   ```
-   Menu: Product → Archive
-   ```
+1. **Select Target:** YoraaApp
+2. **Signing & Capabilities:**
+   - ✅ Team: Select your Apple Developer team
+   - ✅ Signing Certificate: Distribution
+   - ✅ Provisioning Profile: Match App ID
    
-3. Wait for build (5-10 minutes)
+3. **Build Settings → Search "Code Signing":**
+   - Code Signing Identity (Release): iOS Distribution
+   - Code Signing Style: Automatic (recommended) or Manual
+   
+4. **General Tab:**
+   - Bundle Identifier: `com.yoraa` (must match App Store)
+   - Version: Update if needed (e.g., 1.2)
+   - Build: Update (e.g., 12)
 
-4. In Organizer:
+### Step 6: Build Archive
+
+#### Option A: Using Xcode GUI (Recommended)
+
+1. **Select Device:**
+   - Click device dropdown at top
+   - Select: **"Any iOS Device (arm64)"**
+   - Do NOT select simulator
+
+2. **Set Scheme to Release:**
+   - Product → Scheme → Edit Scheme
+   - Select "Archive" on left
+   - Build Configuration: **Release**
+   - Click "Close"
+
+3. **Create Archive:**
+   - Product → Archive
+   - Wait for build to complete (5-10 minutes)
+   - Archive window will open automatically
+
+4. **Distribute App:**
    - Click "Distribute App"
-   - Select "App Store Connect"
-   - Follow prompts to upload
+   - Choose method:
+     - **App Store Connect** - For TestFlight & App Store
+     - **Ad Hoc** - For testing on specific devices
+     - **Development** - For development devices
+     - **Enterprise** - For enterprise distribution
 
----
-
-## 🔍 Testing Backend Connection
-
-### Test 1: Check Production Backend Availability
-
-```bash
-# Test from terminal
-curl -X GET https://api.yoraa.in.net/api/health
-
-# Expected Response:
-# {"success":true,"message":"API is running","statusCode":200}
-```
-
-### Test 2: Test Categories Endpoint
+#### Option B: Using Command Line
 
 ```bash
-curl -X GET https://api.yoraa.in.net/api/categories
+cd ios
 
-# Expected: List of categories
-```
+# Create archive
+xcodebuild clean archive \
+  -workspace Yoraa.xcworkspace \
+  -scheme YoraaApp \
+  -configuration Release \
+  -archivePath ./build/YoraaApp.xcarchive \
+  -destination 'generic/platform=iOS' \
+  -allowProvisioningUpdates
 
-### Test 3: In-App Testing (Before Build)
-
-Add this to your app (temporary test):
-
-```javascript
-// Add to App.js or a test component
-useEffect(() => {
-  async function testBackend() {
-    try {
-      const response = await fetch('https://api.yoraa.in.net/api/health');
-      const data = await response.json();
-      console.log('✅ Backend connection successful:', data);
-    } catch (error) {
-      console.error('❌ Backend connection failed:', error);
-    }
-  }
-  testBackend();
-}, []);
+# Export IPA (create exportOptions.plist first)
+xcodebuild -exportArchive \
+  -archivePath ./build/YoraaApp.xcarchive \
+  -exportPath ./build \
+  -exportOptionsPlist exportOptions.plist
 ```
 
 ---
 
-## 📱 Info.plist Configuration Changes
+## 📄 exportOptions.plist
 
-### Current (Development)
+Create this file at `ios/exportOptions.plist`:
+
 ```xml
-<key>NSAppTransportSecurity</key>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
 <dict>
-    <key>NSAllowsArbitraryLoads</key>
-    <true/>  <!-- ⚠️ Allows all HTTP - NOT SECURE -->
+    <key>method</key>
+    <string>app-store</string>
+    <key>teamID</key>
+    <string>YOUR_TEAM_ID</string>
+    <key>uploadBitcode</key>
+    <false/>
+    <key>uploadSymbols</key>
+    <true/>
+    <key>compileBitcode</key>
+    <false/>
+    <key>signingStyle</key>
+    <string>automatic</string>
 </dict>
+</plist>
 ```
 
-### Production (Secure)
-```xml
-<key>NSAppTransportSecurity</key>
-<dict>
-    <key>NSAllowsArbitraryLoads</key>
-    <false/>  <!-- ✅ Secure by default -->
-    
-    <key>NSExceptionDomains</key>
-    <dict>
-        <!-- Allow HTTPS with exceptions -->
-        <key>api.yoraa.in.net</key>
-        <dict>
-            <key>NSIncludesSubdomains</key>
-            <true/>
-            <key>NSExceptionMinimumTLSVersion</key>
-            <string>TLSv1.2</string>
-        </dict>
-        
-        <!-- Local development only -->
-        <key>localhost</key>
-        <dict>
-            <key>NSExceptionAllowsInsecureHTTPLoads</key>
-            <true/>
-        </dict>
-    </dict>
-</dict>
-```
+**Methods available:**
+- `app-store` - App Store distribution
+- `ad-hoc` - Ad Hoc testing
+- `development` - Development testing
+- `enterprise` - Enterprise distribution
 
 ---
 
-## 🔐 Security Features
+## 🔐 Signing & Certificates
 
-### 1. Transport Security
-- ✅ HTTPS enforced for production
-- ✅ TLS 1.2+ required
-- ✅ No arbitrary HTTP loads in production
-- ✅ Only whitelisted domains allowed
+### Find Your Team ID
 
-### 2. Backend Authentication
-```javascript
-// API calls automatically include credentials
-const api = axios.create({
-  baseURL: 'https://api.yoraa.in.net/api',
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-```
+1. Go to [Apple Developer Portal](https://developer.apple.com)
+2. Account → Membership
+3. Copy your **Team ID**
 
-### 3. Cloudflare Protection
-- ✅ DDoS protection
-- ✅ SSL/TLS encryption
-- ✅ Rate limiting
-- ✅ Web Application Firewall (WAF)
+### Create/Verify Certificates
+
+1. **Xcode → Preferences → Accounts**
+2. Select your Apple ID
+3. Click "Manage Certificates"
+4. Ensure you have:
+   - ✅ Apple Distribution certificate
+   - ✅ iOS App Store provisioning profile
+
+### Automatic Signing (Recommended)
+
+In Xcode:
+- ✅ Enable "Automatically manage signing"
+- ✅ Select your Team
+- Xcode handles the rest
+
+### Manual Signing
+
+If you prefer manual:
+1. Download certificates from Apple Developer Portal
+2. Download provisioning profiles
+3. Install both in Xcode
+4. Select them in Build Settings
 
 ---
 
-## 🧪 Verification Checklist
+## 🔍 Verification Checklist
 
-Before submitting to TestFlight:
+Before submitting to App Store:
 
 ### Build Configuration
-- [ ] Build configuration set to "Release"
-- [ ] Bundle identifier correct
-- [ ] Version number incremented
-- [ ] Signing configured correctly
+- [ ] Scheme set to **Release**
+- [ ] Device target is **Any iOS Device** (not simulator)
+- [ ] Bundle ID matches App Store listing: `com.yoraa`
+- [ ] Version number updated (if new version)
+- [ ] Build number incremented
 
-### Backend Connection
-- [ ] `.env.production` has correct URL
-- [ ] Info.plist updated for production
-- [ ] Test backend connectivity
-- [ ] HTTPS enforced
+### Environment Variables
+- [ ] `.env.production` copied to `.env`
+- [ ] `.env.production` copied to `ios/.env`
+- [ ] API_BASE_URL points to production: `https://api.yoraa.in.net`
+- [ ] Razorpay uses **LIVE** keys (rzp_live_...)
+- [ ] DEBUG_MODE=false
+- [ ] BUILD_TYPE=release
 
-### App Functionality
-- [ ] App launches successfully
-- [ ] Can fetch products/categories
-- [ ] Cart operations work
-- [ ] User authentication works
-- [ ] Payment integration works
+### App Configuration
+- [ ] All required app icons present (including iPad 152x152 & 167x167) ✅
+- [ ] Launch screen configured
+- [ ] App permissions configured (Camera, Microphone, etc.)
+- [ ] Firebase configuration for production
 
-### Security
-- [ ] No console.log in production code
-- [ ] API keys properly secured
-- [ ] HTTPS enforced
-- [ ] No development URLs hardcoded
+### Code Signing
+- [ ] Valid distribution certificate
+- [ ] Valid provisioning profile
+- [ ] Team ID configured
+- [ ] Signing identity verified
+
+### Testing
+- [ ] Archive builds successfully
+- [ ] No build errors or warnings (critical ones)
+- [ ] App runs on physical device
+- [ ] All features work with production API
+- [ ] Payment flow tested with Razorpay LIVE mode
 
 ---
 
-## 📊 How iOS App Connects to Backend
+## 📤 Upload to App Store Connect
 
-### Connection Flow
+### Option 1: Using Xcode (Recommended)
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    iOS PRODUCTION ARCHITECTURE                   │
-└─────────────────────────────────────────────────────────────────┘
+1. After creating archive:
+   - Window → Organizer → Archives
+2. Select your archive
+3. Click "Distribute App"
+4. Choose "App Store Connect"
+5. Follow the wizard:
+   - Upload
+   - Include bitcode: NO (not needed for iOS 14+)
+   - Upload symbols: YES
+   - Automatically manage signing: YES
+6. Click "Upload"
+7. Wait for upload to complete
 
-                    iOS Device (Physical)
-                         ↓
-                 App makes API call
-              (https://api.yoraa.in.net/api/...)
-                         ↓
-                  Cellular/WiFi Network
-                         ↓
-                 DNS Resolution
-              (api.yoraa.in.net → Cloudflare)
-                         ↓
-                 Cloudflare Tunnel
-                  (SSL/TLS Encryption)
-                         ↓
-              Backend Server (Node.js)
-              185.193.19.244:8080
-                         ↓
-                 Database Queries
-                         ↓
-                 Response → Cloudflare
-                         ↓
-                   iOS Device
-```
+### Option 2: Using Transporter App
 
-### Code Flow
+1. Export IPA from Xcode Organizer
+2. Open **Transporter** app
+3. Drag & drop IPA file
+4. Click "Deliver"
 
-```javascript
-// 1. Component makes API call
-import yoraaAPI from './services/yoraaAPI';
+### Option 3: Using altool (Command Line)
 
-const products = await yoraaAPI.getProducts();
-
-// 2. yoraaAPI uses API_CONFIG
-import API_CONFIG from './config/apiConfig';
-
-// 3. API_CONFIG reads from environment
-import environmentConfig from './config/environment';
-
-// 4. environment reads .env.production
-const apiUrl = Config.BACKEND_URL; // https://api.yoraa.in.net/api
-
-// 5. Request goes through axios
-axios.create({
-  baseURL: 'https://api.yoraa.in.net/api',
-  timeout: 30000,
-});
-
-// 6. iOS makes HTTPS request
-// 7. Cloudflare handles SSL
-// 8. Backend processes request
-// 9. Response returns through Cloudflare
-// 10. App receives data
+```bash
+xcrun altool --upload-app \
+  -f YoraaApp.ipa \
+  -t ios \
+  -u your-apple-id@email.com \
+  -p your-app-specific-password
 ```
 
 ---
 
-## 🚨 Troubleshooting
+## 🧪 TestFlight Distribution
 
-### Issue 1: "The network connection was lost"
+After upload to App Store Connect:
 
-**Cause:** Info.plist blocking HTTP or domain not whitelisted
+1. Go to [App Store Connect](https://appstoreconnect.apple.com)
+2. Select your app
+3. Go to **TestFlight** tab
+4. Wait for processing (10-60 minutes)
+5. Add internal testers (your team)
+6. Add external testers (beta users)
+7. Submit for Beta App Review (if external)
+
+---
+
+## ❗ Common Issues & Solutions
+
+### Issue: "No signing identity found"
 
 **Solution:**
 ```bash
-# Run the update script
-./update-ios-info-plist.sh
+# Check available identities
+security find-identity -v -p codesigning
+
+# If none found, create one in Xcode:
+# Xcode → Preferences → Accounts → Manage Certificates → +
 ```
 
-### Issue 2: "Could not connect to the server"
-
-**Cause:** Backend URL incorrect or backend down
+### Issue: "Provisioning profile doesn't match"
 
 **Solution:**
-```bash
-# Test backend
-curl https://api.yoraa.in.net/api/health
+1. Xcode → Preferences → Accounts
+2. Download Manual Profiles
+3. Or enable "Automatically manage signing"
 
-# Check .env.production
-cat .env.production | grep BACKEND_URL
-```
-
-### Issue 3: Archive Build Fails
-
-**Cause:** Pods not installed or cache issues
+### Issue: "Pod install fails"
 
 **Solution:**
 ```bash
 cd ios
-rm -rf ~/Library/Developer/Xcode/DerivedData/*
 pod deintegrate
-pod install
-cd ..
+pod install --repo-update
 ```
 
-### Issue 4: "App Transport Security" Error
-
-**Cause:** Trying to use HTTP in production
+### Issue: "Build fails with 'Command PhaseScriptExecution failed'"
 
 **Solution:**
-- Ensure all URLs use `https://`
-- Check Info.plist has correct exceptions
-- Verify `API_BASE_URL` in `.env.production`
-
----
-
-## 📝 Configuration Files Summary
-
-### `.env.production`
-```bash
-API_BASE_URL=https://api.yoraa.in.net/api
-BACKEND_URL=https://api.yoraa.in.net/api
-APP_ENV=production
-BUILD_TYPE=release
-```
-
-### `src/config/environment.js`
-```javascript
-getApiUrl() {
-  if (this.isProduction) {
-    return 'https://api.yoraa.in.net/api';
-  }
-  return 'http://localhost:8001/api';
-}
-```
-
-### `ios/YoraaApp/Info.plist`
-```xml
-<key>NSAppTransportSecurity</key>
-<dict>
-    <key>NSAllowsArbitraryLoads</key>
-    <false/>
-    <key>NSExceptionDomains</key>
-    <dict>
-        <key>api.yoraa.in.net</key>
-        <dict>
-            <key>NSExceptionMinimumTLSVersion</key>
-            <string>TLSv1.2</string>
-        </dict>
-    </dict>
-</dict>
-```
-
----
-
-## 🎯 Quick Start Commands
-
-### Full Production Build
-```bash
-# One command to rule them all
-./ios-production-build.sh
-```
-
-### Just Update Info.plist
-```bash
-./update-ios-info-plist.sh
-```
-
-### Test Backend Connection
-```bash
-./test-ios-backend-connection.sh
-```
-
-### Clean Build
-```bash
-cd ios && rm -rf ~/Library/Developer/Xcode/DerivedData/* && pod deintegrate && pod install && cd ..
-```
-
----
-
-## 📚 Related Documentation
-
-- [Web Backend Connection Guide](./PRODUCTION_BACKEND_CONNECTION_GUIDE.md)
-- [Mobile Backend Connection Guide](./MOBILE_APP_BACKEND_CONNECTION_GUIDE.md)
-- [iOS TestFlight Build Guide](./build-for-testflight-complete.sh)
-
----
-
-## ✅ Production Checklist
-
-### Before Archive
-- [ ] Run `./ios-production-build.sh`
-- [ ] Test backend connectivity
-- [ ] Verify `.env.production` settings
-- [ ] Check Info.plist updated
-- [ ] Test on physical device
-
-### Archive & Upload
-- [ ] Build configuration: Release
-- [ ] Select "Any iOS Device"
-- [ ] Clean build folder
-- [ ] Create archive
-- [ ] Distribute to App Store Connect
-
-### After Upload
-- [ ] Wait for processing (20-30 mins)
-- [ ] Add to TestFlight group
-- [ ] Test on actual devices
-- [ ] Verify backend operations
-- [ ] Submit for review
-
----
-
-## 🆘 Emergency Contacts
-
-**Backend Not Responding:**
-```bash
-# Check backend status
-curl https://api.yoraa.in.net/api/health
-
-# Contact backend team if down
-```
-
-**Build Issues:**
 ```bash
 # Clean everything
-cd ios
 rm -rf ~/Library/Developer/Xcode/DerivedData/*
-rm -rf Pods/
-rm Podfile.lock
-pod install
-cd ..
+rm -rf ios/Pods ios/Podfile.lock
+cd ios && pod install
 ```
 
-**Certificate Issues:**
-- Open Xcode
-- Preferences → Accounts
-- Download Manual Profiles
-- Try again
+### Issue: "Archive validation fails - Missing icons"
+
+**Solution:**
+Already fixed! ✅ All iPad icons (152x152 and 167x167) have been added.
+
+### Issue: "Module 'react-native-config' not found"
+
+**Solution:**
+```bash
+cd ios
+rm -rf Pods Podfile.lock
+pod install
+# Then clean build in Xcode (⇧⌘K)
+```
+
+### Issue: Environment variables not loading
+
+**Solution:**
+```bash
+# Ensure .env files are in place
+cp .env.production .env
+cp .env.production ios/.env
+
+# Verify they're being read
+cat ios/.env | grep API_BASE_URL
+
+# Clean and rebuild
+cd ios && pod install
+```
 
 ---
 
-**Last Updated:** November 7, 2025  
-**Backend URL:** `https://api.yoraa.in.net/api`  
-**Build Type:** Production Release  
-**Status:** ✅ Ready for TestFlight
+## 📊 Build Size Optimization
+
+To reduce app size:
+
+1. **Enable Bitcode:** ❌ Not needed for iOS 14+
+2. **Optimize Images:** Use compressed assets
+3. **Remove unused code:** Check imports
+4. **Use App Thinning:** Automatic with App Store
+
+---
+
+## 🔄 Version Management
+
+### Semantic Versioning
+
+- **Major.Minor.Patch** (e.g., 1.2.0)
+- Update in `ios/YoraaApp/Info.plist`:
+  - `CFBundleShortVersionString`: Version (1.2)
+  - `CFBundleVersion`: Build (12)
+
+### In Xcode:
+
+1. Select Target → General
+2. **Version:** 1.2 (visible to users)
+3. **Build:** 12 (internal tracking)
+
+**Rules:**
+- Each upload must have unique build number
+- Version can stay same for hotfixes
+- Increment version for new features
+
+---
+
+## 📚 Additional Resources
+
+- [Apple Developer Documentation](https://developer.apple.com/documentation/)
+- [React Native iOS Build Guide](https://reactnative.dev/docs/publishing-to-app-store)
+- [App Store Review Guidelines](https://developer.apple.com/app-store/review/guidelines/)
+- [TestFlight Beta Testing](https://developer.apple.com/testflight/)
+
+---
+
+## 🎉 Success Checklist
+
+After successful build & upload:
+
+- [x] Archive created successfully
+- [x] IPA exported without errors
+- [x] Uploaded to App Store Connect
+- [x] Processing complete in App Store Connect
+- [x] TestFlight build available
+- [x] Internal testing successful
+- [x] Ready for App Store submission
+
+---
+
+## 📞 Quick Reference Commands
+
+```bash
+# Full production build (automated)
+./build-ios-production-release.sh
+
+# Manual steps
+cp .env.production .env
+cp .env.production ios/.env
+npm install
+cd ios && pod install && cd ..
+open ios/Yoraa.xcworkspace
+
+# Clean everything
+rm -rf node_modules ios/Pods ios/Podfile.lock
+npm install
+cd ios && pod install
+
+# Check signing
+security find-identity -v -p codesigning
+
+# Kill Metro
+lsof -ti:8081 | xargs kill -9
+```
+
+---
+
+## ✅ Summary
+
+You now have:
+1. ✅ Automated build script: `build-ios-production-release.sh`
+2. ✅ Production environment variables configured
+3. ✅ All iPad icons added (152x152, 167x167)
+4. ✅ Complete build guide
+5. ✅ Troubleshooting solutions
+
+**Next Steps:**
+1. Run `./build-ios-production-release.sh`
+2. Archive in Xcode
+3. Upload to App Store Connect
+4. Submit for review
+
+Good luck with your iOS release! 🚀

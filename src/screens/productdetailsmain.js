@@ -28,6 +28,11 @@ import { yoraaAPI } from '../services/yoraaAPI';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useBag } from '../contexts/BagContext';
 import AnimatedHeartIcon from '../components/AnimatedHeartIcon';
+import { 
+  getResponsiveFontSize, 
+  getResponsiveSpacing, 
+  getResponsiveValue 
+} from '../utils/responsive';
 
 const { width } = Dimensions.get('window');
 

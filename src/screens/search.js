@@ -51,8 +51,9 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
   // Use the singleton API client instance
   const apiClient = yoraaAPI;
   
-  // Get the previous screen from route params
+  // Get the previous screen and params from route params
   const previousScreen = route?.params?.previousScreen;
+  const previousParams = route?.params?.previousParams || {};
   
   const slideAnim = useRef(new Animated.Value(Dimensions.get('window').height)).current;
   const modalSlideAnim = useRef(new Animated.Value(Dimensions.get('window').height)).current;
@@ -462,7 +463,7 @@ const SearchScreen = React.memo(({ navigation, onClose, route }) => {
       useNativeDriver: true,
     }).start(() => {
       if (previousScreen && navigation && navigation.navigate) {
-        navigation.navigate(previousScreen);
+        navigation.navigate(previousScreen, previousParams);
       } else if (navigation && navigation.goBack) {
         navigation.goBack();
       } else if (onClose) {

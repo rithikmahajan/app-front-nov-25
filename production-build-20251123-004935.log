@@ -1,0 +1,104 @@
+================================
+🚀 YORAA Android Production Build
+================================
+
+[0;34m📍 Working directory: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10[0m
+
+[0;34mStep 1: Verifying production environment configuration...[0m
+[0;32m✅ .env.production found[0m
+
+[0;34mStep 2: Production Configuration:[0m
+[1;33mBackend API:[0m https://api.yoraa.in.net
+[1;33mEnvironment:[0m production
+[1;33mBuild Type:[0m release
+[1;33mDebug Mode:[0m false
+
+[0;34mStep 3: Verifying release keystore...[0m
+[0;32m✅ Release keystore verified[0m
+
+[0;34mStep 4: Cleaning previous builds...[0m
+Starting a Gradle Daemon, 1 busy and 2 stopped Daemons could not be reused, use --status for details
+> Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:shared:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:shared:compileJava NO-SOURCE
+> Task :gradle-plugin:shared:processResources NO-SOURCE
+> Task :gradle-plugin:shared:classes UP-TO-DATE
+> Task :gradle-plugin:shared:jar UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:settings-plugin:pluginDescriptors UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:processResources UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:classes UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:jar UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:react-native-gradle-plugin:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:processResources UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:classes UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:jar UP-TO-DATE
+
+> Configure project :app
+Reading env from: .env
+
+=============== JavaScriptCore is being moved ===============
+JavaScriptCore has been extracted from react-native core
+and will be removed in a future release. It can now be
+installed from `@react-native-community/javascriptcore`
+See: https://github.com/react-native-community/javascriptcore
+=============================================================
+
+
+> Configure project :react-native-firebase_app
+:react-native-firebase_app package.json found at /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-firebase/app/package.json
+:react-native-firebase_app:firebase.bom using default value: 34.4.0
+:react-native-firebase_app:play.play-services-auth using default value: 21.4.0
+:react-native-firebase_app package.json found at /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-firebase/app/package.json
+:react-native-firebase_app:version set from package.json: 23.5.0 (23,5,0 - 23005000)
+:react-native-firebase_app:android.compileSdk using custom value: 35
+:react-native-firebase_app:android.targetSdk using custom value: 35
+:react-native-firebase_app:android.minSdk using custom value: 24
+:react-native-firebase_app:reactNativeAndroidDir /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native
+
+> Configure project :react-native-firebase_auth
+:react-native-firebase_auth package.json found at /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-firebase/auth/package.json
+:react-native-firebase_app package.json found at /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-firebase/app/package.json
+:react-native-firebase_auth:firebase.bom using default value: 34.4.0
+:react-native-firebase_auth package.json found at /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-firebase/auth/package.json
+:react-native-firebase_auth:version set from package.json: 23.5.0 (23,5,0 - 23005000)
+:react-native-firebase_auth:android.compileSdk using custom value: 35
+:react-native-firebase_auth:android.targetSdk using custom value: 35
+:react-native-firebase_auth:android.minSdk using custom value: 24
+:react-native-firebase_auth:reactNativeAndroidDir /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native
+
+> Configure project :react-native-firebase_messaging
+:react-native-firebase_messaging package.json found at /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-firebase/messaging/package.json
+:react-native-firebase_app package.json found at /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-firebase/app/package.json
+:react-native-firebase_messaging:firebase.bom using default value: 34.4.0
+:react-native-firebase_messaging package.json found at /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-firebase/messaging/package.json
+:react-native-firebase_messaging:version set from package.json: 23.5.0 (23,5,0 - 23005000)
+:react-native-firebase_messaging:android.compileSdk using custom value: 35
+:react-native-firebase_messaging:android.targetSdk using custom value: 35
+:react-native-firebase_messaging:android.minSdk using custom value: 24
+:react-native-firebase_messaging:reactNativeAndroidDir /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native
+
+> Configure project :react-native-video
+Kotlin version is correct: 2.1.20
+AndroidX version is correct: 1.9.3
+useExoplayerIMA: false
+useExoplayerSmoothStreaming: true
+useExoplayerDash: true
+useExoplayerHls: true
+useExoplayerRtsp: false
+buildFromSource: false
+
+> Configure project :react-native-vision-camera
+[VisionCamera] Thank you for using VisionCamera ❤️
+[VisionCamera] If you enjoy using VisionCamera, please consider sponsoring this project: https://github.com/sponsors/mrousavy
+[VisionCamera] node_modules found at /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules
+[VisionCamera] VisionCamera_enableFrameProcessors is set to true!
+[VisionCamera] react-native-worklets-core not found, Frame Processors are disabled!
+[VisionCamera] VisionCamera_enableCodeScanner is set to false!
+
+> Task :app:clean

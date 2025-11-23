@@ -9,6 +9,9 @@ import {
   Image,
   Animated,
   Dimensions,
+  SafeAreaView,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import { Colors, FontFamilies } from '../constants';
 import HeartFilledIcon from '../assets/icons/HeartFilledIcon';
@@ -348,35 +351,37 @@ const FavouritesContent = ({ navigation }) => {
   }, [handleProductPress, isEditMode, removingItems, handleRemoveItem, deleteIconAnimation]);
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft} />
-        <Text style={styles.headerTitle}>Favourites</Text>
-        {isEditMode ? (
-          <View style={styles.editModeButtons}>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft} />
+          <Text style={styles.headerTitle}>Favourites</Text>
+          {isEditMode ? (
+            <View style={styles.editModeButtons}>
+              <TouchableOpacity 
+                style={styles.clearAllButton}
+                onPress={handleClearAll}
+              >
+                <Text style={styles.clearAllText}>Clear All</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.doneButton}
+                onPress={handleEditPress}
+              >
+                <Text style={styles.doneText}>Done</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
             <TouchableOpacity 
-              style={styles.clearAllButton}
-              onPress={handleClearAll}
-            >
-              <Text style={styles.clearAllText}>Clear All</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.doneButton}
+              style={styles.editButton}
               onPress={handleEditPress}
             >
-              <Text style={styles.doneText}>Done</Text>
+              <Text style={styles.editText}>Edit</Text>
             </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity 
-            style={styles.editButton}
-            onPress={handleEditPress}
-          >
-            <Text style={styles.editText}>Edit</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+          )}
+        </View>
 
       {/* Products Grid */}
       <View style={styles.content}>
@@ -423,10 +428,15 @@ const FavouritesContent = ({ navigation }) => {
         )}
       </View>
     </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.white,
+  },
   container: {
     flex: 1,
     backgroundColor: Colors.white,

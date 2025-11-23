@@ -56,6 +56,7 @@ const ProductViewTwo = ({ navigation, route }) => {
     if (navigation && navigation.navigate) {
       navigation.navigate('Filters', {
         previousScreen: 'ProductViewTwo',
+        previousParams: routeParams, // Pass all route params back
         onApplyFilters: (items, filterParams) => {
           console.log('🔍 Filters applied from ProductViewTwo:', filterParams);
           // Handle filtered results here if needed
@@ -66,7 +67,10 @@ const ProductViewTwo = ({ navigation, route }) => {
 
   const handleSearchPress = () => {
     if (navigation && navigation.navigate) {
-      navigation.navigate('SearchScreen', { previousScreen: 'ProductViewTwo' });
+      navigation.navigate('SearchScreen', { 
+        previousScreen: 'ProductViewTwo',
+        previousParams: routeParams // Pass all route params back
+      });
     }
   };
 

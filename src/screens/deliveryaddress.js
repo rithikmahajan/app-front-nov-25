@@ -10,6 +10,8 @@ import {
   PanResponder,
   ScrollView,
   ActivityIndicator,
+  SafeAreaView,
+  Platform,
 } from 'react-native';
 import { useAddress } from '../contexts/AddressContext';
 
@@ -208,6 +210,11 @@ const DeliveryAddressModal = ({ visible, onClose, navigation, asScreen = false, 
       ]}
       {...(asScreen ? {} : panResponder.panHandlers)}
     >
+      {/* Safe Area Top Spacer for Full Screen Mode */}
+      {asScreen && Platform.OS === 'ios' && (
+        <SafeAreaView style={styles.safeAreaTop} />
+      )}
+
       {/* Handle bar for drag gesture */}
       {!asScreen && (
         <View style={styles.handleBar} />
@@ -374,6 +381,9 @@ const styles = StyleSheet.create({
     maxHeight: '100%',
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
+  },
+  safeAreaTop: {
+    backgroundColor: '#FFFFFF',
   },
   handleBar: {
     width: 36,

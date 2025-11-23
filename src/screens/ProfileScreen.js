@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Linking,
   ActivityIndicator,
+  SafeAreaView,
+  StatusBar,
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import Svg, { G, Path, Defs, ClipPath, Rect } from 'react-native-svg';
@@ -160,8 +162,6 @@ const ProfileScreen = React.memo(({ navigation }) => {
 
   const loadUserName = useCallback(async () => {
     try {
-      setIsLoadingUserName(true);
-      
       // Get current Firebase user
       const currentUser = auth().currentUser;
       if (currentUser) {
@@ -171,105 +171,69 @@ const ProfileScreen = React.memo(({ navigation }) => {
           email: currentUser.email
         });
 
-        // CRITICAL FOR TESTFLIGHT: Ensure backend is authenticated before loading profile
-        try {
-          const isBackendAuth = yoraaAPI.isAuthenticated();
-          console.log('🔍 Backend auth status:', isBackendAuth ? 'AUTHENTICATED' : 'NOT AUTHENTICATED');
-          
-          if (!isBackendAuth) {
-            console.log('⚠️ Backend not authenticated, syncing now...');
-            const syncSuccess = await authManager.syncBackendAuth();
+        // ✅ INSTANT LOAD: Set name immediately from Firebase (no waiting)
+        let quickName = '';
+        if (currentUser.displayName) {
+          quickName = currentUser.displayName;
+        } else if (currentUser.email) {
+          const emailName = currentUser.email.split('@')[0];
+          quickName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
+        } else {
+          quickName = 'User';
+        }
+        
+        // Set name instantly - no loading state
+        setUserName(quickName);
+        setIsAuthenticated(true);
+        setIsLoadingUserName(false);
+        console.log('✅ Quick name set instantly:', quickName);
+
+        // ✅ BACKGROUND UPDATE: Try to get better name from backend (non-blocking)
+        setTimeout(async () => {
+          try {
+            // Check backend auth status quickly
+            const isBackendAuth = yoraaAPI.isAuthenticated();
             
-            if (!syncSuccess) {
-              console.warn('❌ Initial backend sync failed, retrying once...');
-              // Wait a bit and retry
-              await new Promise(resolve => setTimeout(resolve, 1000));
-              const retrySuccess = await authManager.syncBackendAuth();
+            if (isBackendAuth) {
+              // Only fetch if backend is already authenticated (no sync/retry delays)
+              const profile = await yoraaAPI.getUserProfile();
               
-              if (!retrySuccess) {
-                console.error('❌ Backend sync failed after retry - will try to use cached data');
-              } else {
-                console.log('✅ Backend sync successful on retry');
+              if (profile && profile.success && profile.data && !profile.data.fallback) {
+                let displayName = '';
+                
+                if (profile.data.firstName && profile.data.lastName) {
+                  displayName = `${profile.data.firstName} ${profile.data.lastName}`;
+                } else if (profile.data.firstName) {
+                  displayName = profile.data.firstName;
+                } else if (profile.data.name || profile.data.displayName) {
+                  displayName = profile.data.name || profile.data.displayName;
+                }
+                
+                // Only update if we got a better name
+                if (displayName && displayName !== quickName) {
+                  setUserName(displayName);
+                  console.log('✅ Updated with backend profile name:', displayName);
+                }
               }
             } else {
-              console.log('✅ Backend sync successful in ProfileScreen');
+              console.log('ℹ️ Backend not authenticated - using Firebase name');
             }
-          } else {
-            console.log('✅ Backend already authenticated');
+          } catch (profileError) {
+            console.log('ℹ️ Background profile update failed (non-critical):', profileError.message);
+            // Keep using the quick name - no error to user
           }
-        } catch (syncError) {
-          console.error('❌ Backend sync error in ProfileScreen:', syncError);
-          // Continue anyway - try to load what we can
-        }
-
-        // Try to get profile from backend API
-        try {
-          const profile = await yoraaAPI.getUserProfile();
-          console.log('📊 Profile data for ProfileScreen:', profile);
-          
-          if (profile && profile.success && profile.data && !profile.data.fallback) {
-            // Use backend profile name - prioritize firstName + lastName
-            let displayName = '';
-            
-            if (profile.data.firstName && profile.data.lastName) {
-              displayName = `${profile.data.firstName} ${profile.data.lastName}`;
-            } else if (profile.data.firstName) {
-              displayName = profile.data.firstName;
-            } else if (profile.data.name || profile.data.displayName) {
-              displayName = profile.data.name || profile.data.displayName;
-            }
-            
-            if (displayName) {
-              setUserName(displayName);
-              setIsAuthenticated(true);
-              console.log('✅ Using backend profile name:', displayName);
-              return;
-            }
-          }
-          
-          // Fallback to Firebase user displayName
-          if (currentUser.displayName) {
-            setUserName(currentUser.displayName);
-            setIsAuthenticated(true);
-            console.log('✅ Using Firebase displayName:', currentUser.displayName);
-          } else if (currentUser.email) {
-            // Extract name from email if no displayName
-            const emailName = currentUser.email.split('@')[0];
-            const formattedName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
-            setUserName(formattedName);
-            setIsAuthenticated(true);
-            console.log('✅ Using email-derived name:', formattedName);
-          } else {
-            setUserName('User');
-            setIsAuthenticated(true);
-          }
-          
-        } catch (profileError) {
-          console.warn('⚠️ Could not load backend profile for ProfileScreen:', profileError.message);
-          
-          // Fallback to Firebase user data
-          if (currentUser.displayName) {
-            setUserName(currentUser.displayName);
-            setIsAuthenticated(true);
-          } else if (currentUser.email) {
-            const emailName = currentUser.email.split('@')[0];
-            setUserName(emailName.charAt(0).toUpperCase() + emailName.slice(1));
-            setIsAuthenticated(true);
-          } else {
-            setUserName('User');
-            setIsAuthenticated(true);
-          }
-        }
+        }, 100); // Small delay to not block rendering
+        
       } else {
         console.log('❌ No authenticated user found for ProfileScreen');
         setUserName('Guest User');
         setIsAuthenticated(false);
+        setIsLoadingUserName(false);
       }
     } catch (error) {
       console.error('❌ Error loading user name for ProfileScreen:', error);
       setUserName('Guest User');
       setIsAuthenticated(false);
-    } finally {
       setIsLoadingUserName(false);
     }
   }, []);
@@ -296,7 +260,8 @@ const ProfileScreen = React.memo(({ navigation }) => {
   }, [loadUserName]);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Profile Header */}
         <View style={styles.profileContainer}>
@@ -462,7 +427,7 @@ const ProfileScreen = React.memo(({ navigation }) => {
         visible={showContactUsModal}
         navigation={{ goBack: () => setShowContactUsModal(false) }}
       />
-    </View>
+    </SafeAreaView>
   );
 });
 

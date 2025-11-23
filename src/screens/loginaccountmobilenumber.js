@@ -400,14 +400,16 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
           reviewData: route?.params?.reviewData
         });
         
-        // Show success message after navigation
-        setTimeout(() => {
-          Alert.alert(
-            'OTP Sent',
-            `A verification code has been sent to ${formattedPhoneNumber}\n\n⏱️ SMS may take 5-30 seconds to arrive.\n\nIf you don't receive it within 30 seconds, use "Resend Code" on the next screen.`,
-            [{ text: 'OK' }]
-          );
-        }, 500);
+        // Show success message after navigation (only in development)
+        if (__DEV__) {
+          setTimeout(() => {
+            Alert.alert(
+              'OTP Sent',
+              `A verification code has been sent to ${formattedPhoneNumber}\n\n⏱️ SMS may take 5-30 seconds to arrive.\n\nIf you don't receive it within 30 seconds, use "Resend Code" on the next screen.`,
+              [{ text: 'OK' }]
+            );
+          }, 500);
+        }
       }
       
     } catch (error) {

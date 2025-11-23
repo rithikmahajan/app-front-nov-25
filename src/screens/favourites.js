@@ -4,6 +4,8 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  SafeAreaView,
+  StatusBar,
 } from 'react-native';
 import { Colors, FontFamilies } from '../constants';
 import HeartIcon from '../assets/icons/HeartIcon';
@@ -29,54 +31,61 @@ const FavouritesScreen = React.memo(({ navigation }) => {
 
   // Empty state - no favorites
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft} />
-        <Text style={styles.headerTitle} accessibilityRole="header">Favourites</Text>
-        <View style={styles.headerRight} />
-      </View>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft} />
+          <Text style={styles.headerTitle} accessibilityRole="header">Favourites</Text>
+          <View style={styles.headerRight} />
+        </View>
 
-      {/* Content */}
-      <View style={styles.content}>
-        {/* Heart Icon */}
-        <View style={styles.heartIconContainer}>
-          <View style={styles.heartIconCircle}>
-            <HeartIcon size={35} color="#14142B" filled={false} />
+        {/* Content */}
+        <View style={styles.content}>
+          {/* Heart Icon */}
+          <View style={styles.heartIconContainer}>
+            <View style={styles.heartIconCircle}>
+              <HeartIcon size={35} color="#14142B" filled={false} />
+            </View>
+          </View>
+
+          {/* Text Content */}
+          <View style={styles.textContainer}>
+            <Text style={styles.emptyText}>
+              Your <Text style={styles.boldText}>Favourites</Text> is empty.
+            </Text>
+            <Text style={styles.descriptionText}>
+              When you add products, they'll
+            </Text>
+            <Text style={styles.descriptionText}>
+              appear here.
+            </Text>
           </View>
         </View>
 
-        {/* Text Content */}
-        <View style={styles.textContainer}>
-          <Text style={styles.emptyText}>
-            Your <Text style={styles.boldText}>Favourites</Text> is empty.
-          </Text>
-          <Text style={styles.descriptionText}>
-            When you add products, they'll
-          </Text>
-          <Text style={styles.descriptionText}>
-            appear here.
-          </Text>
+        {/* Add Favourites Button */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity 
+            style={styles.addFavouritesButton}
+            onPress={handleAddFavouritesNow}
+            accessibilityRole="button"
+            accessibilityLabel="Add Favourites Now"
+            accessibilityHint="Navigate to home to browse products"
+          >
+            <Text style={styles.buttonText}>Add Favourites Now</Text>
+          </TouchableOpacity>
         </View>
       </View>
-
-      {/* Add Favourites Button */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.addFavouritesButton}
-          onPress={handleAddFavouritesNow}
-          accessibilityRole="button"
-          accessibilityLabel="Add Favourites Now"
-          accessibilityHint="Navigate to home to browse products"
-        >
-          <Text style={styles.buttonText}>Add Favourites Now</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </SafeAreaView>
   );
 });
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.white,
+  },
   container: {
     flex: 1,
     backgroundColor: Colors.white,

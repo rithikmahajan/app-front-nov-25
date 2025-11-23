@@ -496,6 +496,7 @@ const CollectionScreen = ({ navigation, route }) => {
     if (navigation && navigation.navigate) {
       navigation.navigate('Filters', {
         previousScreen: 'Collection',
+        previousParams: route?.params || {}, // Pass all route params back
         onApplyFilters: (items, filterParams) => {
           console.log('🔍 Filters applied from Collection:', filterParams);
           // Handle filtered results here if needed
@@ -674,19 +675,21 @@ const CollectionScreen = ({ navigation, route }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-        
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.searchButton}
-            onPress={() => navigation?.navigate('SearchScreen', { previousScreen: 'Collection' })}
-          >
-            <GlobalSearchIcon size={24} />
-          </TouchableOpacity>
-        </View>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.searchButton}
+          onPress={() => navigation?.navigate('SearchScreen', { 
+            previousScreen: 'Collection',
+            previousParams: route?.params || {} // Pass all route params back
+          })}
+        >
+          <GlobalSearchIcon size={24} />
+        </TouchableOpacity>
+      </View>
 
         {/* Filter Bar */}
         <View style={styles.filterBar}>
@@ -813,7 +816,6 @@ const CollectionScreen = ({ navigation, route }) => {
           onClearFilters={clearFilters}
         />
       </SafeAreaView>
-    </View>
   );
 };
 
@@ -827,7 +829,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 8,  // Reduced from 16 since SafeAreaView handles status bar
     paddingBottom: 16,
     backgroundColor: '#FFFFFF',
   },

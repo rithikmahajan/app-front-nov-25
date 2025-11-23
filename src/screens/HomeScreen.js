@@ -24,6 +24,7 @@ const HomeScreen = React.memo(({ navigation, route }) => {
   const [categories, setCategories] = useState([]);
   const [currentSubcategories, setCurrentSubcategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingSubcategories, setLoadingSubcategories] = useState(false);
   const [error, setError] = useState(null);
 
   // Fetch categories and subcategories from API
@@ -103,6 +104,7 @@ const HomeScreen = React.memo(({ navigation, route }) => {
   // Fetch subcategories for a specific category
   const fetchSubcategoriesForCategory = useCallback(async (categoryId) => {
     try {
+      setLoadingSubcategories(true);
       console.log(`Fetching subcategories for category ID: ${categoryId}`);
       
       const response = await apiService.getSubcategoriesByCategory(categoryId);
@@ -120,6 +122,8 @@ const HomeScreen = React.memo(({ navigation, route }) => {
     } catch (err) {
       console.error('Error fetching subcategories:', err);
       setCurrentSubcategories([]);
+    } finally {
+      setLoadingSubcategories(false);
     }
   }, []);
 
@@ -206,18 +210,9 @@ const HomeScreen = React.memo(({ navigation, route }) => {
     } else {
       console.log('❌ No subcategories to show for', activeTab);
       
-      // Temporary: Add some test subcategories for debugging
-      const selectedCategory = categories.find(cat => 
-        cat.name.toLowerCase() === activeTab.toLowerCase()
-      );
-      
-      if (selectedCategory) {
-        console.log('🔧 Adding temporary test subcategories for debugging');
-        items.push(
-          { id: 'test1', name: 'Test Shirt', isSale: false, imageUrl: null },
-          { id: 'test2', name: 'Test Pants', isSale: false, imageUrl: null }
-        );
-      }
+      // ✅ REMOVED: Test subcategories (unprofessional in production)
+      // Show empty state or skeleton loader instead
+      // No items will be added - displayItems will be empty array
     }
     
     console.log('Final displayItems:', items.map(i => ({ id: i.id, name: i.name, isSale: i.isSale })));
@@ -341,11 +336,16 @@ const HomeScreen = React.memo(({ navigation, route }) => {
       {/* Content */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.categoriesContainer}>
-          {loading ? (
+          {loading || loadingSubcategories ? (
             <View style={styles.skeletonGrid}>
               {[1, 2, 3, 4, 5, 6].map((index) => (
                 <CategoryCardSkeleton key={index} />
               ))}
+            </View>
+          ) : displayItems.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>No products available at the moment</Text>
+              <Text style={styles.emptyStateSubText}>Please check back later</Text>
             </View>
           ) : (
             <>
@@ -591,6 +591,21 @@ const styles = StyleSheet.create({
     fontSize: getResponsiveFontSize(12),
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
+  },
+  
+  // Empty State
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: getResponsiveSpacing(60),
+    paddingHorizontal: getResponsiveSpacing(32),
+  },
+  emptyStateText: {
+    fontSize: getResponsiveFontSize(14),
+    color: '#666666',
+    fontFamily: 'Montserrat-Regular',
+    textAlign: 'center',
   },
 });
 

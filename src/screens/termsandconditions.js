@@ -8,8 +8,11 @@ import {
   ScrollView,
   Linking,
   Alert,
+  Dimensions,
 } from 'react-native';
 import GlobalBackButton from '../components/GlobalBackButton';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const TermsAndConditions = ({ navigation, route }) => {
   const [isAccepted, setIsAccepted] = useState(false);
@@ -198,12 +201,13 @@ const styles = StyleSheet.create({
   },
   bottomSection: {
     paddingBottom: 40,
+    paddingHorizontal: 16,
   },
   termsContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingHorizontal: 38,
-    marginBottom: 40,
+    paddingHorizontal: 22,
+    marginBottom: 30,
   },
   checkboxContainer: {
     marginRight: 12,
@@ -244,19 +248,20 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 38,
-    gap: 30,
+    paddingHorizontal: 16,
+    gap: 16,
   },
   readButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    minWidth: 200,
+    flex: 1,
+    maxWidth: SCREEN_WIDTH * 0.42,
     height: 60,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 60,
+    paddingHorizontal: 20,
     paddingVertical: 18,
   },
   readButtonText: {
@@ -271,11 +276,12 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     borderWidth: 1,
     borderColor: '#000000',
-    minWidth: 200,
+    flex: 1,
+    maxWidth: SCREEN_WIDTH * 0.42,
     height: 60,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 60,
+    paddingHorizontal: 20,
     paddingVertical: 18,
   },
   yesButtonDisabled: {

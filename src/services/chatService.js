@@ -78,10 +78,12 @@ class ChatService {
           messages: []
         };
 
-        // Send initial welcome message
-        await this.sendWelcomeMessage();
+        // ✅ REMOVED: Frontend welcome message (backend sends it)
+        // The backend already sends a welcome message when session is created
+        // Sending it here causes duplicate messages in production
+        // await this.sendWelcomeMessage();
         
-        // Start polling for admin messages
+        // Start polling for admin messages (including backend's welcome message)
         this.startMessagePolling();
         
         console.log('✅ Chat session started:', this.activeSession.sessionId);
@@ -99,8 +101,13 @@ class ChatService {
 
   /**
    * Send welcome message for authenticated users only
+   * ✅ DEPRECATED: Backend now sends welcome message automatically
+   * This method is kept for reference but no longer called
    */
   async sendWelcomeMessage() {
+    // This function is no longer used - backend sends welcome message
+    // Kept for reference in case we need to revert
+    /*
     if (!this.activeSession) return;
 
     const { userInfo } = this.activeSession;
@@ -118,6 +125,8 @@ class ChatService {
 
     this.activeSession.messages.push(welcomeMessage);
     this.notifyMessageListeners('message_received', welcomeMessage);
+    */
+    console.log('ℹ️ sendWelcomeMessage() is deprecated - backend sends welcome message');
   }
 
   /**

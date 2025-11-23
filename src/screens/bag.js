@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -414,6 +414,50 @@ const BagScreen = ({ navigation, route }) => {
     error: null,
     selectedCode: null
   });
+
+  // CRITICAL FIX: Track auth initialization to prevent multiple reinitializations
+  const authInitialized = useRef(false);
+
+  // CRITICAL FIX: Reinitialize yoraaAPI on component mount to ensure token is loaded
+  // This fixes the issue where users logged in with Phone OTP or Google Sign-In
+  // appear as "not authenticated" when navigating to the Bag screen
+  useEffect(() => {
+    const reinitializeAuth = async () => {
+      // Prevent multiple initializations
+      if (authInitialized.current) {
+        return;
+      }
+      
+      console.log('\n╔═══════════════════════════════════════════════════════════════╗');
+      console.log('║  🛒 BAG SCREEN MOUNTED - CHECKING AUTHENTICATION STATE        ║');
+      console.log('╚═══════════════════════════════════════════════════════════════╝');
+      
+      // Check current authentication status
+      const wasAuthenticated = yoraaAPI.isAuthenticated();
+      console.log('📊 Current Auth Status (before reinit):', wasAuthenticated ? '✅ AUTHENTICATED' : '❌ NOT AUTHENTICATED');
+      
+      // Reinitialize to load token from storage into memory
+      await yoraaAPI.reinitialize();
+      
+      // Check authentication status after reinitialization
+      const nowAuthenticated = yoraaAPI.isAuthenticated();
+      console.log('📊 Auth Status (after reinit):', nowAuthenticated ? '✅ AUTHENTICATED' : '❌ NOT AUTHENTICATED');
+      
+      if (!wasAuthenticated && nowAuthenticated) {
+        console.log('✅ Authentication restored from storage');
+      } else if (wasAuthenticated && nowAuthenticated) {
+        console.log('✅ Authentication maintained');
+      } else if (!nowAuthenticated) {
+        console.log('ℹ️ User not authenticated - guest mode');
+      }
+      
+      console.log('╚═══════════════════════════════════════════════════════════════╝\n');
+      
+      authInitialized.current = true;
+    };
+    
+    reinitializeAuth();
+  }, []); // Empty dependency array - only run on mount
 
   // Function to fetch product details for dynamic sizes and quantities
   const fetchProductDetails = useCallback(async (productId) => {

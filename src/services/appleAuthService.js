@@ -324,22 +324,58 @@ class AppleAuthService {
         console.error('❌ Backend Error Message:', backendError.message);
         console.error('❌ Stack Trace:', backendError.stack);
         
-        // CRITICAL: Backend authentication FAILED - Rollback Firebase auth
-        console.error('🔄 ROLLBACK: Signing out from Firebase due to backend auth failure...');
-        
+        // ✅ CRITICAL FIX: Retry backend authentication before rolling back
+        console.log('\n🔄 RETRY: Attempting backend authentication again...');
         try {
-          await auth().signOut();
-          console.log('✅ Firebase sign-out successful');
-        } catch (signOutError) {
-          console.error('❌ Failed to sign out from Firebase:', signOutError);
+          // Wait a bit before retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          console.log('   - Getting fresh Firebase ID token...');
+          const retryIdToken = await userCredential.user.getIdToken(/* forceRefresh */ true);
+          console.log(`   - Fresh Firebase ID Token obtained (${retryIdToken.length} chars)`);
+          
+          console.log('   - Retrying backend firebaseLogin API...');
+          const retryBackendResponse = await yoraaAPI.firebaseLogin(retryIdToken);
+          
+          if (retryBackendResponse && retryBackendResponse.token) {
+            console.log('✅ RETRY SUCCESS: Backend authentication successful on retry');
+            
+            // Verify token storage
+            const storedToken = await yoraaAPI.getUserToken();
+            console.log(`   - Token Storage After Retry: ${storedToken ? '✅ EXISTS' : '❌ MISSING'}`);
+            
+            const isAuth = yoraaAPI.isAuthenticated();
+            console.log(`🔐 Backend Authentication Status After Retry: ${isAuth ? '✅ AUTHENTICATED' : '❌ NOT AUTHENTICATED'}`);
+            
+            if (!isAuth) {
+              throw new Error('Token not persisted after retry');
+            }
+            
+            // Success - continue with the flow
+            console.log('✅ Retry successful - continuing with Apple Sign In flow');
+          } else {
+            throw new Error('Retry failed: No token received');
+          }
+        } catch (retryError) {
+          console.error('❌ RETRY FAILED:', retryError.message);
+          
+          // CRITICAL: Backend authentication FAILED even after retry - Rollback Firebase auth
+          console.error('🔄 ROLLBACK: Signing out from Firebase due to backend auth failure...');
+          
+          try {
+            await auth().signOut();
+            console.log('✅ Firebase sign-out successful');
+          } catch (signOutError) {
+            console.error('❌ Failed to sign out from Firebase:', signOutError);
+          }
+          
+          // Clear any partial data
+          await yoraaAPI.clearAuthTokens();
+          
+          // Throw a user-friendly error
+          const errorMessage = backendError.message || 'Backend authentication failed';
+          throw new Error(`Sign-in failed: ${errorMessage}. Please try again or contact support.`);
         }
-        
-        // Clear any partial data
-        await yoraaAPI.clearAuthTokens();
-        
-        // Throw a user-friendly error
-        const errorMessage = backendError.message || 'Backend authentication failed';
-        throw new Error(`Sign-in failed: ${errorMessage}. Please try again or contact support.`);
       }
 
       console.log('\n✅ Apple Sign In flow completed successfully');

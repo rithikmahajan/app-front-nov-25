@@ -1,0 +1,6 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -workspace Yoraa.xcworkspace -scheme YoraaApp -configuration Debug -sdk iphonesimulator -derivedDataPath ./build clean build
+
+Build settings from command line:
+    SDKROOT = iphonesimulator18.5
+

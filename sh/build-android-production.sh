@@ -1,103 +1,149 @@
 #!/bin/bash
 
-# Android Production Build Script
-# This script creates a production build for Android
+# ================================
+# 🚀 YORAA Android Production Build
+# Build APK/AAB for Play Store Release
+# ================================
 
-set -e  # Exit on any error
+set -e  # Exit on error
 
-echo "🚀 Starting Android Production Build Process..."
+echo "================================"
+echo "🚀 YORAA Android Production Build"
+echo "================================"
+echo ""
 
 # Colors for output
-RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Function to print colored output
-print_status() {
-    echo -e "${BLUE}ℹ️  $1${NC}"
-}
+# Get the directory where the script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
 
-print_success() {
-    echo -e "${GREEN}✅ $1${NC}"
-}
+echo -e "${BLUE}📍 Working directory: $SCRIPT_DIR${NC}"
+echo ""
 
-print_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
-}
+# Step 1: Verify production environment file exists
+echo -e "${BLUE}Step 1: Verifying production environment configuration...${NC}"
+if [ ! -f ".env.production" ]; then
+    echo -e "${RED}❌ Error: .env.production file not found!${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✅ .env.production found${NC}"
+echo ""
 
-print_error() {
-    echo -e "${RED}❌ $1${NC}"
-}
+# Step 2: Display production configuration
+echo -e "${BLUE}Step 2: Production Configuration:${NC}"
+echo -e "${YELLOW}Backend API:${NC} $(grep 'API_BASE_URL=' .env.production | cut -d'=' -f2)"
+echo -e "${YELLOW}Environment:${NC} $(grep 'APP_ENV=' .env.production | cut -d'=' -f2)"
+echo -e "${YELLOW}Build Type:${NC} $(grep 'BUILD_TYPE=' .env.production | cut -d'=' -f2)"
+echo -e "${YELLOW}Debug Mode:${NC} $(grep 'DEBUG_MODE=' .env.production | cut -d'=' -f2)"
+echo ""
 
-# Check if we're in the correct directory
-if [ ! -f "package.json" ]; then
-    print_error "package.json not found. Please run this script from the project root."
+# Step 3: Verify keystore exists
+echo -e "${BLUE}Step 3: Verifying release keystore...${NC}"
+if [ ! -f "android/app/upload-keystore.jks" ]; then
+    echo -e "${RED}❌ Error: upload-keystore.jks not found!${NC}"
+    echo "Please ensure the keystore file is in android/app/"
     exit 1
 fi
 
-# Check if Android directory exists
-if [ ! -d "android" ]; then
-    print_error "Android directory not found."
+if [ ! -f "android/upload-keystore.properties" ]; then
+    echo -e "${RED}❌ Error: upload-keystore.properties not found!${NC}"
     exit 1
 fi
+echo -e "${GREEN}✅ Release keystore verified${NC}"
+echo ""
 
-print_status "Cleaning previous build artifacts..."
-
-# Kill any running Metro processes
-lsof -ti:8081 | xargs kill -9 2>/dev/null || true
-lsof -ti:5000 | xargs kill -9 2>/dev/null || true
-pkill -f metro 2>/dev/null || true
-
-# Clean node modules and reinstall
-print_status "Cleaning and reinstalling node modules..."
-rm -rf node_modules
-npm install
-
-# Clean Android build
-print_status "Cleaning Android build artifacts..."
+# Step 4: Clean previous builds
+echo -e "${BLUE}Step 4: Cleaning previous builds...${NC}"
 cd android
 ./gradlew clean
 cd ..
+echo -e "${GREEN}✅ Clean completed${NC}"
+echo ""
 
-print_status "Creating android-builds directory..."
-mkdir -p android/app/build/outputs/apk/release
-mkdir -p android/app/build/outputs/bundle/release
+# Step 5: Ask user which build type
+echo -e "${BLUE}Step 5: Select build output:${NC}"
+echo "1) APK (for direct installation/testing)"
+echo "2) AAB (for Play Store upload)"
+echo -n "Enter choice [1 or 2]: "
+read -r BUILD_CHOICE
 
-print_status "Building production Android app..."
+if [ "$BUILD_CHOICE" = "2" ]; then
+    BUILD_TYPE="bundle"
+    BUILD_TASK="bundleRelease"
+    OUTPUT_FILE="app-release.aab"
+    OUTPUT_PATH="android/app/build/outputs/bundle/release/app-release.aab"
+else
+    BUILD_TYPE="apk"
+    BUILD_TASK="assembleRelease"
+    OUTPUT_FILE="app-release.apk"
+    OUTPUT_PATH="android/app/build/outputs/apk/release/app-release.apk"
+fi
 
-# Build APK
-print_status "Building APK..."
+echo ""
+echo -e "${BLUE}Step 6: Building production $BUILD_TYPE...${NC}"
+echo -e "${YELLOW}This may take several minutes...${NC}"
+echo ""
+
+# Set environment file and build
+export ENVFILE=.env.production
 cd android
-./gradlew assembleRelease
-
-# Build AAB (Android App Bundle) for Play Store
-print_status "Building AAB (Android App Bundle)..."
-./gradlew bundleRelease
-
+./gradlew $BUILD_TASK --warning-mode all 2>&1 | tee ../build-production.log
 cd ..
 
-print_success "🎉 Android Production Build Process Completed!"
+# Step 7: Verify build output
+echo ""
+echo -e "${BLUE}Step 7: Verifying build output...${NC}"
 
-# List the generated files
-print_status "📱 Build artifacts are located in:"
-echo "   APK: android/app/build/outputs/apk/release/"
-echo "   AAB: android/app/build/outputs/bundle/release/"
-
-if [ -d "android/app/build/outputs/apk/release" ]; then
-    print_status "Generated APK files:"
-    ls -la android/app/build/outputs/apk/release/*.apk 2>/dev/null || echo "   No APK files found"
+if [ -f "$OUTPUT_PATH" ]; then
+    FILE_SIZE=$(ls -lh "$OUTPUT_PATH" | awk '{print $5}')
+    echo -e "${GREEN}✅ Build successful!${NC}"
+    echo ""
+    echo "================================"
+    echo -e "${GREEN}🎉 Production Build Complete!${NC}"
+    echo "================================"
+    echo ""
+    echo -e "${BLUE}Output Details:${NC}"
+    echo -e "  Type: ${YELLOW}$BUILD_TYPE${NC}"
+    echo -e "  File: ${YELLOW}$OUTPUT_FILE${NC}"
+    echo -e "  Size: ${YELLOW}$FILE_SIZE${NC}"
+    echo -e "  Path: ${YELLOW}$OUTPUT_PATH${NC}"
+    echo ""
+    
+    if [ "$BUILD_TYPE" = "aab" ]; then
+        echo -e "${GREEN}📦 Next Steps:${NC}"
+        echo "1. Upload to Google Play Console"
+        echo "2. Create a new release in Play Console"
+        echo "3. Upload the AAB file from the path above"
+    else
+        echo -e "${GREEN}📦 APK is ready for installation/testing${NC}"
+        echo ""
+        echo "To install on a connected device:"
+        echo "  adb install $OUTPUT_PATH"
+    fi
+    
+    echo ""
+    echo -e "${BLUE}Configuration Used:${NC}"
+    echo "  Backend: https://api.yoraa.in.net/api"
+    echo "  Environment: Production"
+    echo "  Signed: Yes (with upload keystore)"
+    echo ""
+    
+    # Copy to root for easy access
+    cp "$OUTPUT_PATH" "./$OUTPUT_FILE"
+    echo -e "${GREEN}✅ Build also copied to: ./$OUTPUT_FILE${NC}"
+    echo ""
+    
+else
+    echo -e "${RED}❌ Build failed!${NC}"
+    echo "Check build-production.log for details"
+    exit 1
 fi
 
-if [ -d "android/app/build/outputs/bundle/release" ]; then
-    print_status "Generated AAB files:"
-    ls -la android/app/build/outputs/bundle/release/*.aab 2>/dev/null || echo "   No AAB files found"
-fi
-
-print_status "📋 Next steps:"
-echo "   1. Test the APK file on a physical device"
-echo "   2. Upload the AAB file to Google Play Console"
-echo "   3. Submit for Play Store review"
-
-print_success "🎊 Android build completed successfully!"
+echo -e "${GREEN}Build log saved to: build-production.log${NC}"
+echo "================================"
