@@ -8,7 +8,6 @@ import {
   SafeAreaView,
   StatusBar,
   Image,
-  ActivityIndicator,
 } from 'react-native';
 import Video from 'react-native-video';
 import Svg, { Path, Rect } from 'react-native-svg';
@@ -18,6 +17,7 @@ import BottomNavigationBar from '../components/bottomnavigationbar';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { apiService } from '../services/apiService';
 import { AnimatedHeartIcon, ProductGridSkeleton } from '../components';
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 // Icon components defined outside to avoid re-rendering
 const BackIcon = () => (
@@ -89,10 +89,9 @@ const ProductViewOne = ({ navigation, route }) => {
     if (navigation && navigation.navigate) {
       navigation.navigate('Filters', {
         previousScreen: 'ProductViewOne',
-        previousParams: routeParams, // Pass all route params back
-        onApplyFilters: (items, filterParams) => {
+        previousParams: routeParams,
+        onApplyFilters: (filteredItems, filterParams) => {
           console.log('🔍 Filters applied from ProductViewOne:', filterParams);
-          // Handle filtered results here if needed
         }
       });
     }
@@ -175,7 +174,7 @@ const ProductViewOne = ({ navigation, route }) => {
                 />
                 {/* Video Play Icon Indicator */}
                 <View style={styles.videoPlayIcon}>
-                  <Svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                  <Svg width={isTablet ? 60 : 40} height={isTablet ? 60 : 40} viewBox="0 0 40 40" fill="none">
                     <Rect width="40" height="40" rx="20" fill="rgba(0, 0, 0, 0.6)" />
                     <Path d="M16 12L28 20L16 28V12Z" fill="white" />
                   </Svg>
@@ -202,7 +201,7 @@ const ProductViewOne = ({ navigation, route }) => {
                 console.error('Error toggling favorite:', favoriteError);
               }
             }}
-            size={21}
+            size={isTablet ? 26 : 21}
             containerStyle={styles.heartButton}
             style={styles.heartIconContainer}
             filledColor="#FF0000"
@@ -257,7 +256,7 @@ const ProductViewOne = ({ navigation, route }) => {
         
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.iconButton} onPress={handleSearchPress}>
-            <GlobalSearchIcon size={20} color="#000000" />
+            <GlobalSearchIcon size={isTablet ? 24 : 20} color="#000000" />
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.iconButton} onPress={() => {
@@ -308,19 +307,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
 
-  // Control Bar / Header Styles
   controlBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingHorizontal: wp(4.3),
+    paddingTop: hp(2),
+    paddingBottom: hp(1.5),
     backgroundColor: '#FFFFFF',
-    height: 90,
+    minHeight: isTablet ? hp(10) : hp(11),
   },
   headerLeft: {
-    width: 68,
+    width: isTablet ? wp(10) : wp(18),
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -331,10 +329,10 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: isTablet ? wp(2.5) : wp(4.3),
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.4,
@@ -342,37 +340,36 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   backButton: {
-    padding: 8,
+    padding: wp(2),
   },
   iconButton: {
-    padding: 4,
+    padding: wp(1),
   },
 
-  // Icon Styles
   backIcon: {
-    width: 24,
-    height: 24,
+    width: isTablet ? wp(3) : wp(6.4),
+    height: isTablet ? hp(2.5) : hp(3),
     justifyContent: 'center',
     alignItems: 'center',
   },
   backArrow: {
-    width: 10,
-    height: 17,
+    width: isTablet ? wp(1.5) : wp(2.7),
+    height: isTablet ? hp(2) : hp(2.1),
     borderLeftWidth: 2,
     borderBottomWidth: 2,
     borderColor: '#000000',
     transform: [{ rotate: '45deg' }],
-    marginRight: 2,
+    marginRight: wp(0.5),
   },
 
   viewButtonContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: wp(1),
   },
   viewButtonText: {
     fontFamily: 'Montserrat-Medium',
-    fontSize: 10,
+    fontSize: isTablet ? fs(12) : isSmallDevice ? fs(9) : fs(10),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.06,
@@ -380,122 +377,116 @@ const styles = StyleSheet.create({
   },
   
   filterIcon: {
-    width: 26,
-    height: 26,
+    width: isTablet ? wp(3.5) : wp(7),
+    height: isTablet ? hp(3) : hp(3.2),
     justifyContent: 'center',
     alignItems: 'center',
   },
   filterDot1: {
     position: 'absolute',
-    top: 3,
-    left: 1,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+    top: isTablet ? hp(0.4) : hp(0.37),
+    left: isTablet ? wp(0.15) : wp(0.27),
+    width: isTablet ? wp(0.6) : wp(1.1),
+    height: isTablet ? wp(0.6) : wp(1.1),
+    borderRadius: isTablet ? wp(0.3) : wp(0.55),
     backgroundColor: '#262626',
   },
   filterLine1: {
     position: 'absolute',
-    top: 4.5,
-    left: 7,
-    width: 17,
+    top: isTablet ? hp(0.55) : hp(0.55),
+    left: isTablet ? wp(1) : wp(1.87),
+    width: isTablet ? wp(2.5) : wp(4.53),
     height: 1.5,
     backgroundColor: '#262626',
   },
   filterDot2: {
     position: 'absolute',
-    top: 11,
-    left: 9,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+    top: isTablet ? hp(1.3) : hp(1.35),
+    left: isTablet ? wp(1.3) : wp(2.4),
+    width: isTablet ? wp(0.6) : wp(1.1),
+    height: isTablet ? wp(0.6) : wp(1.1),
+    borderRadius: isTablet ? wp(0.3) : wp(0.55),
     backgroundColor: '#262626',
   },
   filterLine2: {
     position: 'absolute',
-    top: 12.5,
-    left: 1,
-    width: 6,
+    top: isTablet ? hp(1.45) : hp(1.53),
+    left: isTablet ? wp(0.15) : wp(0.27),
+    width: isTablet ? wp(0.9) : wp(1.6),
     height: 1.5,
     backgroundColor: '#262626',
   },
   filterDot3: {
     position: 'absolute',
-    top: 19,
-    left: 12,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+    top: isTablet ? hp(2.2) : hp(2.32),
+    left: isTablet ? wp(1.7) : wp(3.2),
+    width: isTablet ? wp(0.6) : wp(1.1),
+    height: isTablet ? wp(0.6) : wp(1.1),
+    borderRadius: isTablet ? wp(0.3) : wp(0.55),
     backgroundColor: '#262626',
   },
   filterLine3: {
     position: 'absolute',
-    top: 20.5,
-    left: 1,
-    width: 9,
+    top: isTablet ? hp(2.35) : hp(2.51),
+    left: isTablet ? wp(0.15) : wp(0.27),
+    width: isTablet ? wp(1.3) : wp(2.4),
     height: 1.5,
     backgroundColor: '#262626',
   },
 
-  // Content Styles
   content: {
     flex: 1,
-    paddingTop: 10,
+    paddingTop: hp(1.2),
   },
   productsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 0,
-    paddingBottom: 100, // Add space for bottom navigation
+    paddingHorizontal: isTablet ? wp(2) : wp(1.6),
+    paddingBottom: isTablet ? hp(12) : hp(12),
+    justifyContent: 'space-between',
   },
 
-  // Product Styles
   productContainer: {
-    width: 184,
-    marginLeft: 6,
-    marginRight: 6,
-    marginBottom: 40,
+    width: isTablet ? wp(46) : wp(47.5),
+    marginBottom: isTablet ? hp(5) : hp(4.9),
   },
   productContainerRight: {
-    marginLeft: 6,
   },
   
   imageContainer: {
     position: 'relative',
-    marginBottom: 14,
+    marginBottom: isTablet ? hp(1.8) : hp(1.7),
   },
   imagePlaceholder: {
-    width: 184,
-    height: 184,
+    width: '100%',
+    aspectRatio: 1,
     backgroundColor: '#EEEEEE',
     borderRadius: 0,
   },
   
-  // Icon Buttons on Product
   heartButton: {
     position: 'absolute',
-    top: 12,
-    right: 12,
+    top: isTablet ? hp(1.5) : hp(1.47),
+    right: isTablet ? wp(2) : wp(3.2),
   },
   heartIconContainer: {
-    width: 34,
-    height: 34,
+    width: isTablet ? wp(5.5) : wp(9.1),
+    height: isTablet ? wp(5.5) : wp(9.1),
     backgroundColor: '#FFFFFF',
-    borderRadius: 17,
+    borderRadius: isTablet ? wp(2.75) : wp(4.55),
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  // Heart Icon
   heartIcon: {
-    width: 20,
-    height: 20,
+    width: isTablet ? wp(3) : wp(5.3),
+    height: isTablet ? wp(3) : wp(5.3),
     justifyContent: 'center',
     alignItems: 'center',
   },
   heartShape: {
-    width: 16,
-    height: 14,
+    width: isTablet ? wp(2.5) : wp(4.3),
+    height: isTablet ? wp(2.2) : wp(3.73),
     borderWidth: 1,
     borderColor: '#000000',
     backgroundColor: 'transparent',
@@ -507,80 +498,76 @@ const styles = StyleSheet.create({
     borderColor: '#CA3327',
   },
 
-  // Product Info Styles
   productInfo: {
-    paddingHorizontal: 14,
+    paddingHorizontal: isTablet ? wp(2) : wp(3.73),
   },
   productName: {
-    fontSize: 14,
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(13) : fs(14),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.14,
     fontFamily: 'Montserrat-Medium',
-    marginBottom: 5,
-    lineHeight: 17,
+    marginBottom: hp(0.6),
+    lineHeight: isTablet ? fs(20) : isSmallDevice ? fs(15) : fs(17),
   },
   productSubtitle: {
-    fontSize: 14,
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(13) : fs(14),
     fontWeight: '400',
     color: '#767676',
     letterSpacing: -0.14,
     fontFamily: 'Montserrat-Regular',
-    marginBottom: 5,
-    lineHeight: 17,
+    marginBottom: hp(0.6),
+    lineHeight: isTablet ? fs(20) : isSmallDevice ? fs(15) : fs(17),
   },
   
-  // Color Dots
   colorDotsContainer: {
     flexDirection: 'row',
-    marginBottom: 5,
-    gap: 4,
+    marginBottom: hp(0.6),
+    gap: wp(1.1),
   },
   colorDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: isTablet ? wp(2) : wp(3.2),
+    height: isTablet ? wp(2) : wp(3.2),
+    borderRadius: isTablet ? wp(1) : wp(1.6),
     borderWidth: 0.5,
     borderColor: '#E0E0E0',
   },
   
   productPrice: {
-    fontSize: 14,
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(13) : fs(14),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.14,
     fontFamily: 'Montserrat-Medium',
-    lineHeight: 17,
+    lineHeight: isTablet ? fs(20) : isSmallDevice ? fs(15) : fs(17),
   },
 
-  // Video Styles
   videoContainer: {
     position: 'relative',
     width: '100%',
-    height: 200,
+    aspectRatio: 1,
   },
   videoPlayIcon: {
     position: 'absolute',
     top: '50%',
     left: '50%',
-    marginTop: -20,
-    marginLeft: -20,
-    width: 40,
-    height: 40,
+    marginTop: isTablet ? wp(-3) : wp(-5.3),
+    marginLeft: isTablet ? wp(-3) : wp(-5.3),
+    width: isTablet ? wp(6) : wp(10.7),
+    height: isTablet ? wp(6) : wp(10.7),
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  // Loading and Error States
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 50,
+    paddingTop: hp(6),
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
+    marginTop: hp(2),
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
     color: '#666666',
     fontFamily: 'Montserrat-Regular',
   },
@@ -588,38 +575,36 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingHorizontal: wp(5.3),
+    paddingTop: hp(6),
   },
   errorText: {
-    fontSize: 16,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
     color: '#666666',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: hp(2.4),
     fontFamily: 'Montserrat-Regular',
   },
   retryButton: {
     backgroundColor: '#000000',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingHorizontal: wp(6.4),
+    paddingVertical: hp(1.5),
     borderRadius: 8,
   },
   retryButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(13) : fs(14),
     fontWeight: '600',
     fontFamily: 'Montserrat-SemiBold',
   },
 
-  // Product Image
   productImage: {
     width: '100%',
-    height: 200,
+    aspectRatio: 1,
     borderRadius: 12,
     backgroundColor: '#f5f5f5',
   },
 
-  // Bottom Navigation Container
   bottomNavContainer: {
     position: 'absolute',
     bottom: 0,

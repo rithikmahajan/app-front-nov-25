@@ -171,10 +171,6 @@ const EnhancedLayout = () => {
           return <SearchScreen navigation={navigation} route={{ params: routeParams }} />;
         case 'ScanBarcode':
           return renderScreen('ScanBarcodeFlow', { navigation });
-        case 'SaleScreen':
-          return renderScreen('SaleScreen', { navigation, route: { params: routeParams } });
-        case 'SaleCategoryScreen':
-          return renderScreen('SaleCategoryScreen', { navigation, route: { params: routeParams } });
         case 'Rewards':
           return <RewardsContent navigation={navigation} route={{ params: routeParams }} />;
         case 'RewardsScreen':

@@ -8,9 +8,7 @@ import {
   SafeAreaView,
   StatusBar,
   Image,
-  ActivityIndicator,
   RefreshControl,
-  Dimensions,
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import GlobalSearchIcon from '../assets/icons/GlobalSearchIcon';
@@ -19,10 +17,7 @@ import BottomNavigationBar from '../components/bottomnavigationbar';
 import { useProductActions } from '../hooks/useProductActions';
 import { AnimatedHeartIcon, ListItemSkeleton } from '../components';
 import { apiService } from '../services/apiService';
-
-// Get screen dimensions for responsive design
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const isTablet = SCREEN_WIDTH >= 768;
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 // Icon components defined outside to avoid re-rendering
 const BackIcon = () => (
@@ -99,12 +94,12 @@ const ProductViewThree = ({ navigation, route }) => {
         // Add masonry layout heights matching Figma design
         // Figma shows full-width product images stacked vertically
         // For iPad/tablets, increase heights proportionally to screen width
-        const baseHeight1 = isTablet ? 480 : 363;
-        const baseHeight2 = isTablet ? 512 : 388;
+        const baseHeight1 = isTablet ? hp(59) : hp(44.4);
+        const baseHeight2 = isTablet ? hp(62.7) : hp(47.4);
         
         const itemsWithHeights = items.map((item, index) => ({
           ...item,
-          height: index % 2 === 0 ? baseHeight1 : baseHeight2, // Alternating heights scaled for device
+          height: index % 2 === 0 ? baseHeight1 : baseHeight2,
         }));
         
         setProducts(itemsWithHeights);
@@ -145,15 +140,13 @@ const ProductViewThree = ({ navigation, route }) => {
     if (!product) return null;
     
     const imageUrl = getProductImageUrl(product);
-    // Use responsive height based on device
-    const productHeight = product.height || (isTablet ? 480 : 363);
+    const productHeight = product.height || (isTablet ? hp(59) : hp(44.4));
     
-    // Calculate staggered top position based on previous items in same column
     let topPosition = 0;
     const columnProducts = columnIndex === 0 ? leftColumnProducts : rightColumnProducts;
     for (let i = 0; i < columnProducts.indexOf(product); i++) {
-      const prevProductHeight = columnProducts[i].height || (isTablet ? 480 : 363);
-      topPosition += prevProductHeight + (isTablet ? 16 : 10); // Larger gap for tablets
+      const prevProductHeight = columnProducts[i].height || (isTablet ? hp(59) : hp(44.4));
+      topPosition += prevProductHeight + (isTablet ? hp(2) : hp(1.2));
     }
     
     return (
@@ -192,7 +185,7 @@ const ProductViewThree = ({ navigation, route }) => {
             onPress={async () => {
               await handleToggleFavorite(product);
             }}
-            size={21}
+            size={isTablet ? 24 : 21}
             containerStyle={styles.heartButton}
             style={styles.heartIconContainer}
             filledColor="#FF0000"
@@ -204,10 +197,9 @@ const ProductViewThree = ({ navigation, route }) => {
   };
 
   const renderColumn = (columnProducts, columnIndex) => {
-    // Calculate total height for column container with responsive gaps
-    const gapSize = isTablet ? 16 : 10;
+    const gapSize = isTablet ? hp(2) : hp(1.2);
     const totalHeight = columnProducts.reduce((sum, product) => {
-      const productHeight = product.height || (isTablet ? 480 : 363);
+      const productHeight = product.height || (isTablet ? hp(59) : hp(44.4));
       return sum + productHeight + gapSize;
     }, 0);
     
@@ -264,7 +256,7 @@ const ProductViewThree = ({ navigation, route }) => {
         
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.iconButton} onPress={handleSearchPress}>
-            <GlobalSearchIcon size={20} color="#000000" />
+            <GlobalSearchIcon size={isTablet ? 24 : 20} color="#000000" />
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.iconButton} onPress={handleGridPress}>
@@ -336,14 +328,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: isTablet ? 24 : 16,
-    paddingTop: isTablet ? 20 : 16,
-    paddingBottom: isTablet ? 16 : 12,
+    paddingHorizontal: isTablet ? wp(3.1) : wp(4.3),
+    paddingTop: isTablet ? hp(2.5) : hp(2),
+    paddingBottom: isTablet ? hp(2) : hp(1.5),
     backgroundColor: '#FFFFFF',
-    height: isTablet ? 100 : 90,
+    minHeight: isTablet ? hp(10) : hp(11),
   },
   headerLeft: {
-    width: isTablet ? 80 : 68,
+    width: isTablet ? wp(10.4) : wp(18),
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -354,10 +346,10 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: isTablet ? 20 : 16,
+    gap: isTablet ? wp(2.6) : wp(4.3),
   },
   headerTitle: {
-    fontSize: isTablet ? 18 : 16,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.4,
@@ -365,38 +357,37 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   backButton: {
-    padding: 8,
+    padding: wp(2),
   },
   iconButton: {
-    padding: 4,
+    padding: wp(1),
   },
   
-  // Icon Styles
   backIcon: {
-    width: 24,
-    height: 24,
+    width: isTablet ? wp(3) : wp(6.4),
+    height: isTablet ? hp(2.5) : hp(2.9),
     alignItems: 'center',
     justifyContent: 'center',
   },
   
   backArrow: {
-    width: 10,
-    height: 17,
+    width: isTablet ? wp(1.5) : wp(2.7),
+    height: isTablet ? hp(2) : hp(2.1),
     borderLeftWidth: 2,
     borderTopWidth: 2,
     borderColor: '#000000',
     transform: [{ rotate: '-45deg' }],
-    marginRight: 4,
+    marginRight: wp(1),
   },
   
   viewButtonContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: wp(1),
   },
   viewButtonText: {
     fontFamily: 'Montserrat-Medium',
-    fontSize: 10,
+    fontSize: isTablet ? fs(12) : isSmallDevice ? fs(9) : fs(10),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.06,
@@ -404,8 +395,8 @@ const styles = StyleSheet.create({
   },
   
   filterIcon: {
-    width: 26,
-    height: 20,
+    width: isTablet ? wp(3.4) : wp(6.9),
+    height: isTablet ? hp(2.5) : hp(2.4),
     position: 'relative',
   },
   
@@ -417,9 +408,9 @@ const styles = StyleSheet.create({
   
   filterCircle: {
     position: 'absolute',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: isTablet ? wp(1.2) : wp(2.1),
+    height: isTablet ? wp(1.2) : wp(2.1),
+    borderRadius: isTablet ? wp(0.6) : wp(1.05),
     borderWidth: 1.5,
     borderColor: '#262626',
     backgroundColor: '#FFFFFF',
@@ -428,16 +419,16 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 0,
-    paddingTop: 8,
+    paddingTop: hp(1),
   },
   
   pinterestGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: isTablet ? 16 : 8,
+    paddingHorizontal: isTablet ? wp(2.1) : wp(2.1),
     paddingTop: 0,
-    paddingBottom: isTablet ? 120 : 100, // More space for bottom navigation on tablets
-    gap: isTablet ? 12 : 6, // Larger gap between columns on tablets
+    paddingBottom: isTablet ? hp(14.7) : hp(12.2),
+    gap: isTablet ? wp(1.6) : wp(1.6),
   },
   
   column: {
@@ -475,21 +466,20 @@ const styles = StyleSheet.create({
     borderRadius: 0,
   },
   
-  // Loading, Error, Empty States
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 60,
-    minHeight: 300,
+    paddingTop: hp(7.3),
+    minHeight: hp(36.7),
   },
   skeletonContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingHorizontal: wp(4.3),
+    paddingTop: hp(2),
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
+    marginTop: hp(1.5),
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(13) : fs(14),
     color: '#666666',
     fontFamily: 'Montserrat-Regular',
   },
@@ -497,25 +487,25 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    minHeight: 300,
+    paddingTop: hp(7.3),
+    paddingHorizontal: wp(5.3),
+    minHeight: hp(36.7),
   },
   errorText: {
-    fontSize: 14,
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(13) : fs(14),
     color: '#FF0000',
     fontFamily: 'Montserrat-Regular',
-    marginBottom: 16,
+    marginBottom: hp(2),
     textAlign: 'center',
   },
   retryButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingHorizontal: wp(6.4),
+    paddingVertical: hp(1.5),
     backgroundColor: '#000000',
     borderRadius: 6,
   },
   retryButtonText: {
-    fontSize: 14,
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(13) : fs(14),
     color: '#FFFFFF',
     fontFamily: 'Montserrat-Medium',
   },
@@ -523,26 +513,26 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 60,
-    minHeight: 300,
+    paddingTop: hp(7.3),
+    minHeight: hp(36.7),
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(15) : fs(16),
     fontFamily: 'Montserrat-Medium',
     color: '#666666',
   },
   
   heartButton: {
     position: 'absolute',
-    top: 6,
-    right: 7,
+    top: isTablet ? hp(0.8) : hp(0.73),
+    right: isTablet ? wp(1.2) : wp(1.9),
     zIndex: 2,
   },
   
   heartIconContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: isTablet ? wp(4.2) : wp(7.5),
+    height: isTablet ? wp(4.2) : wp(7.5),
+    borderRadius: isTablet ? wp(2.1) : wp(3.75),
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
@@ -557,27 +547,26 @@ const styles = StyleSheet.create({
   },
   
   heartIcon: {
-    width: 16,
-    height: 16,
+    width: isTablet ? wp(2.5) : wp(4.3),
+    height: isTablet ? wp(2.5) : wp(4.3),
     alignItems: 'center',
     justifyContent: 'center',
   },
   
   heartOutline: {
-    width: 12,
-    height: 11,
+    width: isTablet ? wp(1.8) : wp(3.2),
+    height: isTablet ? hp(1.6) : hp(1.35),
     borderWidth: 1,
     borderColor: '#000000',
     backgroundColor: 'transparent',
   },
   
   heartFilled: {
-    width: 12,
-    height: 11,
+    width: isTablet ? wp(1.8) : wp(3.2),
+    height: isTablet ? hp(1.6) : hp(1.35),
     backgroundColor: '#FF4444',
   },
   
-  // Bottom Navigation Container
   bottomNavContainer: {
     position: 'absolute',
     bottom: 0,

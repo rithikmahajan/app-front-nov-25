@@ -73,7 +73,3 @@ export { default as OrdersCancelOrderModal } from './orderscancelordermodal';
 export { default as OrderConfirmationPhone } from './orderconfirmationphone';
 export { default as DeliveryOptionsStepFourIfCustomRequired } from './deliveryoptionsstepfourifcustomrequired';
 export { default as DeliveryOptionsStepThreeAddAddress } from './deliveryoptionsstepthreeaddaddress';
-
-// Sale screens
-export { default as SaleScreen } from './SaleScreen';
-export { default as SaleCategoryScreen } from './SaleCategoryScreen';

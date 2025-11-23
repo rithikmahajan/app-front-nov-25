@@ -230,169 +230,158 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
       // Step 3: CRITICAL - Authenticate with backend to get JWT token
       console.log('\n🔄 STEP 3: Authenticating with Yoraa backend...');
       
+      // ✅ PRODUCTION FIX: Check backend health before attempting authentication
+      console.log('\n🏥 STEP 3.0: Checking backend server health...');
       try {
-        console.log('   - Getting Firebase ID token...');
-        const idToken = await user.getIdToken(/* forceRefresh */ true);
-        console.log(`   - Firebase ID Token: ${idToken.substring(0, 30)}... (${idToken.length} chars)`);
+        const healthUrl = `${yoraaAPI.baseURL}/api/health`;
+        console.log('   - Health Check URL:', healthUrl);
         
-        console.log('   - Calling backend firebaseLogin API...');
-        const backendResponse = await yoraaAPI.firebaseLogin(idToken);
-        
-        console.log('✅ STEP 3 SUCCESS: Backend authentication successful');
-        console.log('📦 Backend Response:', {
-          hasToken: !!backendResponse?.token,
-          hasUser: !!backendResponse?.user,
-          tokenLength: backendResponse?.token?.length || 0
+        const healthResponse = await fetch(healthUrl, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          timeout: 5000, // 5 second timeout for health check
         });
         
-        if (backendResponse && backendResponse.token) {
-          console.log('✅ Backend JWT token received and stored');
-          
-          // Store user data in auth storage service
-          if (backendResponse.user) {
-            console.log('   - Storing user data in auth storage...');
-            await authStorageService.storeAuthData(backendResponse.token, backendResponse.user);
-            console.log('✅ User data stored in auth storage');
-          }
-          
-          // Verify token storage
-          console.log('\n🔍 STEP 3.1: Verifying token storage...');
-          const storedToken = await yoraaAPI.getUserToken();
-          console.log(`   - Token Storage: ${storedToken ? '✅ EXISTS' : '❌ MISSING'}`);
-          
-          if (!storedToken) {
-            console.error('⚠️ Token not stored properly, reinitializing...');
-            await yoraaAPI.initialize();
-            
-            const retryToken = await yoraaAPI.getUserToken();
-            console.log(`   - Token After Retry: ${retryToken ? '✅ EXISTS' : '❌ STILL MISSING'}`);
-          }
-          
-          const isAuth = yoraaAPI.isAuthenticated();
-          console.log(`🔐 Backend Authentication Status: ${isAuth ? '✅ AUTHENTICATED' : '❌ NOT AUTHENTICATED'}`);
-          
-          // ✅ NEW: STEP 3.2 - Initialize and Register FCM Token
-          console.log('\n🔔 STEP 3.2: Initializing FCM service...');
-          try {
-            // Import FCM service
-            const fcmService = require('../services/fcmService').default;
-            const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-            
-            // Initialize FCM and get token
-            const fcmResult = await fcmService.initialize();
-            
-            if (fcmResult.success && fcmResult.token) {
-              console.log('✅ FCM token obtained:', fcmResult.token.substring(0, 20) + '...');
-              
-              // Register token with backend using the auth token we just verified
-              const authToken = await AsyncStorage.getItem('userToken');
-              
-              if (authToken) {
-                const registerResult = await fcmService.registerTokenWithBackend(authToken);
-                
-                if (registerResult.success) {
-                  console.log('✅ FCM token registered with backend');
-                } else {
-                  console.warn('⚠️ FCM registration failed (non-critical):', registerResult.error);
-                }
-              } else {
-                console.warn('⚠️ Auth token not found for FCM registration');
-              }
-            } else {
-              console.warn('⚠️ FCM initialization failed:', fcmResult.error);
-            }
-          } catch (fcmError) {
-            console.warn('⚠️ FCM setup error (non-critical):', fcmError.message);
-            // Don't throw - FCM is non-critical to authentication
-          }
-          console.log('✅ STEP 3.2: FCM setup completed');
-          
+        if (healthResponse.ok) {
+          const healthData = await healthResponse.json();
+          console.log('✅ Backend server is healthy:', healthData);
         } else {
-          console.warn('⚠️ Backend authentication succeeded but no token received');
-          console.warn('⚠️ This may cause authentication issues');
+          console.warn('⚠️ Backend health check returned:', healthResponse.status);
         }
-      } catch (backendError) {
-        console.log('\n╔═══════════════════════════════════════════════════════════════╗');
-        console.log('║              ⚠️  BACKEND AUTHENTICATION FAILED                ║');
-        console.log('╚═══════════════════════════════════════════════════════════════╝');
-        console.error('❌ Backend Error Type:', backendError.constructor.name);
-        console.error('❌ Backend Error Code:', backendError.code);
-        console.error('❌ Backend Error Message:', backendError.message);
-        console.error('❌ Full Backend Error:', JSON.stringify(backendError, null, 2));
-        console.error('❌ Stack Trace:', backendError.stack);
-        
-        // ✅ CRITICAL FIX: Retry backend authentication
-        console.log('\n🔄 RETRY: Attempting backend authentication again...');
+      } catch (healthError) {
+        console.warn('⚠️ Backend health check failed (will continue anyway):', healthError.message);
+        // Don't fail authentication if health check fails - server might not have health endpoint
+      }
+      
+      // ✅ PRODUCTION FIX: Add multiple retry attempts with exponential backoff
+      let backendAuthSuccess = false;
+      let backendResponse = null;
+      const maxRetries = 3;
+      
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-          // Wait a bit before retry
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          console.log(`\n🔄 ATTEMPT ${attempt}/${maxRetries}: Authenticating with backend...`);
           
-          console.log('   - Getting fresh Firebase ID token...');
-          const retryIdToken = await user.getIdToken(/* forceRefresh */ true);
-          console.log(`   - Fresh Firebase ID Token obtained (${retryIdToken.length} chars)`);
+          // Wait before retry (exponential backoff)
+          if (attempt > 1) {
+            const waitTime = Math.pow(2, attempt - 1) * 1000; // 2s, 4s, 8s
+            console.log(`⏳ Waiting ${waitTime}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+          }
           
-          console.log('   - Retrying backend firebaseLogin API...');
-          const retryBackendResponse = await yoraaAPI.firebaseLogin(retryIdToken);
+          console.log('   - Getting Firebase ID token...');
+          const idToken = await user.getIdToken(/* forceRefresh */ true);
+          console.log(`   - Firebase ID Token: ${idToken.substring(0, 30)}... (${idToken.length} chars)`);
           
-          if (retryBackendResponse && retryBackendResponse.token) {
-            console.log('✅ RETRY SUCCESS: Backend authentication successful on retry');
-            console.log('📦 Backend JWT token received and stored');
+          // ✅ PRODUCTION FIX: Verify API URL is correct before making request
+          const apiUrl = yoraaAPI.baseURL;
+          console.log('   - API Base URL:', apiUrl);
+          console.log('   - Full Login URL:', `${apiUrl}/api/auth/login/firebase`);
+          console.log('   - Environment:', __DEV__ ? 'DEVELOPMENT' : 'PRODUCTION');
+          
+          console.log('   - Calling backend firebaseLogin API...');
+          backendResponse = await yoraaAPI.firebaseLogin(idToken);
+          
+          console.log('✅ ATTEMPT SUCCESS: Backend authentication successful');
+          console.log('📦 Backend Response:', {
+            hasToken: !!backendResponse?.token,
+            hasUser: !!backendResponse?.user,
+            tokenLength: backendResponse?.token?.length || 0
+          });
+          
+          if (backendResponse && backendResponse.token) {
+            console.log('✅ Backend JWT token received and stored');
+            backendAuthSuccess = true;
             
             // Store user data in auth storage service
-            if (retryBackendResponse.user) {
+            if (backendResponse.user) {
               console.log('   - Storing user data in auth storage...');
-              await authStorageService.storeAuthData(retryBackendResponse.token, retryBackendResponse.user);
+              await authStorageService.storeAuthData(backendResponse.token, backendResponse.user);
               console.log('✅ User data stored in auth storage');
             }
             
             // Verify token storage
+            console.log('\n🔍 STEP 3.1: Verifying token storage...');
             const storedToken = await yoraaAPI.getUserToken();
-            console.log(`   - Token Storage After Retry: ${storedToken ? '✅ EXISTS' : '❌ MISSING'}`);
+            console.log(`   - Token Storage: ${storedToken ? '✅ EXISTS' : '❌ MISSING'}`);
+            
+            if (!storedToken) {
+              console.error('⚠️ Token not stored properly, reinitializing...');
+              await yoraaAPI.initialize();
+              
+              const retryToken = await yoraaAPI.getUserToken();
+              console.log(`   - Token After Retry: ${retryToken ? '✅ EXISTS' : '❌ STILL MISSING'}`);
+            }
             
             const isAuth = yoraaAPI.isAuthenticated();
-            console.log(`🔐 Backend Authentication Status After Retry: ${isAuth ? '✅ AUTHENTICATED' : '❌ NOT AUTHENTICATED'}`);
-          } else {
-            throw new Error('Retry failed: No token received');
-          }
-        } catch (retryError) {
-          console.error('❌ RETRY FAILED:', retryError.message);
-          console.error('⚠️⚠️⚠️ CRITICAL: User logged in to Firebase but NOT authenticated with backend!');
-          console.error('This WILL cause "not authenticated" status to display in the app');
-          
-          // ✅ CRITICAL: Don't continue if backend auth failed - show detailed error
-          setIsLoading(false);
-          
-          // Determine specific error message based on error type
-          let errorTitle = 'Authentication Error';
-          let errorMessage = 'We could not complete your login. Please try again or contact support if the problem persists.';
-          
-          if (retryError.message.includes('Network request failed') || retryError.message.includes('timeout')) {
-            errorTitle = 'Network Error';
-            errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
-          } else if (retryError.message.includes('HTML response') || retryError.message.includes('Received HTML')) {
-            errorTitle = 'Server Error';
-            errorMessage = 'The server is temporarily unavailable. Please try again in a few moments.';
-          } else if (retryError.message.includes('No token received')) {
-            errorTitle = 'Server Error';
-            errorMessage = 'Authentication with our server failed. Please try again or contact support.';
-          }
-          
-          Alert.alert(
-            errorTitle,
-            errorMessage,
-            [
-              {
-                text: 'Try Again',
-                onPress: () => navigation.goBack()
-              },
-              {
-                text: 'Cancel',
-                style: 'cancel'
+            console.log(`🔐 Backend Authentication Status: ${isAuth ? '✅ AUTHENTICATED' : '❌ NOT AUTHENTICATED'}`);
+            
+            // ✅ NEW: STEP 3.2 - Initialize and Register FCM Token
+            console.log('\n🔔 STEP 3.2: Initializing FCM service...');
+            try {
+              // Import FCM service
+              const fcmService = require('../services/fcmService').default;
+              const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+              
+              // Initialize FCM and get token
+              const fcmResult = await fcmService.initialize();
+              
+              if (fcmResult.success && fcmResult.token) {
+                console.log('✅ FCM token obtained:', fcmResult.token.substring(0, 20) + '...');
+                
+                // Register token with backend using the auth token we just verified
+                const authToken = await AsyncStorage.getItem('userToken');
+                
+                if (authToken) {
+                  const registerResult = await fcmService.registerTokenWithBackend(authToken);
+                  
+                  if (registerResult.success) {
+                    console.log('✅ FCM token registered with backend');
+                  } else {
+                    console.warn('⚠️ FCM registration failed (non-critical):', registerResult.error);
+                  }
+                } else {
+                  console.warn('⚠️ Auth token not found for FCM registration');
+                }
+              } else {
+                console.warn('⚠️ FCM initialization failed:', fcmResult.error);
               }
-            ]
-          );
-          return; // Stop execution - don't proceed without backend auth
+            } catch (fcmError) {
+              console.warn('⚠️ FCM setup error (non-critical):', fcmError.message);
+              // Don't throw - FCM is non-critical to authentication
+            }
+            console.log('✅ STEP 3.2: FCM setup completed');
+            
+            // Success! Break out of retry loop
+            break;
+          } else {
+            console.warn(`⚠️ Attempt ${attempt}: Backend authentication succeeded but no token received`);
+            if (attempt === maxRetries) {
+              throw new Error('No token received from backend after all retries');
+            }
+          }
+        } catch (attemptError) {
+          console.log(`\n╔═══════════════════════════════════════════════════════════════╗`);
+          console.log(`║         ⚠️  BACKEND AUTH ATTEMPT ${attempt}/${maxRetries} FAILED            ║`);
+          console.log(`╚═══════════════════════════════════════════════════════════════╝`);
+          console.error('❌ Error Type:', attemptError.constructor.name);
+          console.error('❌ Error Code:', attemptError.code);
+          console.error('❌ Error Message:', attemptError.message);
+          console.error('❌ Stack:', attemptError.stack);
+          
+          // If this is the last attempt, throw error to outer catch block
+          if (attempt === maxRetries) {
+            console.error('❌ ALL RETRY ATTEMPTS EXHAUSTED');
+            throw attemptError;
+          } else {
+            console.log(`⏭️  Will retry (${maxRetries - attempt} attempts remaining)...`);
+          }
         }
+      }
+      
+      // ✅ Check if backend authentication was successful
+      if (!backendAuthSuccess) {
+        throw new Error('Backend authentication failed after all retry attempts');
       }
       
       // Step 4: Create session for phone login
@@ -451,21 +440,91 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
       console.error('❌ Full Error Object:', JSON.stringify(error, null, 2));
       console.error('❌ Stack Trace:', error.stack);
       
-      // Handle specific authentication errors
-      let errorMessage = 'Invalid verification code. Please try again.';
+      // ✅ PRODUCTION FIX: Better error messages for users
+      let errorTitle = 'Authentication Error';
+      let errorMessage = 'We could not complete your login. Please try again.';
+      let showRetryButton = true;
       
+      // Handle Firebase OTP verification errors
       if (error.code === 'auth/invalid-verification-code') {
-        errorMessage = 'Invalid OTP code. Please check and try again.';
+        errorTitle = 'Invalid Code';
+        errorMessage = 'The verification code you entered is incorrect. Please check and try again.';
+        showRetryButton = false;
       } else if (error.code === 'auth/code-expired') {
-        errorMessage = 'OTP code has expired. Please request a new code.';
+        errorTitle = 'Code Expired';
+        errorMessage = 'Your verification code has expired. Please request a new code.';
+        showRetryButton = true;
       } else if (error.code === 'auth/session-expired') {
-        errorMessage = 'Session expired. Please request a new OTP.';
+        errorTitle = 'Session Expired';
+        errorMessage = 'Your session has expired. Please request a new OTP code.';
+        showRetryButton = true;
+      } 
+      // Handle backend authentication errors
+      else if (error.message.includes('Network request failed') || error.message.includes('network') || error.message.includes('timeout')) {
+        errorTitle = 'Network Error';
+        errorMessage = 'Unable to connect to our servers. Please check your internet connection and try again.';
+        showRetryButton = true;
+      } else if (error.message.includes('HTML response') || error.message.includes('Received HTML') || error.message.includes('Backend error')) {
+        errorTitle = 'Server Error';
+        errorMessage = 'Our servers are experiencing issues. Please try again in a few moments.';
+        showRetryButton = true;
+      } else if (error.message.includes('No token received') || error.message.includes('Backend authentication failed')) {
+        errorTitle = 'Server Error';
+        errorMessage = 'There was a problem connecting to our authentication server. Please try again.';
+        showRetryButton = true;
+      } else if (error.message.includes('Authentication required')) {
+        errorTitle = 'Login Required';
+        errorMessage = 'Please verify your phone number to continue.';
+        showRetryButton = true;
       } else if (error.message) {
+        // Use the error message if available
         errorMessage = error.message;
       }
       
-      console.log('📱 Showing Alert:', errorMessage);
-      Alert.alert('Error', errorMessage);
+      console.log('📱 Showing Alert:', { errorTitle, errorMessage, showRetryButton });
+      
+      // Show appropriate alert based on error type
+      if (showRetryButton) {
+        Alert.alert(
+          errorTitle,
+          errorMessage,
+          [
+            {
+              text: 'Try Again',
+              onPress: () => {
+                // Clear the code and allow retry
+                setVerificationCode(['', '', '', '', '', '']);
+                inputRefs.current[0]?.focus();
+              }
+            },
+            {
+              text: 'Get New Code',
+              onPress: () => handleResendCode(),
+              style: 'default'
+            },
+            {
+              text: 'Cancel',
+              style: 'cancel'
+            }
+          ]
+        );
+      } else {
+        Alert.alert(
+          errorTitle,
+          errorMessage,
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                // Clear the code and allow retry
+                setVerificationCode(['', '', '', '', '', '']);
+                inputRefs.current[0]?.focus();
+              }
+            }
+          ]
+        );
+      }
+      
       console.log('╚═══════════════════════════════════════════════════════════════╝\n');
     } finally {
       setIsLoading(false);

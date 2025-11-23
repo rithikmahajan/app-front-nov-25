@@ -22,15 +22,16 @@ import {
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { request, check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import Voice from '@react-native-voice/voice';
-import { Colors, FontSizes, FontWeights, Spacing, BorderRadius } from '../constants';
+import { Colors, FontWeights } from '../constants';
 import { MicrophoneIcon, CameraIcon, ScanBarcodeIcon, SearchIcon } from '../assets/icons';
 import { useAccessibility } from '../hooks/useAccessibility';
 import yoraaAPI from '../services/yoraaBackendAPI';
 import { apiService } from '../services/apiService';
 import { formatPrice } from '../utils/currencyUtils';
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 // Grid separator component
-const GridSeparator = () => <View style={{ height: 20 }} />;
+const GridSeparator = () => <View style={{ height: hp(2.4) }} />;
 
 const SearchScreen = React.memo(({ navigation, onClose, route }) => {
   const [searchText, setSearchText] = useState('');
@@ -1178,51 +1179,51 @@ const styles = StyleSheet.create({
   searchInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    paddingTop: 16,
-    gap: 21,
+    paddingHorizontal: wp(4.3),
+    paddingBottom: hp(1.5),
+    paddingTop: hp(2),
+    gap: wp(5.6),
   },
   searchIcon: {
-    width: 24,
-    height: 24,
+    width: wp(6.4),
+    height: wp(6.4),
     justifyContent: 'center',
     alignItems: 'center',
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
     fontFamily: 'Montserrat-Regular',
     fontWeight: '400',
     color: '#767676',
     letterSpacing: -0.4,
-    lineHeight: 16,
-    minHeight: 16,
+    lineHeight: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
+    minHeight: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
   },
   micButton: {
-    width: 20,
-    height: 20,
+    width: wp(5.3),
+    height: wp(5.3),
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: wp(3.2),
   },
   cancelButton: {
     justifyContent: 'center',
     alignItems: 'flex-end',
   },
   cancelText: {
-    fontSize: 16,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
     fontFamily: 'Montserrat-Regular',
     fontWeight: '400',
     color: '#767676',
     letterSpacing: -0.32,
-    lineHeight: 16,
+    lineHeight: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
   },
   actionButtonsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 24,
-    paddingTop: 8,
-    gap: 12,
+    paddingHorizontal: wp(6.4),
+    paddingTop: hp(1),
+    gap: wp(3.2),
     justifyContent: 'center', // Always center for better appearance
     alignItems: 'center',
   },
@@ -1233,73 +1234,73 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 0,
     paddingVertical: 0,
-    borderRadius: 50,
+    borderRadius: wp(13.3),
     borderWidth: 1,
     borderColor: '#000000',
-    height: 36,
+    height: hp(4.4),
   },
   cameraButton: {
-    width: 128,
+    width: wp(34.1),
   },
   scanBarcodeButton: {
-    width: 191,
+    width: wp(50.9),
   },
   actionButtonText: {
-    fontSize: 16,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
     fontFamily: 'Montserrat-Medium',
     fontWeight: '500',
     color: '#000000',
-    marginLeft: 8,
-    lineHeight: 19.2,
+    marginLeft: wp(2.1),
+    lineHeight: isTablet ? fs(21.6) : isSmallDevice ? fs(16.8) : fs(19.2),
   },
   suggestionsList: {
     flex: 1,
-    paddingHorizontal: 24, // 24px as per Figma
-    paddingTop: 8, // 8px top padding as per Figma content
+    paddingHorizontal: wp(6.4), // 24px as per Figma
+    paddingTop: hp(1), // 8px top padding as per Figma content
   },
   suggestionItem: {
-    paddingVertical: 10,
+    paddingVertical: hp(1.2),
     paddingHorizontal: 0,
     borderBottomWidth: 0,
     alignItems: 'flex-end', // Align to right as per Figma
   },
   suggestionText: {
-    fontSize: 16,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
     color: '#000000',
     fontFamily: 'Montserrat-Medium',
     fontWeight: '500',
-    lineHeight: 19.2, // 1.2 line height as per Figma
+    lineHeight: isTablet ? fs(21.6) : isSmallDevice ? fs(16.8) : fs(19.2), // 1.2 line height as per Figma
     textAlign: 'right',
   },
   loadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
-    paddingHorizontal: 24,
+    paddingVertical: hp(2.4),
+    paddingHorizontal: wp(6.4),
   },
   loadingText: {
-    marginLeft: 8,
-    fontSize: 14,
+    marginLeft: wp(2.1),
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(12) : fs(14),
     color: '#767676',
     fontFamily: 'Montserrat-Regular',
   },
   noResultsContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 24,
+    paddingVertical: hp(4.9),
+    paddingHorizontal: wp(6.4),
   },
   noResultsText: {
-    fontSize: 16,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
     color: '#000000',
     fontFamily: 'Montserrat-Medium',
     fontWeight: '500',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: hp(1),
   },
   noResultsSubText: {
-    fontSize: 14,
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(12) : fs(14),
     color: '#767676',
     fontFamily: 'Montserrat-Regular',
     textAlign: 'center',
@@ -1308,64 +1309,64 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.lg,
+    paddingVertical: hp(2),
   },
   recordingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: Spacing.xs,
+    marginBottom: hp(0.5),
   },
   recordingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: wp(2.1),
+    height: wp(2.1),
+    borderRadius: wp(1.1),
     backgroundColor: Colors.primary,
-    marginRight: Spacing.sm,
+    marginRight: wp(2.1),
   },
   recordingText: {
-    fontSize: FontSizes.md,
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(12) : fs(14),
     color: Colors.primary,
     fontWeight: FontWeights.medium,
     textAlign: 'center',
   },
   recordingSubText: {
-    fontSize: FontSizes.sm,
+    fontSize: isTablet ? fs(13) : isSmallDevice ? fs(10) : fs(11),
     color: Colors.textSecondary,
     fontWeight: FontWeights.regular,
     textAlign: 'center',
-    marginTop: Spacing.xs,
+    marginTop: hp(0.5),
   },
   // Search Results Styles
   searchResultsContainer: {
     flex: 1,
-    paddingHorizontal: 8, // Reduced padding to match gridResultsList
+    paddingHorizontal: wp(2.1), // Reduced padding to match gridResultsList
   },
   resultsHeader: {
-    fontSize: FontSizes.lg,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
     fontWeight: FontWeights.semiBold,
     color: Colors.textPrimary,
-    marginBottom: Spacing.lg,
-    paddingVertical: Spacing.md,
+    marginBottom: hp(2),
+    paddingVertical: hp(1.5),
   },
   resultsList: {
-    paddingBottom: Spacing.xxl,
+    paddingBottom: hp(2.9),
   },
   productItem: {
     backgroundColor: Colors.background,
-    marginBottom: Spacing.xl,
-    borderRadius: BorderRadius.lg,
+    marginBottom: hp(2.4),
+    borderRadius: wp(2.7),
     overflow: 'hidden',
   },
   productImageContainer: {
-    height: 300,
+    height: hp(36.6),
     backgroundColor: '#F8F8F8',
   },
   productImageScroll: {
     flex: 1,
   },
   productImage: {
-    width: Dimensions.get('window').width - (Spacing.lg * 2),
-    height: 300,
+    width: wp(91.5),
+    height: hp(36.6),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1378,97 +1379,97 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   imageText: {
-    fontSize: 48,
+    fontSize: isTablet ? fs(56) : isSmallDevice ? fs(42) : fs(48),
     color: '#888',
     fontWeight: 'bold',
   },
   videoIndicator: {
     position: 'absolute',
-    top: 16,
-    right: 16,
+    top: hp(2),
+    right: wp(4.3),
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    borderRadius: 12,
-    padding: 8,
+    borderRadius: wp(3.2),
+    padding: wp(2.1),
   },
   videoText: {
     color: 'white',
-    fontSize: 12,
+    fontSize: isTablet ? fs(14) : isSmallDevice ? fs(10) : fs(12),
   },
   productInfo: {
-    padding: Spacing.lg,
+    padding: wp(4.3),
   },
   productName: {
-    fontSize: FontSizes.xl,
+    fontSize: isTablet ? fs(20) : isSmallDevice ? fs(16) : fs(18),
     fontWeight: FontWeights.bold,
     color: Colors.textPrimary,
-    marginBottom: Spacing.xs,
+    marginBottom: hp(0.5),
   },
   productSubtitle: {
-    fontSize: FontSizes.md,
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(12) : fs(14),
     color: Colors.textSecondary,
-    marginBottom: Spacing.md,
+    marginBottom: hp(1.5),
   },
   priceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: Spacing.md,
+    marginBottom: hp(1.5),
   },
   currentPrice: {
-    fontSize: FontSizes.lg,
+    fontSize: isTablet ? fs(18) : isSmallDevice ? fs(14) : fs(16),
     fontWeight: FontWeights.bold,
     color: Colors.textPrimary,
-    marginRight: Spacing.sm,
+    marginRight: wp(2.1),
   },
   originalPrice: {
-    fontSize: FontSizes.md,
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(12) : fs(14),
     color: Colors.textSecondary,
     textDecorationLine: 'line-through',
-    marginRight: Spacing.sm,
+    marginRight: wp(2.1),
   },
   discountBadge: {
     backgroundColor: '#E8F5E8',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.sm,
+    paddingHorizontal: wp(2.1),
+    paddingVertical: hp(0.2),
+    borderRadius: wp(1.1),
   },
   discountText: {
-    fontSize: FontSizes.sm,
+    fontSize: isTablet ? fs(13) : isSmallDevice ? fs(10) : fs(11),
     color: '#2E7D32',
     fontWeight: FontWeights.medium,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: Spacing.md,
+    marginBottom: hp(1.5),
   },
   stars: {
     flexDirection: 'row',
-    marginRight: Spacing.sm,
+    marginRight: wp(2.1),
   },
   star: {
-    fontSize: FontSizes.md,
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(12) : fs(14),
     color: '#FFD700',
   },
   reviewCount: {
-    fontSize: FontSizes.sm,
+    fontSize: isTablet ? fs(13) : isSmallDevice ? fs(10) : fs(11),
     color: Colors.textSecondary,
   },
   variantContainer: {
-    marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.lg,
+    marginHorizontal: wp(4.3),
+    marginBottom: hp(2),
   },
   variantScrollContent: {
-    paddingVertical: Spacing.sm,
-    gap: Spacing.sm,
+    paddingVertical: hp(1),
+    gap: wp(2.1),
   },
   variantItem: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   variantColor: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: wp(8.5),
+    height: wp(8.5),
+    borderRadius: wp(4.3),
     borderWidth: 2,
     borderColor: 'transparent',
   },
@@ -1501,44 +1502,44 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    paddingHorizontal: 12,
-    paddingBottom: 34, // Safe area bottom
+    paddingHorizontal: wp(3.2),
+    paddingBottom: hp(4.1), // Safe area bottom
   },
   cameraModal: {
     backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    borderRadius: 14,
-    marginBottom: 8,
+    borderRadius: wp(3.7),
+    marginBottom: hp(1),
     overflow: 'hidden',
   },
   modalHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: wp(4.3),
+    paddingVertical: hp(1.5),
     borderBottomWidth: 0.33,
     borderBottomColor: 'rgba(128, 128, 128, 0.55)',
     alignItems: 'center',
   },
   modalTitle: {
-    fontSize: 13,
+    fontSize: isTablet ? fs(15) : isSmallDevice ? fs(11) : fs(13),
     fontWeight: '600',
     color: '#3D3D3D',
     textAlign: 'center',
     letterSpacing: -0.08,
-    lineHeight: 18,
-    marginBottom: 4,
+    lineHeight: isTablet ? fs(20) : isSmallDevice ? fs(16) : fs(18),
+    marginBottom: hp(0.5),
   },
   modalDescription: {
-    fontSize: 13,
+    fontSize: isTablet ? fs(15) : isSmallDevice ? fs(11) : fs(13),
     fontWeight: '400',
     color: '#3D3D3D',
     textAlign: 'center',
     letterSpacing: -0.08,
-    lineHeight: 18,
+    lineHeight: isTablet ? fs(20) : isSmallDevice ? fs(16) : fs(18),
   },
   modalButtonContainer: {
     overflow: 'hidden',
   },
   modalButton: {
-    height: 56,
+    height: hp(6.8),
     justifyContent: 'center',
     alignItems: 'center',
     borderBottomWidth: 0.33,
@@ -1548,18 +1549,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   modalButtonText: {
-    fontSize: 17,
+    fontSize: isTablet ? fs(19) : isSmallDevice ? fs(15) : fs(17),
     fontWeight: '400',
     color: '#007AFF',
     letterSpacing: -0.43,
-    lineHeight: 22,
+    lineHeight: isTablet ? fs(24) : isSmallDevice ? fs(20) : fs(22),
   },
   modalButtonSecondaryText: {
-    fontSize: 17,
+    fontSize: isTablet ? fs(19) : isSmallDevice ? fs(15) : fs(17),
     fontWeight: '400',
     color: '#AEAEB2',
     letterSpacing: -0.43,
-    lineHeight: 22,
+    lineHeight: isTablet ? fs(24) : isSmallDevice ? fs(20) : fs(22),
   },
   modalButtonSeparator: {
     height: 0.33,
@@ -1567,8 +1568,8 @@ const styles = StyleSheet.create({
   },
   modalCancelContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    borderRadius: 14,
-    height: 56,
+    borderRadius: wp(3.7),
+    height: hp(6.8),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1579,31 +1580,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalCancelText: {
-    fontSize: 17,
+    fontSize: isTablet ? fs(19) : isSmallDevice ? fs(15) : fs(17),
     fontWeight: '600',
     color: '#007AFF',
     letterSpacing: -0.43,
-    lineHeight: 22,
+    lineHeight: isTablet ? fs(24) : isSmallDevice ? fs(20) : fs(22),
   },
   // Grid Layout Styles (Figma Design)
   gridResultsList: {
-    paddingHorizontal: 8, // Add padding for edge spacing
-    paddingBottom: 20,
+    paddingHorizontal: wp(2.1), // Add padding for edge spacing
+    paddingBottom: hp(2.4),
   },
   gridRow: {
     justifyContent: 'space-between',
     paddingHorizontal: 0,
-    gap: 8, // Add gap between columns
+    gap: wp(2.1), // Add gap between columns
   },
   gridProductItem: {
-    width: (Dimensions.get('window').width - 24) / 2, // Responsive width: (full width - padding) / 2 columns
-    marginBottom: 20,
+    width: '47.5%', // Responsive width: (full width - padding) / 2 columns
+    marginBottom: hp(2.4),
     backgroundColor: '#FFFFFF',
   },
   gridProductImageContainer: {
     width: '100%',
     aspectRatio: 1, // Keep square aspect ratio (1:1)
-    marginBottom: 14, // 14px gap as per Figma
+    marginBottom: hp(1.7), // 14px gap as per Figma
   },
   gridProductImage: {
     width: '100%',
@@ -1611,57 +1612,57 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: wp(2.1),
   },
   gridProductImageComponent: {
     width: '100%',
     height: '100%',
-    borderRadius: 8,
+    borderRadius: wp(2.1),
   },
   gridProductInfo: {
-    paddingHorizontal: 8, // Responsive padding (reduced from 14px)
-    gap: 5, // 5px gap between name and price
+    paddingHorizontal: wp(2.1), // Responsive padding (reduced from 14px)
+    gap: hp(0.6), // 5px gap between name and price
   },
   gridProductName: {
-    fontSize: 14,
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(12) : fs(14),
     fontFamily: 'Montserrat-Medium',
     fontWeight: '500',
     color: '#000000',
-    lineHeight: 16.8, // 14px * 1.2 line height
+    lineHeight: isTablet ? fs(19.2) : isSmallDevice ? fs(14.4) : fs(16.8), // 14px * 1.2 line height
     letterSpacing: -0.14,
   },
   gridProductPrice: {
-    fontSize: 14,
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(12) : fs(14),
     fontFamily: 'Montserrat-Medium',
     fontWeight: '500',
     color: '#000000',
-    lineHeight: 16.8,
+    lineHeight: isTablet ? fs(19.2) : isSmallDevice ? fs(14.4) : fs(16.8),
     letterSpacing: -0.14,
   },
   // Error handling styles
   errorContainer: {
     backgroundColor: '#FFE6E6',
-    borderRadius: 8,
-    padding: 16,
-    marginVertical: 10,
+    borderRadius: wp(2.1),
+    padding: wp(4.3),
+    marginVertical: hp(1.2),
     alignItems: 'center',
   },
   errorText: {
-    fontSize: 14,
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(12) : fs(14),
     fontFamily: 'Montserrat-Medium',
     color: '#D32F2F',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: hp(1.5),
   },
   retryButton: {
     backgroundColor: '#007AFF',
-    borderRadius: 6,
-    paddingHorizontal: 20,
-    paddingVertical: 8,
+    borderRadius: wp(1.6),
+    paddingHorizontal: wp(5.3),
+    paddingVertical: hp(1),
   },
   retryText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: isTablet ? fs(16) : isSmallDevice ? fs(12) : fs(14),
     fontFamily: 'Montserrat-Medium',
     fontWeight: '600',
   },
