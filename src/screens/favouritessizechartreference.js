@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Dimensions,
   PanResponder,
   Image,
   ActivityIndicator,
@@ -14,8 +13,7 @@ import {
 } from 'react-native';
 import { Colors, FontFamilies } from '../constants';
 import apiService from '../services/apiService';
-
-const { width: screenWidth } = Dimensions.get('window');
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 const FavouritesSizeChartReference = ({ route, navigation }) => {
   const { product, sizeChartData: passedSizeChartData, sizeChartImage: passedSizeChartImage } = route.params || {};
@@ -43,9 +41,6 @@ const FavouritesSizeChartReference = ({ route, navigation }) => {
       console.log('🔍 Loading size chart data for product:', product);
       console.log('🔍 Product keys:', product ? Object.keys(product) : 'No product');
 
-      // SKIP passed data and ALWAYS fetch from API for correct field mapping
-      const skipPassedData = true;
-      
       if (false && passedSizeChartData && passedSizeChartData.length > 0) {
         // This block is now disabled - we always fetch from API
         console.log('✅ Using passed size chart data (will process for field mapping):', passedSizeChartData);
@@ -394,7 +389,7 @@ const FavouritesSizeChartReference = ({ route, navigation }) => {
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={true}
-          contentContainerStyle={{ paddingHorizontal: 0 }}
+          contentContainerStyle={styles.horizontalScrollContent}
         >
           <View style={styles.tableContainer}>
             {/* Table Header - Dynamic based on available fields */}
@@ -684,8 +679,8 @@ const styles = StyleSheet.create({
   },
   bottomSheet: {
     backgroundColor: Colors.white,
-    borderTopLeftRadius: 36,
-    borderTopRightRadius: 36,
+    borderTopLeftRadius: isTablet ? 40 : 36,
+    borderTopRightRadius: isTablet ? 40 : 36,
     minHeight: '70%',
     maxHeight: '90%',
     shadowColor: '#000',
@@ -700,45 +695,45 @@ const styles = StyleSheet.create({
   },
   headerSection: {
     backgroundColor: Colors.white,
-    paddingVertical: 8,
-    borderTopLeftRadius: 36,
-    borderTopRightRadius: 36,
+    paddingVertical: hp(1),
+    borderTopLeftRadius: isTablet ? 40 : 36,
+    borderTopRightRadius: isTablet ? 40 : 36,
   },
   drawerHandle: {
-    width: 64,
-    height: 6,
+    width: wp(isTablet ? 10 : isSmallDevice ? 18 : 17),
+    height: hp(isTablet ? 0.8 : 0.7),
     backgroundColor: '#E6E6E6',
     borderRadius: 40,
     alignSelf: 'center',
-    marginTop: 8,
-    marginBottom: 16,
+    marginTop: hp(1),
+    marginBottom: hp(isTablet ? 2.5 : 2),
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: hp(isTablet ? 2.5 : 2),
     letterSpacing: -0.16,
   },
   tabContainer: {
     flexDirection: 'row',
-    marginHorizontal: 24,
-    marginBottom: 16,
+    marginHorizontal: wp(isTablet ? 8 : 6.4),
+    marginBottom: hp(isTablet ? 2.5 : 2),
   },
   tab: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: hp(isTablet ? 1.2 : 1),
     alignItems: 'center',
-    borderBottomWidth: 2,
+    borderBottomWidth: isTablet ? 3 : 2,
     borderBottomColor: 'transparent',
   },
   activeTab: {
     borderBottomColor: Colors.black,
   },
   tabText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: '#767676',
@@ -753,21 +748,24 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   scrollContentContainer: {
-    paddingBottom: 40,
+    paddingBottom: hp(isTablet ? 6 : 5),
+  },
+  horizontalScrollContent: {
+    paddingHorizontal: 0,
   },
   contentContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 40,
+    paddingHorizontal: wp(isTablet ? 8 : 6.4),
+    paddingTop: hp(isTablet ? 3 : 2.5),
+    paddingBottom: hp(isTablet ? 6 : 5),
   },
   unitToggleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: hp(isTablet ? 3.5 : 3),
   },
   selectSizeText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 12 : 14),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
@@ -777,20 +775,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#F6F6F6',
     borderRadius: 20,
-    padding: 2,
+    padding: hp(0.3),
   },
   unitButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: wp(isTablet ? 5 : 4.2),
+    paddingVertical: hp(isTablet ? 1.2 : 1),
     borderRadius: 18,
-    minWidth: 40,
+    minWidth: wp(isTablet ? 12 : 10.6),
     alignItems: 'center',
   },
   unitButtonActive: {
     backgroundColor: Colors.black,
   },
   unitButtonText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 12 : 14),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: '#767676',
@@ -808,49 +806,49 @@ const styles = StyleSheet.create({
   tableHeader: {
     flexDirection: 'row',
     backgroundColor: Colors.black,
-    paddingVertical: 14,
-    paddingHorizontal: 8,
+    paddingVertical: hp(isTablet ? 2 : 1.7),
+    paddingHorizontal: wp(isTablet ? 3 : 2),
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
   },
   tableHeaderText: {
-    minWidth: 80,
-    fontSize: 13,
+    minWidth: wp(isTablet ? 24 : isSmallDevice ? 20 : 21.3),
+    fontSize: fs(isTablet ? 15 : isSmallDevice ? 11 : 13),
     fontWeight: '600',
     fontFamily: FontFamilies.montserrat,
     color: Colors.white,
     textAlign: 'center',
     letterSpacing: -0.2,
-    paddingHorizontal: 8,
+    paddingHorizontal: wp(isTablet ? 3 : 2),
   },
   tableRow: {
     flexDirection: 'row',
     borderBottomWidth: 1,
     borderBottomColor: '#E4E4E4',
-    paddingVertical: 16,
-    paddingHorizontal: 8,
+    paddingVertical: hp(isTablet ? 2.5 : 2),
+    paddingHorizontal: wp(isTablet ? 3 : 2),
   },
   lastTableRow: {
     borderBottomWidth: 0,
   },
   tableCellText: {
-    minWidth: 80,
-    fontSize: 15,
+    minWidth: wp(isTablet ? 24 : isSmallDevice ? 20 : 21.3),
+    fontSize: fs(isTablet ? 17 : isSmallDevice ? 13 : 15),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
     textAlign: 'center',
     letterSpacing: -0.2,
-    paddingHorizontal: 8,
+    paddingHorizontal: wp(isTablet ? 3 : 2),
   },
   measurementImageContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 24,
+    marginTop: hp(isTablet ? 4 : 3),
   },
   measurementPlaceholder: {
-    width: screenWidth - 48,
-    height: 400,
+    width: wp(isTablet ? 84 : 87.2),
+    height: hp(isTablet ? 55 : 50),
     backgroundColor: '#F6F6F6',
     borderRadius: 8,
     alignItems: 'center',
@@ -858,124 +856,122 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   pantsDiagram: {
-    width: 200,
-    height: 350,
+    width: wp(isTablet ? 60 : isSmallDevice ? 48 : 53.3),
+    height: hp(isTablet ? 48 : isSmallDevice ? 40 : 43.8),
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
   },
   waistMeasurement: {
     position: 'absolute',
-    top: 20,
+    top: hp(isTablet ? 3 : 2.5),
     alignItems: 'center',
   },
   measurementLabel: {
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 10 : 12),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: '#767676',
-    marginBottom: 4,
+    marginBottom: hp(0.5),
   },
   measurementLine: {
-    width: 80,
+    width: wp(isTablet ? 24 : 21.3),
     height: 1,
     backgroundColor: '#767676',
   },
   measurementLineVertical: {
     width: 1,
-    height: 120,
+    height: hp(isTablet ? 18 : 15),
     backgroundColor: '#767676',
   },
   riseMeasurement: {
     position: 'absolute',
-    top: 80,
-    left: -60,
+    top: hp(isTablet ? 12 : 10),
+    left: wp(isTablet ? -20 : -16),
   },
   thighMeasurement: {
     position: 'absolute',
-    top: 140,
-    left: -60,
+    top: hp(isTablet ? 20 : 17.5),
+    left: wp(isTablet ? -20 : -16),
   },
   inseamMeasurement: {
     position: 'absolute',
-    top: 100,
-    right: -80,
+    top: hp(isTablet ? 15 : 12.5),
+    right: wp(isTablet ? -26 : -21.3),
     alignItems: 'center',
   },
   outseamMeasurement: {
     position: 'absolute',
-    top: 200,
-    right: -80,
+    top: hp(isTablet ? 28 : 25),
+    right: wp(isTablet ? -26 : -21.3),
   },
   bottomHemMeasurement: {
     position: 'absolute',
-    bottom: 20,
+    bottom: hp(isTablet ? 3 : 2.5),
     alignItems: 'center',
   },
-  // Loading and error states
   centerContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 300,
-    paddingVertical: 40,
+    minHeight: hp(isTablet ? 45 : 37.5),
+    paddingVertical: hp(isTablet ? 6 : 5),
   },
   loadingText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 12 : 14),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
-    marginTop: 12,
+    marginTop: hp(isTablet ? 2 : 1.5),
   },
   errorText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 12 : 14),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: Colors.red || '#FF4444',
     textAlign: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 16,
+    marginBottom: hp(isTablet ? 2.5 : 2),
+    paddingHorizontal: wp(isTablet ? 6 : 4.2),
   },
   retryButton: {
     backgroundColor: Colors.black,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: wp(isTablet ? 8 : 5.3),
+    paddingVertical: hp(isTablet ? 1.5 : 1.2),
     borderRadius: 6,
   },
   retryButtonText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 12 : 14),
     fontWeight: '600',
     fontFamily: FontFamilies.montserrat,
     color: Colors.white,
   },
   noDataText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 12 : 14),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: '#767676',
     textAlign: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: wp(isTablet ? 6 : 4.2),
   },
-
   measurementImage: {
-    width: screenWidth - 48,
-    height: 300,
+    width: wp(isTablet ? 84 : 87.2),
+    height: hp(isTablet ? 42 : 37.5),
     borderRadius: 8,
   },
   placeholderImageContainer: {
-    width: screenWidth - 48,
-    height: 300,
+    width: wp(isTablet ? 84 : 87.2),
+    height: hp(isTablet ? 42 : 37.5),
     backgroundColor: '#F6F6F6',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   placeholderImageText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 12 : 14),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: '#767676',
     textAlign: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: wp(isTablet ? 6 : 4.2),
   },
 });
 

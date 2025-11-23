@@ -9,6 +9,18 @@ import {
   Easing,
 } from 'react-native';
 import GlobalBackButton from '../components/GlobalBackButton';
+import {
+  getResponsiveFontSize,
+  getResponsiveSpacing,
+  getResponsiveValue,
+  wp,
+  hp,
+  fs,
+  device,
+  isTablet,
+  isSmallDevice,
+  getScreenDimensions,
+} from '../utils/responsive';
 
 // Checkbox Component
 const Checkbox = ({ checked, onPress }) => (
@@ -115,38 +127,36 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   
-  // Header Styles
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 20,
+    paddingHorizontal: getResponsiveSpacing(16),
+    paddingTop: getResponsiveSpacing(12),
+    paddingBottom: getResponsiveSpacing(20),
   },
   backButton: {
-    padding: 8,
-    marginLeft: -8,
+    padding: getResponsiveSpacing(8),
+    marginLeft: getResponsiveSpacing(-8),
   },
   headerTitle: {
-    fontSize: 17,
+    fontSize: getResponsiveFontSize(17),
     fontWeight: '600',
     color: '#000000',
   },
   headerSpacer: {
-    width: 40,
+    width: getResponsiveValue(40, 45, 50),
   },
 
-  // Back Arrow Icon
   backArrowIcon: {
-    width: 24,
-    height: 24,
+    width: getResponsiveValue(24, 28, 32),
+    height: getResponsiveValue(24, 28, 32),
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
   },
   backArrowLine: {
-    width: 12,
+    width: getResponsiveValue(12, 14, 16),
     height: 2,
     backgroundColor: '#000000',
     position: 'absolute',
@@ -154,57 +164,53 @@ const styles = StyleSheet.create({
   backArrowHead: {
     width: 0,
     height: 0,
-    borderRightWidth: 6,
+    borderRightWidth: getResponsiveValue(6, 7, 8),
     borderLeftWidth: 0,
-    borderTopWidth: 4,
-    borderBottomWidth: 4,
+    borderTopWidth: getResponsiveValue(4, 5, 6),
+    borderBottomWidth: getResponsiveValue(4, 5, 6),
     borderRightColor: '#000000',
     borderTopColor: 'transparent',
     borderBottomColor: 'transparent',
     position: 'absolute',
-    left: 6,
+    left: getResponsiveValue(6, 7, 8),
   },
 
-  // Main Content
   mainContent: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingTop: getResponsiveSpacing(8),
   },
 
-  // Section Styles
   sectionTitle: {
-    fontSize: 20,
+    fontSize: getResponsiveFontSize(20),
     fontWeight: '600',
     color: '#000000',
-    marginBottom: 8,
+    marginBottom: getResponsiveSpacing(8),
   },
   sectionDescription: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     color: '#000000',
-    lineHeight: 22,
-    marginBottom: 32,
+    lineHeight: getResponsiveValue(22, 25, 28),
+    marginBottom: getResponsiveSpacing(32),
   },
 
-  // Preference Row
   preferenceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: getResponsiveSpacing(40),
   },
   preferenceText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     color: '#666666',
-    marginLeft: 12,
+    marginLeft: getResponsiveSpacing(12),
   },
 
-  // Checkbox Styles
   checkboxContainer: {
-    padding: 2,
+    padding: getResponsiveSpacing(2),
   },
   checkbox: {
-    width: 20,
-    height: 20,
+    width: getResponsiveValue(20, 23, 26),
+    height: getResponsiveValue(20, 23, 26),
     borderWidth: 2,
     borderColor: '#CCCCCC',
     borderRadius: 4,
@@ -217,24 +223,23 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
   },
   checkmark: {
-    width: 6,
-    height: 10,
+    width: getResponsiveValue(6, 7, 8),
+    height: getResponsiveValue(10, 11, 12),
     borderRightWidth: 2,
     borderBottomWidth: 2,
     borderColor: '#FFFFFF',
     transform: [{ rotate: '45deg' }],
   },
 
-  // Save Button
   saveButton: {
     backgroundColor: '#000000',
     borderRadius: 25,
-    paddingVertical: 16,
+    paddingVertical: getResponsiveSpacing(16),
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: getResponsiveSpacing(20),
   },
   saveButtonText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '600',
     color: '#FFFFFF',
   },

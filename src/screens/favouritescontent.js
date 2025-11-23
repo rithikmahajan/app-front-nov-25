@@ -10,7 +10,6 @@ import {
   Animated,
   Dimensions,
   SafeAreaView,
-  Platform,
   StatusBar,
 } from 'react-native';
 import { Colors, FontFamilies } from '../constants';
@@ -19,15 +18,14 @@ import TrashIcon from '../assets/icons/TrashIcon';
 import { useOptimizedList } from '../hooks/usePerformanceOptimization';
 import { yoraaAPI } from '../services/yoraaAPI';
 import { useFavorites } from '../contexts/FavoritesContext';
+import { wp, hp, fs, isTablet } from '../utils/responsive';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-// Calculate responsive columns and item width
 const getResponsiveLayout = () => {
-  const isTablet = screenWidth >= 768;
   const numColumns = isTablet ? 3 : 2;
-  const horizontalPadding = 16;
-  const itemSpacing = 16;
+  const horizontalPadding = wp(4.3);
+  const itemSpacing = wp(4.3);
   const totalSpacing = horizontalPadding * 2 + (itemSpacing * (numColumns - 1));
   const itemWidth = (screenWidth - totalSpacing) / numColumns;
   
@@ -38,8 +36,7 @@ const getResponsiveLayout = () => {
   };
 };
 
-// Enhanced delete icon component matching Figma design
-const DeleteIcon = ({ size = 34, onPress, isLoading = false, animatedValue }) => (
+const DeleteIcon = ({ size = wp(isTablet ? 10.7 : 8.5), onPress, isLoading = false, animatedValue }) => (
   <Animated.View
     style={[
       styles.deleteIcon,
@@ -332,9 +329,8 @@ const FavouritesContent = ({ navigation }) => {
             <View style={styles.imagePlaceholder} />
           )}
           
-          {/* Delete Icon - Always render but animate visibility */}
           <DeleteIcon 
-            size={32}
+            size={wp(isTablet ? 10.7 : 8.5)}
             onPress={() => handleRemoveItem(item)}
             isLoading={isRemoving}
             animatedValue={deleteIconAnimation}
@@ -445,18 +441,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingHorizontal: wp(4.3),
+    paddingTop: hp(1.9),
+    paddingBottom: hp(1.5),
     backgroundColor: Colors.white,
-    minHeight: 52,
+    minHeight: hp(6.3),
   },
   headerLeft: {
-    width: 68,
+    width: wp(18.1),
     flexShrink: 0,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 20 : 16),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
@@ -465,15 +461,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   editButton: {
-    minWidth: 50,
-    height: 24,
+    minWidth: wp(13.3),
+    height: hp(2.9),
     justifyContent: 'center',
     alignItems: 'flex-end',
-    paddingHorizontal: 8,
+    paddingHorizontal: wp(2.1),
     flexShrink: 0,
   },
   editText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : 16),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
@@ -481,36 +477,32 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingBottom: 80, // Add padding for bottom navigation bar
+    paddingHorizontal: wp(4.3),
+    paddingBottom: hp(9.8),
   },
   gridContainer: {
-    paddingBottom: 20,
+    paddingBottom: hp(2.4),
     flexGrow: 1,
   },
   row: {
     justifyContent: 'flex-start',
-    marginBottom: 24,
+    marginBottom: hp(2.9),
     paddingHorizontal: 0,
-    gap: 16,
+    gap: wp(4.3),
   },
   productContainer: {
-    // Width is set dynamically in renderProductItem
-    // This ensures proper responsiveness on all devices
-    maxWidth: screenWidth >= 768 ? 250 : 200,
+    maxWidth: isTablet ? wp(33.3) : wp(53.3),
   },
   leftProduct: {
-    // Removed - no longer needed with dynamic width
   },
   rightProduct: {
-    // Removed - no longer needed with dynamic width
   },
   imageContainer: {
     position: 'relative',
     width: '100%',
     aspectRatio: 1,
     borderRadius: 8,
-    marginBottom: 12,
+    marginBottom: hp(1.5),
   },
   imagePlaceholder: {
     width: '100%',
@@ -524,103 +516,100 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   productInfo: {
-    paddingHorizontal: 4,
+    paddingHorizontal: wp(1.1),
   },
   productName: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
-    lineHeight: 20,
-    marginBottom: 4,
+    lineHeight: fs(isTablet ? 24 : 20),
+    marginBottom: hp(0.5),
   },
   productPrice: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: Colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: fs(isTablet ? 24 : 20),
   },
-  // Loading state styles
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: wp(5.3),
   },
   loadingText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : 16),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: Colors.textSecondary,
-    marginTop: 16,
+    marginTop: hp(1.9),
     textAlign: 'center',
   },
-  // Empty state styles
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: wp(5.3),
   },
   heartIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: wp(isTablet ? 20 : 16),
+    height: wp(isTablet ? 20 : 16),
+    borderRadius: wp(isTablet ? 10 : 8),
     borderWidth: 2,
     borderColor: Colors.black,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: hp(2.4),
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 20 : 16),
     fontFamily: FontFamilies.montserrat,
     fontWeight: '400',
     color: Colors.black,
     textAlign: 'center',
     letterSpacing: -0.384,
-    lineHeight: 24,
-    marginBottom: 8,
+    lineHeight: fs(isTablet ? 30 : 24),
+    marginBottom: hp(1),
   },
   boldText: {
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
   },
   descriptionText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 20 : 16),
     fontFamily: FontFamilies.montserrat,
     fontWeight: '400',
     color: Colors.black,
     textAlign: 'center',
     letterSpacing: -0.384,
-    lineHeight: 24,
-    marginBottom: 40,
+    lineHeight: fs(isTablet ? 30 : 24),
+    marginBottom: hp(4.9),
   },
   addFavouritesButton: {
     backgroundColor: Colors.black,
-    borderRadius: 100,
-    paddingVertical: 16,
-    paddingHorizontal: 51,
+    borderRadius: wp(26.7),
+    paddingVertical: hp(1.9),
+    paddingHorizontal: wp(13.6),
     alignItems: 'center',
     justifyContent: 'center',
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 20 : 16),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.white,
-    lineHeight: 19.2,
+    lineHeight: fs(isTablet ? 24 : 19.2),
   },
-  // Delete icon styles - matching Figma design
   deleteIcon: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    top: wp(2.1),
+    right: wp(2.1),
     zIndex: 10,
   },
   deleteIconTouchable: {
-    borderRadius: 17,
+    borderRadius: wp(4.5),
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: Colors.black,
@@ -630,39 +619,38 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   deleteLoadingContainer: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: wp(isTablet ? 10.7 : 9.1),
+    height: wp(isTablet ? 10.7 : 9.1),
+    borderRadius: wp(isTablet ? 5.4 : 4.5),
     backgroundColor: 'rgba(202, 51, 39, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#CA3327',
   },
-  // Edit mode button styles
   editModeButtons: {
     flexDirection: 'row',
     alignItems: 'center',
     flexShrink: 0,
-    minWidth: 100,
+    minWidth: wp(26.7),
   },
   clearAllButton: {
-    marginRight: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    marginRight: wp(3.2),
+    paddingHorizontal: wp(2.1),
+    paddingVertical: hp(0.5),
   },
   clearAllText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontFamily: FontFamilies.montserrat,
     color: '#ff4444',
     fontWeight: '500',
   },
   doneButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: wp(2.1),
+    paddingVertical: hp(0.5),
   },
   doneText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontFamily: FontFamilies.montserrat,
     color: Colors.primary,
     fontWeight: '500',

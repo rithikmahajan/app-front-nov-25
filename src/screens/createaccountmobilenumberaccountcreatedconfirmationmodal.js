@@ -5,10 +5,19 @@ import {
   StyleSheet,
   SafeAreaView,
   TouchableOpacity,
-  Dimensions,
 } from 'react-native';
-
-const { width: screenWidth } = Dimensions.get('window');
+import {
+  getResponsiveFontSize,
+  getResponsiveSpacing,
+  getResponsiveValue,
+  wp,
+  hp,
+  fs,
+  device,
+  isTablet,
+  isSmallDevice,
+  getScreenDimensions,
+} from '../utils/responsive';
 
 const CreateAccountMobileNumberAccountCreatedConfirmationModal = ({ navigation }) => {
   const handleContinueShopping = () => {
@@ -46,52 +55,57 @@ const CreateAccountMobileNumberAccountCreatedConfirmationModal = ({ navigation }
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 36,
-    width: screenWidth * 0.85,
-    paddingVertical: 40,
-    paddingHorizontal: 20,
+    width: getResponsiveValue(
+      getScreenDimensions().width * 0.85,
+      getScreenDimensions().width * 0.75,
+      getScreenDimensions().width * 0.65
+    ),
+    maxWidth: getResponsiveValue(400, 500, 600),
+    paddingVertical: getResponsiveSpacing(40),
+    paddingHorizontal: getResponsiveSpacing(20),
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 300,
+    minHeight: getResponsiveValue(300, 340, 380),
   },
   title: {
-    fontSize: 18,
+    fontSize: getResponsiveFontSize(18),
     fontFamily: 'Montserrat-Bold',
     fontWeight: 'bold',
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: getResponsiveSpacing(16),
     letterSpacing: -0.41,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontFamily: 'Montserrat-Regular',
     color: '#767676',
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: getResponsiveValue(22, 25, 28),
     opacity: 0.75,
-    marginBottom: 40,
-    paddingHorizontal: 20,
+    marginBottom: getResponsiveSpacing(40),
+    paddingHorizontal: getResponsiveSpacing(20),
     letterSpacing: -0.41,
   },
   continueButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    width: 280,
-    height: 48,
+    width: getResponsiveValue(280, 320, 360),
+    height: getResponsiveValue(48, 54, 60),
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 51,
-    paddingVertical: 16,
+    paddingHorizontal: getResponsiveSpacing(51),
+    paddingVertical: getResponsiveSpacing(16),
   },
   continueButtonText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontFamily: 'Montserrat-Medium',
     fontWeight: '500',
     color: '#FFFFFF',

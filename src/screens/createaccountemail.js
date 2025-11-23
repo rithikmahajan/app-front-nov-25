@@ -16,18 +16,27 @@ import appleAuthService from '../services/appleAuthService';
 import googleAuthService from '../services/googleAuthService';
 import sessionManager from '../services/sessionManager';
 import yoraaAPI from '../services/yoraaAPI';
+import {
+  getResponsiveFontSize,
+  getResponsiveSpacing,
+  getResponsiveValue,
+  wp,
+  hp,
+  fs,
+  device,
+  isTablet,
+  isSmallDevice,
+  getScreenDimensions,
+} from '../utils/responsive';
 
-// Eye Icon Component
 const EyeIcon = ({ width = 22, height = 16, color = "#979797" }) => (
   <Svg width={width} height={height} viewBox="0 0 22 16" fill="none">
-    {/* Outer eye shape */}
     <Path 
       d="M11 1.25C3.5 1.25 0.5 8 0.5 8C0.5 8 3.5 14.75 11 14.75C18.5 14.75 21.5 8 21.5 8C21.5 8 18.5 1.25 11 1.25Z" 
       stroke={color} 
       strokeLinecap="round" 
       strokeLinejoin="round"
     />
-    {/* Inner circle (pupil) */}
     <Path 
       d="M11 13C13.0711 13 14.75 11.3211 14.75 9.25C14.75 7.17893 13.0711 5.5 11 5.5C8.92893 5.5 7.25 7.17893 7.25 9.25C7.25 11.3211 8.92893 13 11 13Z" 
       stroke={color} 
@@ -545,44 +554,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingTop: 5,
+    paddingHorizontal: getResponsiveSpacing(8),
+    paddingTop: getResponsiveSpacing(5),
   },
   backButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 8,
+    paddingVertical: getResponsiveSpacing(8),
+    paddingHorizontal: getResponsiveSpacing(8),
   },
   skipButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 19,
+    paddingVertical: getResponsiveSpacing(8),
+    paddingHorizontal: getResponsiveSpacing(19),
   },
   skipText: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontFamily: 'Montserrat-Regular',
     color: '#000000',
     textAlign: 'right',
   },
   titleContainer: {
-    paddingHorizontal: 32,
-    marginTop: 15,
+    paddingHorizontal: getResponsiveSpacing(32),
+    marginTop: getResponsiveSpacing(15),
   },
   title: {
-    fontSize: 24,
+    fontSize: getResponsiveFontSize(24),
     fontFamily: 'Montserrat-Bold',
     fontWeight: 'bold',
     color: '#000000',
-    lineHeight: 48,
+    lineHeight: getResponsiveValue(48, 54, 60),
   },
   toggleContainer: {
     alignItems: 'center',
-    marginTop: 30,
+    marginTop: getResponsiveSpacing(30),
   },
   toggleBackground: {
     flexDirection: 'row',
     backgroundColor: '#ededed',
     borderRadius: 15,
-    height: 30,
-    width: 124,
+    height: getResponsiveValue(30, 35, 40),
+    width: getResponsiveValue(124, 140, 156),
   },
   toggleOption: {
     flex: 1,
@@ -594,7 +603,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
   },
   toggleText: {
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     fontFamily: 'Montserrat-Regular',
     color: '#000000',
   },
@@ -604,20 +613,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   formContainer: {
-    paddingHorizontal: 33,
-    marginTop: 35,
+    paddingHorizontal: getResponsiveSpacing(33),
+    marginTop: getResponsiveSpacing(35),
   },
   inputField: {
-    marginBottom: 16,
-    height: 50,
+    marginBottom: getResponsiveSpacing(16),
+    height: getResponsiveValue(50, 56, 62),
   },
   textInput: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontFamily: 'Mulish-Regular',
     color: '#000000',
     paddingVertical: 0,
-    paddingBottom: 12,
-    height: 30,
+    paddingBottom: getResponsiveSpacing(12),
+    height: getResponsiveValue(30, 34, 38),
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -627,19 +636,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   eyeIcon: {
-    padding: 5,
+    padding: getResponsiveSpacing(5),
   },
   underline: {
     height: 1,
     backgroundColor: '#D6D6D6',
-    marginTop: 8,
+    marginTop: getResponsiveSpacing(8),
   },
   signUpButton: {
-    marginHorizontal: 33,
-    marginTop: 45,
+    marginHorizontal: getResponsiveSpacing(33),
+    marginTop: getResponsiveSpacing(45),
     backgroundColor: '#000000',
     borderRadius: 26.5,
-    height: 51,
+    height: getResponsiveValue(51, 58, 64),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -647,7 +656,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#CCCCCC',
   },
   signUpButtonText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontFamily: 'Montserrat-Bold',
     fontWeight: 'bold',
     color: '#ffffff',
@@ -659,8 +668,8 @@ const styles = StyleSheet.create({
   dividerSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 33,
-    marginTop: 30,
+    marginHorizontal: getResponsiveSpacing(33),
+    marginTop: getResponsiveSpacing(30),
   },
   dividerLine: {
     flex: 1,
@@ -668,22 +677,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#E9E9E9',
   },
   dividerText: {
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     fontFamily: 'Montserrat-Regular',
     color: '#000000',
     opacity: 0.6,
-    marginHorizontal: 16,
+    marginHorizontal: getResponsiveSpacing(16),
     letterSpacing: 0.24,
   },
   socialButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
-    gap: 20,
+    marginTop: getResponsiveSpacing(20),
+    gap: getResponsiveSpacing(20),
   },
   socialButton: {
-    width: 42,
-    height: 42,
+    width: getResponsiveValue(42, 48, 54),
+    height: getResponsiveValue(42, 48, 54),
     borderRadius: 30,
     backgroundColor: 'rgba(255, 255, 255, 0.14)',
     borderWidth: 1,
@@ -696,12 +705,12 @@ const styles = StyleSheet.create({
   },
   footer: {
     alignItems: 'center',
-    marginTop: 40,
-    marginBottom: 20,
-    paddingHorizontal: 69,
+    marginTop: getResponsiveSpacing(40),
+    marginBottom: getResponsiveSpacing(20),
+    paddingHorizontal: getResponsiveSpacing(69),
   },
   footerText: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontFamily: 'Montserrat-Regular',
     color: '#000000',
   },

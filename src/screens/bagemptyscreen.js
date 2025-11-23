@@ -8,6 +8,17 @@ import {
 } from 'react-native';
 import BagIconSvg from '../assets/icons/BagIconSvg';
 import { useBag } from '../contexts/BagContext';
+import {
+  getResponsiveFontSize,
+  getResponsiveSpacing,
+  getResponsiveValue,
+  wp,
+  hp,
+  fs,
+  device,
+  isTablet,
+  isSmallDevice
+} from '../utils/responsive';
 
 const BagEmptyScreen = React.memo(({ navigation }) => {
   const { getBagItemsCount } = useBag();
@@ -31,20 +42,19 @@ const BagEmptyScreen = React.memo(({ navigation }) => {
   if (hasBagItems) {
     return (
       <SafeAreaView style={styles.container}>
-        {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft} />
           <Text style={styles.headerTitle} accessibilityRole="header">Bag</Text>
           <View style={styles.headerRight} />
         </View>
 
-        {/* Content */}
-          <View style={styles.content}>
+        <View style={styles.content}>
           <View style={styles.bagIconContainer}>
             <View style={styles.bagIconCircle}>
-              <BagIconSvg size={35} color="#000000" />
+              <BagIconSvg size={getResponsiveValue(35, 40, 45)} color="#000000" />
             </View>
-          </View>          <View style={styles.textContainer}>
+          </View>
+          <View style={styles.textContainer}>
             <Text style={styles.emptyText}>
               You have {bagItemsCount} item{bagItemsCount > 1 ? 's' : ''} in your <Text style={styles.boldText}>bag</Text>!
             </Text>
@@ -54,7 +64,6 @@ const BagEmptyScreen = React.memo(({ navigation }) => {
           </View>
         </View>
 
-        {/* View Bag Button */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity 
             style={styles.viewBagButton}
@@ -73,18 +82,16 @@ const BagEmptyScreen = React.memo(({ navigation }) => {
   // Empty state - no items in bag
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft} />
         <Text style={styles.headerTitle} accessibilityRole="header">Bag</Text>
         <View style={styles.headerRight} />
       </View>
 
-      {/* Content - Empty State */}
       <View style={styles.content}>
         <View style={styles.bagIconContainer}>
           <View style={styles.bagIconCircle}>
-            <BagIconSvg size={27} color="#000000" />
+            <BagIconSvg size={getResponsiveValue(27, 32, 37)} color="#000000" />
           </View>
         </View>
 
@@ -98,7 +105,6 @@ const BagEmptyScreen = React.memo(({ navigation }) => {
         </View>
       </View>
 
-      {/* Shop Now Button */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity 
           style={styles.shopNowButton}
@@ -120,21 +126,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   
-  // Header Styles
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingHorizontal: getResponsiveSpacing(16),
+    paddingTop: getResponsiveSpacing(16),
+    paddingBottom: getResponsiveSpacing(12),
     backgroundColor: '#FFFFFF',
   },
   headerLeft: {
-    width: 68,
+    width: getResponsiveValue(68, 76, 84),
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.4,
@@ -143,27 +148,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerRight: {
-    width: 68,
+    width: getResponsiveValue(68, 76, 84),
   },
 
-  // Content Styles
   content: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
-    marginTop: -100, // Adjust to center the content better
+    paddingHorizontal: getResponsiveSpacing(24),
+    marginTop: getResponsiveValue(-100, -80, -60),
   },
   
   bagIconContainer: {
-    marginBottom: 32,
+    marginBottom: getResponsiveSpacing(32),
     alignItems: 'center',
   },
   
   bagIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: getResponsiveValue(60, 70, 80),
+    height: getResponsiveValue(60, 70, 80),
+    borderRadius: getResponsiveValue(30, 35, 40),
     borderWidth: 2,
     borderColor: '#000000',
     alignItems: 'center',
@@ -173,18 +177,18 @@ const styles = StyleSheet.create({
 
   textContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: getResponsiveSpacing(40),
   },
 
   emptyText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '400',
     color: '#000000',
     textAlign: 'center',
     letterSpacing: -0.384,
     fontFamily: 'Montserrat-Regular',
-    lineHeight: 24,
-    marginBottom: 8,
+    lineHeight: getResponsiveFontSize(24),
+    marginBottom: getResponsiveSpacing(8),
   },
 
   boldText: {
@@ -193,26 +197,25 @@ const styles = StyleSheet.create({
   },
 
   descriptionText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '400',
     color: '#000000',
     textAlign: 'center',
     letterSpacing: -0.384,
     fontFamily: 'Montserrat-Regular',
-    lineHeight: 24,
+    lineHeight: getResponsiveFontSize(24),
   },
 
-  // Button Styles
   buttonContainer: {
-    paddingHorizontal: 24,
-    paddingBottom: 34,
+    paddingHorizontal: getResponsiveSpacing(24),
+    paddingBottom: getResponsiveSpacing(34),
   },
 
   shopNowButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    paddingVertical: 16,
-    paddingHorizontal: 51,
+    paddingVertical: getResponsiveSpacing(16),
+    paddingHorizontal: getResponsiveSpacing(51),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -220,21 +223,20 @@ const styles = StyleSheet.create({
   viewBagButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    paddingVertical: 16,
-    paddingHorizontal: 51,
+    paddingVertical: getResponsiveSpacing(16),
+    paddingHorizontal: getResponsiveSpacing(51),
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   buttonText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#FFFFFF',
     fontFamily: 'Montserrat-Medium',
-    lineHeight: 19.2,
+    lineHeight: getResponsiveFontSize(19.2),
   },
 
-  // Bottom Navigation Bar Styles
   bottomNavContainer: {
     position: 'absolute',
     bottom: 0,

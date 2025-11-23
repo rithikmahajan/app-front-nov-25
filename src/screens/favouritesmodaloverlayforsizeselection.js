@@ -17,6 +17,7 @@ import { Colors, FontFamilies } from '../constants';
 import apiService from '../services/apiService';
 import { useBag } from '../contexts/BagContext';
 import { useFavorites } from '../contexts/FavoritesContext';
+import { wp, hp, fs, isTablet } from '../utils/responsive';
 
 const FavouritesModalOverlayForSizeSelection = ({ route, navigation }) => {
   const { product } = route.params || {};
@@ -638,70 +639,68 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    paddingBottom: 34,
+    paddingBottom: hp(4.1),
     maxHeight: Dimensions.get('window').height * 0.9,
   },
   drawerHandleContainer: {
-    paddingVertical: 12,
+    paddingVertical: hp(1.5),
     alignItems: 'center',
     justifyContent: 'center',
   },
   drawerHandle: {
-    width: 64,
-    height: 6,
+    width: wp(17.1),
+    height: hp(0.7),
     backgroundColor: '#E6E6E6',
     borderRadius: 40,
   },
-  // Loading and Error States
   loadingContainer: {
-    paddingVertical: 40,
+    paddingVertical: hp(4.9),
     alignItems: 'center',
     justifyContent: 'center',
   },
   loadingText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : 16),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
-    marginTop: 12,
+    marginTop: hp(1.5),
   },
   errorContainer: {
-    paddingVertical: 40,
-    paddingHorizontal: 24,
+    paddingVertical: hp(4.9),
+    paddingHorizontal: wp(6.4),
     alignItems: 'center',
   },
   errorText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : 16),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: '#FF6B6B',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: hp(1.9),
   },
   retryButton: {
     backgroundColor: Colors.black,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: wp(5.3),
+    paddingVertical: hp(1.2),
     borderRadius: 6,
   },
   retryButtonText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.white,
   },
-  // Product Section
   productSection: {
     flexDirection: 'row',
-    paddingHorizontal: 24,
-    paddingVertical: 24,
+    paddingHorizontal: wp(6.4),
+    paddingVertical: hp(2.9),
     borderBottomWidth: 1,
     borderBottomColor: '#E4E4E4',
-    gap: 16,
+    gap: wp(4.3),
   },
   productImageContainer: {
-    width: 154,
-    height: 154,
+    width: wp(isTablet ? 25 : 41.1),
+    height: wp(isTablet ? 25 : 41.1),
   },
   productImage: {
     width: '100%',
@@ -719,61 +718,60 @@ const styles = StyleSheet.create({
   productInfo: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingVertical: 4,
+    paddingVertical: hp(0.5),
   },
   productName: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : 16),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
-    lineHeight: 20,
+    lineHeight: fs(isTablet ? 22 : 20),
     letterSpacing: -0.16,
-    marginBottom: 4,
+    marginBottom: hp(0.5),
   },
   productCategory: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: '#767676',
-    lineHeight: 16.8,
+    lineHeight: fs(isTablet ? 19 : 16.8),
     letterSpacing: -0.14,
   },
   productPrice: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : 16),
     fontWeight: '600',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
-    lineHeight: 20,
+    lineHeight: fs(isTablet ? 22 : 20),
     letterSpacing: -0.16,
     marginTop: 'auto',
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: fs(isTablet ? 20 : 18),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
     textAlign: 'center',
-    marginTop: 24,
-    marginBottom: 16,
-    lineHeight: 22,
+    marginTop: hp(2.9),
+    marginBottom: hp(1.9),
+    lineHeight: fs(isTablet ? 24 : 22),
   },
-  // Quantity Options
   quantityOptionsScrollView: {
-    marginHorizontal: 16,
-    marginBottom: 16,
+    marginHorizontal: wp(4.3),
+    marginBottom: hp(1.9),
   },
   quantityOptionsContainer: {
     flexDirection: 'row',
-    gap: 10,
-    paddingHorizontal: 8,
+    gap: wp(2.7),
+    paddingHorizontal: wp(2.1),
   },
   quantityOption: {
     borderWidth: 1,
     borderColor: '#E4E4E4',
     borderRadius: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    minWidth: 50,
+    paddingHorizontal: wp(3.2),
+    paddingVertical: hp(1.5),
+    minWidth: wp(13.3),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -786,7 +784,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF5F5',
   },
   quantityOptionText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
@@ -797,24 +795,22 @@ const styles = StyleSheet.create({
   quantityOptionTextRemove: {
     color: '#FF6B6B',
   },
-  
-  // Size Options
   sizeOptionsScrollView: {
-    marginHorizontal: 16,
-    marginBottom: 24,
+    marginHorizontal: wp(4.3),
+    marginBottom: hp(2.9),
   },
   sizeOptionsContainer: {
     flexDirection: 'row',
-    gap: 10,
-    paddingHorizontal: 8,
+    gap: wp(2.7),
+    paddingHorizontal: wp(2.1),
   },
   sizeOption: {
     borderWidth: 1,
     borderColor: '#E4E4E4',
     borderRadius: 4,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    minWidth: 50,
+    paddingHorizontal: wp(4.3),
+    paddingVertical: hp(1.5),
+    minWidth: wp(13.3),
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -829,7 +825,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   sizeOptionText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
@@ -838,42 +834,42 @@ const styles = StyleSheet.create({
     color: Colors.white,
   },
   lowStockIndicator: {
-    fontSize: 9,
+    fontSize: fs(isTablet ? 11 : 9),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: '#FF9500',
-    marginTop: 2,
+    marginTop: hp(0.2),
   },
   outOfStockIndicator: {
-    fontSize: 9,
+    fontSize: fs(isTablet ? 11 : 9),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: '#FF6B6B',
-    marginTop: 2,
+    marginTop: hp(0.2),
   },
   noSizesContainer: {
-    paddingVertical: 40,
-    paddingHorizontal: 24,
+    paddingVertical: hp(4.9),
+    paddingHorizontal: wp(6.4),
     alignItems: 'center',
   },
   noSizesText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : 16),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: '#767676',
     textAlign: 'center',
   },
   noStockContainer: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingVertical: hp(1.5),
+    paddingHorizontal: wp(6.4),
     alignItems: 'center',
     backgroundColor: '#FFF5F5',
-    marginHorizontal: 16,
-    marginBottom: 16,
+    marginHorizontal: wp(4.3),
+    marginBottom: hp(1.9),
     borderRadius: 8,
   },
   noStockText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: '#FF6B6B',
@@ -882,22 +878,19 @@ const styles = StyleSheet.create({
   sizeOptionTextDisabled: {
     color: '#BABABA',
   },
-  // Size Chart Section
   sizeChartHeader: {
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: hp(2.4),
     borderBottomWidth: 1,
     borderBottomColor: '#E4E4E4',
   },
   sizeChartTitle: {
-    fontSize: 18,
+    fontSize: fs(isTablet ? 20 : 18),
     fontWeight: '600',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
     letterSpacing: -0.18,
   },
-  
-  // Tab Navigation
   tabNavigation: {
     flexDirection: 'row',
     backgroundColor: Colors.white,
@@ -906,7 +899,7 @@ const styles = StyleSheet.create({
   },
   tab: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: hp(1.9),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -915,7 +908,7 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.black,
   },
   tabText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: '#767676',
@@ -924,25 +917,21 @@ const styles = StyleSheet.create({
     color: Colors.black,
     fontWeight: '600',
   },
-  
-  // Tab Content
   tabContent: {
     flex: 1,
   },
   sizeChartContent: {
-    padding: 20,
+    padding: wp(5.3),
   },
-  
-  // Unit Toggle
   unitToggleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
-    gap: 12,
+    marginBottom: hp(2.4),
+    gap: wp(3.2),
   },
   selectSizeText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
@@ -955,15 +944,15 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   unitButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: wp(4.3),
+    paddingVertical: hp(1),
     backgroundColor: Colors.white,
   },
   unitButtonActive: {
     backgroundColor: Colors.black,
   },
   unitText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
@@ -971,8 +960,6 @@ const styles = StyleSheet.create({
   unitTextActive: {
     color: Colors.white,
   },
-  
-  // Size Chart Table
   tableContainer: {
     borderWidth: 1,
     borderColor: '#E4E4E4',
@@ -982,12 +969,12 @@ const styles = StyleSheet.create({
   tableHeader: {
     flexDirection: 'row',
     backgroundColor: '#F8F8F8',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+    paddingVertical: hp(1.5),
+    paddingHorizontal: wp(2.1),
   },
   tableHeaderText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : 12),
     fontWeight: '600',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
@@ -995,8 +982,8 @@ const styles = StyleSheet.create({
   },
   tableRow: {
     flexDirection: 'row',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+    paddingVertical: hp(1.5),
+    paddingHorizontal: wp(2.1),
     borderBottomWidth: 1,
     borderBottomColor: '#E4E4E4',
   },
@@ -1005,96 +992,90 @@ const styles = StyleSheet.create({
   },
   tableCellText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : 12),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
     textAlign: 'center',
   },
-  
-  // How To Measure Content
   howToMeasureContent: {
-    padding: 20,
+    padding: wp(5.3),
   },
   measurementImageContainer: {
     alignItems: 'center',
   },
   measurementImage: {
     width: '100%',
-    height: 250,
+    height: hp(30.5),
     borderRadius: 8,
     backgroundColor: '#F8F8F8',
-    marginBottom: 16,
+    marginBottom: hp(1.9),
   },
   measurementInstructions: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: '#767676',
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: fs(isTablet ? 22 : 20),
   },
   noImageContainer: {
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: hp(4.9),
   },
   noImageText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
     color: '#767676',
     textAlign: 'center',
   },
-  
-  // Size Chart Button
   sizeChartButton: {
     alignSelf: 'center',
-    marginTop: 8,
-    marginBottom: 24,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    marginTop: hp(1),
+    marginBottom: hp(2.9),
+    paddingVertical: hp(1),
+    paddingHorizontal: wp(4.3),
   },
   sizeChartButtonText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
     textDecorationLine: 'underline',
-    lineHeight: 16.8,
+    lineHeight: fs(isTablet ? 19 : 16.8),
   },
-  
-  // Fallback Size Chart Link
   sizeChartContainer: {
     alignSelf: 'center',
-    marginBottom: 24,
+    marginBottom: hp(2.9),
   },
   sizeChartText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : 14),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
     textDecorationLine: 'underline',
-    lineHeight: 16.8,
+    lineHeight: fs(isTablet ? 19 : 16.8),
   },
   addToBagButton: {
     backgroundColor: Colors.black,
-    borderRadius: 100,
-    marginHorizontal: 22,
-    paddingVertical: 16,
+    borderRadius: wp(26.7),
+    marginHorizontal: wp(5.9),
+    paddingVertical: hp(1.9),
     alignItems: 'center',
     justifyContent: 'center',
-    height: 60.283,
+    height: hp(7.3),
   },
   addToBagButtonDisabled: {
     backgroundColor: '#E4E4E4',
     opacity: 0.6,
   },
   addToBagButtonText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : 16),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.white,
-    lineHeight: 19.2,
+    lineHeight: fs(isTablet ? 22 : 19.2),
   },
   addToBagButtonTextDisabled: {
     color: '#999999',

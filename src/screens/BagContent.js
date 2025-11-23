@@ -13,7 +13,13 @@ import { GlobalCartIcon } from '../assets/icons';
 import { 
   getResponsiveFontSize, 
   getResponsiveSpacing, 
-  getResponsiveValue 
+  getResponsiveValue,
+  wp,
+  hp,
+  fs,
+  device,
+  isTablet,
+  isSmallDevice
 } from '../utils/responsive';
 
 const BagContent = React.memo(({ navigation }) => {
@@ -38,7 +44,7 @@ const BagContent = React.memo(({ navigation }) => {
   const renderBagItem = useCallback((item, index) => (
     <View key={`${item.id}-${item.size}`} style={styles.bagItem}>
       <View style={styles.productImagePlaceholder}>
-        <GlobalCartIcon size={24} color="#CCCCCC" />
+        <GlobalCartIcon size={getResponsiveValue(24, 28, 32)} color="#CCCCCC" />
       </View>
       
       <View style={styles.productDetails}>
@@ -124,7 +130,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   
-  // Header Styles
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -135,7 +140,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   backButton: {
-    width: 68,
+    width: getResponsiveValue(68, 76, 84),
     alignItems: 'flex-start',
   },
   headerTitle: {
@@ -148,10 +153,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerRight: {
-    width: 68,
+    width: getResponsiveValue(68, 76, 84),
   },
 
-  // Content Styles
   content: {
     flex: 1,
     paddingHorizontal: getResponsiveSpacing(16),
@@ -165,8 +169,8 @@ const styles = StyleSheet.create({
   },
 
   productImagePlaceholder: {
-    width: 80,
-    height: 80,
+    width: getResponsiveValue(80, 96, 112),
+    height: getResponsiveValue(80, 96, 112),
     backgroundColor: '#F8F8F8',
     borderRadius: getResponsiveSpacing(8),
     alignItems: 'center',
@@ -215,10 +219,10 @@ const styles = StyleSheet.create({
   },
 
   quantityButton: {
-    width: 32,
-    height: 32,
+    width: getResponsiveValue(32, 36, 40),
+    height: getResponsiveValue(32, 36, 40),
     backgroundColor: '#F0F0F0',
-    borderRadius: getResponsiveSpacing(16),
+    borderRadius: getResponsiveValue(16, 18, 20),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -234,7 +238,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#000000',
     marginHorizontal: getResponsiveSpacing(16),
-    minWidth: 20,
+    minWidth: getResponsiveValue(20, 24, 28),
     textAlign: 'center',
   },
 
@@ -250,7 +254,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Regular',
   },
 
-  // Footer Styles
   footer: {
     paddingHorizontal: getResponsiveSpacing(16),
     paddingVertical: getResponsiveSpacing(20),

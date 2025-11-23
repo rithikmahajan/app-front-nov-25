@@ -18,6 +18,11 @@ import {
 import { useAddress } from '../contexts/AddressContext';
 import GlobalBackButton from '../components/GlobalBackButton';
 import ChevronDownIcon from '../assets/icons/ChevronDownIcon';
+import {
+  getResponsiveFontSize,
+  getResponsiveSpacing,
+  getResponsiveValue,
+} from '../utils/responsive';
 
 // Checkbox Component
 const Checkbox = ({ checked, onPress }) => (
@@ -641,54 +646,58 @@ const DeliveryAddressesSettings = ({ navigation }) => {
   };
 
   const renderListView = () => (
-    <Animated.View 
-      style={[
-        styles.content,
-        {
-          transform: [{ translateX: slideAnim }]
-        }
-      ]}
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <GlobalBackButton 
-          onPress={handleBack}
-          style={styles.backButton}
-        />
-        <Text style={styles.headerTitle}>Saved Delivery Address</Text>
-        <View style={styles.headerSpacer} />
+    <>
+      <Animated.View 
+        style={[
+          styles.content,
+          {
+            transform: [{ translateX: slideAnim }]
+          }
+        ]}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <GlobalBackButton 
+            onPress={handleBack}
+            style={styles.backButton}
+          />
+          <Text style={styles.headerTitle}>Saved Delivery Address</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+
+        {/* Loading Indicator */}
+        {loading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#000000" />
+            <Text style={styles.loadingText}>Loading addresses...</Text>
+          </View>
+        )}
+
+        {/* Address List */}
+        {!loading && addresses.length === 0 && (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No saved addresses yet</Text>
+            <Text style={styles.emptySubtext}>Add your first delivery address</Text>
+          </View>
+        )}
+
+        {!loading && addresses.map((address, index) => (
+          <SwipeableAddressCard
+            key={address._id || index}
+            address={address}
+            onEdit={handleEdit}
+            onDelete={() => handleDeleteAddress(address._id)}
+          />
+        ))}
+      </Animated.View>
+
+      {/* Add Address Button - Fixed at Bottom */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.addAddressButton} onPress={handleAddAddress}>
+          <Text style={styles.addAddressButtonText}>Add Address</Text>
+        </TouchableOpacity>
       </View>
-
-      {/* Loading Indicator */}
-      {loading && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#000000" />
-          <Text style={styles.loadingText}>Loading addresses...</Text>
-        </View>
-      )}
-
-      {/* Address List */}
-      {!loading && addresses.length === 0 && (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No saved addresses yet</Text>
-          <Text style={styles.emptySubtext}>Add your first delivery address</Text>
-        </View>
-      )}
-
-      {!loading && addresses.map((address, index) => (
-        <SwipeableAddressCard
-          key={address._id || index}
-          address={address}
-          onEdit={handleEdit}
-          onDelete={() => handleDeleteAddress(address._id)}
-        />
-      ))}
-
-      {/* Add Address Button */}
-      <TouchableOpacity style={styles.addAddressButton} onPress={handleAddAddress}>
-        <Text style={styles.addAddressButtonText}>Add Address</Text>
-      </TouchableOpacity>
-    </Animated.View>
+    </>
   );
 
   const renderFormView = () => (
@@ -964,34 +973,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 20,
+    paddingHorizontal: getResponsiveSpacing(16),
+    paddingTop: getResponsiveSpacing(12),
+    paddingBottom: getResponsiveSpacing(20),
   },
   backButton: {
-    padding: 8,
-    marginLeft: -8,
+    padding: getResponsiveSpacing(8),
+    marginLeft: getResponsiveSpacing(-8),
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: getResponsiveFontSize(20),
     fontFamily: 'Montserrat-Medium',
     letterSpacing: -0.5,
     color: '#000000',
   },
   headerSpacer: {
-    width: 40,
+    width: getResponsiveValue(40, 45, 50),
   },
 
   // Back Arrow Icon - PNG Image
   backArrowIcon: {
-    width: 24,
-    height: 24,
+    width: getResponsiveValue(24, 27, 30),
+    height: getResponsiveValue(24, 27, 30),
   },
 
   // Swipeable Container Styles
   swipeableContainer: {
-    marginHorizontal: 20,
-    marginTop: 10,
+    marginHorizontal: getResponsiveSpacing(20),
+    marginTop: getResponsiveSpacing(10),
     position: 'relative',
     overflow: 'hidden',
   },
@@ -1004,15 +1013,15 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 0,
-    width: 120,
+    width: getResponsiveValue(120, 135, 150),
     justifyContent: 'center',
     alignItems: 'flex-end',
-    paddingRight: 30,
+    paddingRight: getResponsiveSpacing(30),
     zIndex: 1,
   },
   deleteIndicator: {
-    width: 4,
-    height: 60,
+    width: getResponsiveValue(4, 5, 6),
+    height: getResponsiveValue(60, 68, 75),
     backgroundColor: '#FF3B30',
     borderRadius: 2,
   },
@@ -1022,50 +1031,60 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingVertical: getResponsiveSpacing(20),
     backgroundColor: '#FFFFFF',
   },
   addressInfo: {
     flex: 1,
   },
   addressName: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '600',
     color: '#000000',
-    marginBottom: 4,
+    marginBottom: getResponsiveSpacing(4),
   },
   addressLine: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     color: '#666666',
-    marginBottom: 2,
+    marginBottom: getResponsiveSpacing(2),
   },
   addressEmail: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     color: '#666666',
-    marginTop: 4,
+    marginTop: getResponsiveSpacing(4),
   },
   editButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: getResponsiveSpacing(16),
+    paddingVertical: getResponsiveSpacing(8),
   },
   editButtonText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
   },
 
   // Add Address Button
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingTop: getResponsiveSpacing(16),
+    paddingBottom: getResponsiveSpacing(34),
+    borderTopWidth: 0.5,
+    borderTopColor: '#E5E5E5',
+  },
   addAddressButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    paddingVertical: 16,
-    marginHorizontal: 20,
-    marginTop: 30,
+    paddingVertical: getResponsiveSpacing(16),
     alignItems: 'center',
   },
   addAddressButtonText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontFamily: 'Montserrat-Medium',
     letterSpacing: -0.35,
     color: '#FFFFFF',
@@ -1074,24 +1093,24 @@ const styles = StyleSheet.create({
   // Form Styles
   formContainer: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 20,
+    paddingHorizontal: getResponsiveSpacing(24),
+    paddingTop: getResponsiveSpacing(20),
   },
   inputContainer: {
-    marginBottom: 12,
+    marginBottom: getResponsiveSpacing(12),
   },
   textInput: {
     borderWidth: 1,
     borderColor: '#979797',
     borderRadius: 12,
-    paddingHorizontal: 19,
-    paddingVertical: 15,
-    fontSize: 14,
+    paddingHorizontal: getResponsiveSpacing(19),
+    paddingVertical: getResponsiveSpacing(15),
+    fontSize: getResponsiveFontSize(14),
     fontFamily: 'Montserrat-Regular',
     letterSpacing: -0.35,
     color: '#000000',
     backgroundColor: '#FFFFFF',
-    height: 47,
+    height: getResponsiveValue(47, 54, 60),
   },
 
   // Dropdown Styles
@@ -1102,52 +1121,52 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#979797',
     borderRadius: 12,
-    paddingHorizontal: 19,
-    paddingVertical: 10,
+    paddingHorizontal: getResponsiveSpacing(19),
+    paddingVertical: getResponsiveSpacing(10),
     backgroundColor: '#FFFFFF',
-    height: 47,
+    height: getResponsiveValue(47, 54, 60),
   },
   dropdownContent: {
     flex: 1,
   },
   dropdownLabel: {
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     fontFamily: 'Montserrat-Regular',
     letterSpacing: -0.3,
     color: '#000000',
-    marginBottom: 2,
+    marginBottom: getResponsiveSpacing(2),
   },
   dropdownValue: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontFamily: 'Montserrat-Medium',
     letterSpacing: -0.35,
     color: '#000000',
   },
   dropdownText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     color: '#000000',
   },
   dropdownArrow: {
-    width: 12,
-    height: 12,
+    width: getResponsiveValue(12, 14, 16),
+    height: getResponsiveValue(12, 14, 16),
     justifyContent: 'center',
     alignItems: 'center',
   },
   dropdownLine1: {
-    width: 8,
+    width: getResponsiveValue(8, 9, 10),
     height: 2,
     backgroundColor: '#666666',
     position: 'absolute',
     transform: [{ rotate: '45deg' }],
-    top: 3,
+    top: getResponsiveValue(3, 4, 5),
   },
   dropdownLine2: {
-    width: 8,
+    width: getResponsiveValue(8, 9, 10),
     height: 2,
     backgroundColor: '#666666',
     position: 'absolute',
     transform: [{ rotate: '-45deg' }],
-    top: 3,
+    top: getResponsiveValue(3, 4, 5),
   },
 
   // Phone Input Styles
@@ -1157,45 +1176,45 @@ const styles = StyleSheet.create({
     borderColor: '#979797',
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
-    height: 47,
+    height: getResponsiveValue(47, 54, 60),
     overflow: 'hidden',
   },
   countryCodeContainer: {
-    paddingHorizontal: 19,
-    paddingVertical: 6,
+    paddingHorizontal: getResponsiveSpacing(19),
+    paddingVertical: getResponsiveSpacing(6),
     justifyContent: 'center',
   },
   phoneCodeContent: {
     flexDirection: 'column',
   },
   phoneLabel: {
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     fontFamily: 'Montserrat-Regular',
     letterSpacing: -0.3,
     color: '#000000',
-    marginBottom: 2,
+    marginBottom: getResponsiveSpacing(2),
   },
   phoneCodeRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   countryCodeText: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontFamily: 'Montserrat-Medium',
     letterSpacing: -0.35,
     color: '#000000',
-    marginLeft: 6,
-    marginRight: 6,
+    marginLeft: getResponsiveSpacing(6),
+    marginRight: getResponsiveSpacing(6),
   },
   phoneDivider: {
     width: 1,
     backgroundColor: '#979797',
-    marginVertical: 8,
+    marginVertical: getResponsiveSpacing(8),
   },
   phoneInput: {
     flex: 1,
-    paddingHorizontal: 19,
-    fontSize: 14,
+    paddingHorizontal: getResponsiveSpacing(19),
+    fontSize: getResponsiveFontSize(14),
     fontFamily: 'Montserrat-Regular',
     letterSpacing: -0.35,
     color: '#000000',
@@ -1203,8 +1222,8 @@ const styles = StyleSheet.create({
 
   // Flag Styles
   flagContainer: {
-    width: 20,
-    height: 14,
+    width: getResponsiveValue(20, 22, 24),
+    height: getResponsiveValue(14, 16, 18),
     flexDirection: 'column',
   },
   flagOrange: {
@@ -1227,15 +1246,15 @@ const styles = StyleSheet.create({
   checkboxRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 32,
+    marginTop: getResponsiveSpacing(8),
+    marginBottom: getResponsiveSpacing(32),
   },
   checkboxContainer: {
-    marginRight: 12,
+    marginRight: getResponsiveSpacing(12),
   },
   checkbox: {
-    width: 20,
-    height: 20,
+    width: getResponsiveValue(20, 22, 24),
+    height: getResponsiveValue(20, 22, 24),
     borderWidth: 2,
     borderColor: '#CCCCCC',
     borderRadius: 4,
@@ -1248,15 +1267,15 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
   },
   checkmark: {
-    width: 6,
-    height: 10,
+    width: getResponsiveValue(6, 7, 8),
+    height: getResponsiveValue(10, 11, 12),
     borderRightWidth: 2,
     borderBottomWidth: 2,
     borderColor: '#FFFFFF',
     transform: [{ rotate: '45deg' }],
   },
   checkboxLabel: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontFamily: 'Montserrat-Regular',
     letterSpacing: -0.35,
     color: '#666666',
@@ -1266,12 +1285,12 @@ const styles = StyleSheet.create({
   updateButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    paddingVertical: 16,
+    paddingVertical: getResponsiveSpacing(16),
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: getResponsiveSpacing(40),
   },
   updateButtonText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontFamily: 'Montserrat-Medium',
     letterSpacing: -0.35,
     color: '#FFFFFF',
@@ -1282,28 +1301,28 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: getResponsiveSpacing(60),
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
+    marginTop: getResponsiveSpacing(16),
+    fontSize: getResponsiveFontSize(16),
     color: '#666666',
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 40,
+    paddingVertical: getResponsiveSpacing(60),
+    paddingHorizontal: getResponsiveSpacing(40),
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: getResponsiveFontSize(18),
     fontWeight: '600',
     color: '#000000',
-    marginBottom: 8,
+    marginBottom: getResponsiveSpacing(8),
   },
   emptySubtext: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     color: '#666666',
     textAlign: 'center',
   },
@@ -1316,14 +1335,14 @@ const styles = StyleSheet.create({
   // Default Badge
   defaultBadge: {
     backgroundColor: '#000000',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingHorizontal: getResponsiveSpacing(12),
+    paddingVertical: getResponsiveSpacing(4),
     borderRadius: 12,
-    marginTop: 8,
+    marginTop: getResponsiveSpacing(8),
     alignSelf: 'flex-start',
   },
   defaultBadgeText: {
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     fontWeight: '600',
     color: '#FFFFFF',
   },
@@ -1334,49 +1353,49 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   swipeIndicator: {
-    width: 36,
-    height: 5,
+    width: getResponsiveValue(36, 40, 44),
+    height: getResponsiveValue(5, 6, 7),
     backgroundColor: '#C7C7CC',
     borderRadius: 3,
     alignSelf: 'center',
-    marginTop: 12,
-    marginBottom: 8,
+    marginTop: getResponsiveSpacing(12),
+    marginBottom: getResponsiveSpacing(8),
   },
   selectorModalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingVertical: getResponsiveSpacing(16),
     borderBottomWidth: 0.5,
     borderBottomColor: '#E5E5E5',
   },
   selectorModalTitle: {
-    fontSize: 17,
+    fontSize: getResponsiveFontSize(17),
     fontFamily: 'Montserrat-Medium',
     letterSpacing: -0.41,
     color: '#000000',
   },
   selectorModalCloseButton: {
-    padding: 4,
+    padding: getResponsiveSpacing(4),
   },
   selectorModalCloseText: {
-    fontSize: 17,
+    fontSize: getResponsiveFontSize(17),
     fontFamily: 'Montserrat-Regular',
     letterSpacing: -0.41,
     color: '#007AFF',
   },
   selectorModalList: {
-    paddingVertical: 8,
+    paddingVertical: getResponsiveSpacing(8),
   },
   selectorItem: {
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingVertical: getResponsiveSpacing(16),
+    paddingHorizontal: getResponsiveSpacing(20),
     borderBottomWidth: 0.5,
     borderBottomColor: '#E5E5E5',
   },
   selectorItemText: {
-    fontSize: 17,
+    fontSize: getResponsiveFontSize(17),
     fontFamily: 'Montserrat-Regular',
     letterSpacing: -0.41,
     color: '#000000',

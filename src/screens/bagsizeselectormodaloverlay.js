@@ -5,13 +5,24 @@ import {
   Modal,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
   PanResponder,
   Animated,
 } from 'react-native';
 import BagSizeSelectorSizeChart from './bagsizeselectorsizechart';
+import {
+  getResponsiveFontSize,
+  getResponsiveSpacing,
+  getResponsiveValue,
+  wp,
+  hp,
+  fs,
+  device,
+  isTablet,
+  isSmallDevice,
+  getScreenDimensions,
+} from '../utils/responsive';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = getScreenDimensions();
 
 const BagSizeSelectorModalOverlay = ({ 
   visible, 
@@ -247,19 +258,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-    minHeight: 320,
+    paddingHorizontal: getResponsiveSpacing(24),
+    paddingBottom: getResponsiveSpacing(40),
+    minHeight: getResponsiveValue(320, 360, 400),
   },
   dragHandleContainer: {
-    paddingVertical: 15,
-    paddingHorizontal: 20,
+    paddingVertical: getResponsiveSpacing(15),
+    paddingHorizontal: getResponsiveSpacing(20),
     alignItems: 'center',
     backgroundColor: 'transparent',
   },
   dragHandle: {
-    width: 40,
-    height: 4,
+    width: getResponsiveValue(40, 45, 50),
+    height: getResponsiveValue(4, 5, 6),
     backgroundColor: '#C7C7CC',
     borderRadius: 2,
   },
@@ -269,14 +280,18 @@ const styles = StyleSheet.create({
   sizeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 24,
-    marginBottom: 40,
+    gap: getResponsiveSpacing(24),
+    marginBottom: getResponsiveSpacing(40),
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: getResponsiveSpacing(20),
   },
   sizeOption: {
-    width: (screenWidth - 48 - 72) / 3, // 3 columns with gaps
-    height: 60,
+    width: getResponsiveValue(
+      (screenWidth - 48 - 72) / 3,
+      (screenWidth - 60 - 96) / 3,
+      (screenWidth - 80 - 120) / 3
+    ),
+    height: getResponsiveValue(60, 70, 80),
     backgroundColor: 'transparent',
     borderRadius: 0,
     justifyContent: 'center',
@@ -290,7 +305,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#000000',
   },
   sizeText: {
-    fontSize: 20,
+    fontSize: getResponsiveFontSize(20),
     fontWeight: '400',
     color: '#999999',
     letterSpacing: -0.4,
@@ -301,10 +316,10 @@ const styles = StyleSheet.create({
   },
   sizeChartContainer: {
     alignSelf: 'flex-end',
-    marginBottom: 32,
+    marginBottom: getResponsiveSpacing(32),
   },
   sizeChartText: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontWeight: '400',
     color: '#000000',
     textDecorationLine: 'underline',
@@ -313,29 +328,29 @@ const styles = StyleSheet.create({
   doneButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    paddingVertical: 16,
-    paddingHorizontal: 51,
+    paddingVertical: getResponsiveSpacing(16),
+    paddingHorizontal: getResponsiveSpacing(51),
     alignItems: 'center',
     justifyContent: 'center',
   },
   doneButtonText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#FFFFFF',
-    lineHeight: 19.2,
+    lineHeight: getResponsiveValue(19.2, 22, 24),
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: getResponsiveFontSize(18),
     fontWeight: '600',
     color: '#000000',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: getResponsiveSpacing(20),
   },
   sizeChartContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: getResponsiveSpacing(20),
   },
 });
 

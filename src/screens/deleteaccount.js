@@ -10,6 +10,11 @@ import {
 } from 'react-native';
 import { Colors } from '../constants/colors';
 import { FontSizes, FontWeights, Spacing, BorderRadius } from '../constants/styles';
+import {
+  getResponsiveFontSize,
+  getResponsiveSpacing,
+  getResponsiveValue,
+} from '../utils/responsive';
 
 const DeleteAccount = ({ navigation }) => {
   const [isFirstCheckboxChecked, setIsFirstCheckboxChecked] = useState(false);
@@ -116,43 +121,43 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
+    paddingHorizontal: getResponsiveSpacing(Spacing.lg),
+    paddingVertical: getResponsiveSpacing(Spacing.md),
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderLight,
   },
   backButton: {
-    marginRight: Spacing.lg,
-    padding: Spacing.sm,
+    marginRight: getResponsiveSpacing(Spacing.lg),
+    padding: getResponsiveSpacing(Spacing.sm),
   },
   backButtonText: {
-    fontSize: 24,
+    fontSize: getResponsiveFontSize(24),
     color: Colors.textPrimary,
     fontWeight: FontWeights.medium,
   },
   headerTitle: {
-    fontSize: FontSizes.xl,
+    fontSize: getResponsiveFontSize(FontSizes.xl),
     fontWeight: FontWeights.medium,
     color: Colors.textPrimary,
   },
   content: {
     flex: 1,
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.xxl,
+    paddingHorizontal: getResponsiveSpacing(Spacing.xl),
+    paddingVertical: getResponsiveSpacing(Spacing.xxl),
   },
   guidelineSection: {
-    marginBottom: Spacing.xxxl,
+    marginBottom: getResponsiveSpacing(Spacing.xxxl),
   },
   guidelineTitle: {
-    fontSize: FontSizes.xl,
+    fontSize: getResponsiveFontSize(FontSizes.xl),
     fontWeight: FontWeights.semiBold,
     color: Colors.textPrimary,
-    marginBottom: Spacing.md,
+    marginBottom: getResponsiveSpacing(Spacing.md),
   },
   guidelineText: {
-    fontSize: FontSizes.md,
+    fontSize: getResponsiveFontSize(FontSizes.md),
     color: Colors.textPrimary,
-    lineHeight: 20,
+    lineHeight: getResponsiveValue(20, 23, 26),
   },
   termsLink: {
     textDecorationLine: 'underline',
@@ -160,20 +165,20 @@ const styles = StyleSheet.create({
     fontWeight: FontWeights.medium,
   },
   checkboxSection: {
-    marginBottom: Spacing.xxxl * 2,
+    marginBottom: getResponsiveSpacing(Spacing.xxxl * 2),
   },
   checkboxRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: Spacing.lg,
+    marginBottom: getResponsiveSpacing(Spacing.lg),
   },
   checkboxContainer: {
-    marginRight: Spacing.md,
-    marginTop: 2,
+    marginRight: getResponsiveSpacing(Spacing.md),
+    marginTop: getResponsiveSpacing(2),
   },
   checkbox: {
-    width: 20,
-    height: 20,
+    width: getResponsiveValue(20, 23, 26),
+    height: getResponsiveValue(20, 23, 26),
     borderWidth: 2,
     borderColor: Colors.textSecondary,
     backgroundColor: Colors.background,
@@ -186,29 +191,29 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     color: Colors.background,
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     fontWeight: FontWeights.bold,
   },
   checkboxText: {
     flex: 1,
-    fontSize: FontSizes.md,
+    fontSize: getResponsiveFontSize(FontSizes.md),
     color: Colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: getResponsiveValue(20, 23, 26),
   },
   continueButton: {
     backgroundColor: Colors.textPrimary,
-    paddingVertical: Spacing.lg,
+    paddingVertical: getResponsiveSpacing(Spacing.lg),
     borderRadius: BorderRadius.xxxl,
     alignItems: 'center',
     marginTop: 'auto',
-    marginBottom: Spacing.xxl,
+    marginBottom: getResponsiveSpacing(Spacing.xxl),
   },
   continueButtonDisabled: {
     backgroundColor: Colors.textTertiary,
   },
   continueButtonText: {
     color: Colors.background,
-    fontSize: FontSizes.lg,
+    fontSize: getResponsiveFontSize(FontSizes.lg),
     fontWeight: FontWeights.medium,
   },
   continueButtonTextDisabled: {

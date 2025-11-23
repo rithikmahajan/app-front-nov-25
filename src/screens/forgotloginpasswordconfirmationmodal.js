@@ -6,10 +6,10 @@ import {
   SafeAreaView,
   TouchableOpacity,
 } from 'react-native';
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 const ForgotLoginPasswordConfirmationModal = ({ navigation }) => {
   const handleContinue = () => {
-    // Navigate to login account email screen
     if (navigation) {
       navigation.navigate('LoginAccountEmail');
     }
@@ -19,18 +19,14 @@ const ForgotLoginPasswordConfirmationModal = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
-          {/* Handle bar */}
           <View style={styles.handleBar} />
           
-          {/* Content */}
           <View style={styles.contentContainer}>
-            {/* Title and description */}
             <View style={styles.textContainer}>
               <Text style={styles.title}>Your password has been changed</Text>
               <Text style={styles.description}>Welcome back! Discover now!</Text>
             </View>
             
-            {/* Continue button */}
             <TouchableOpacity 
               style={styles.continueButton}
               onPress={handleContinue}
@@ -55,11 +51,11 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 45,
-    borderTopRightRadius: 45,
-    paddingHorizontal: 30,
-    paddingTop: 16,
-    paddingBottom: 82,
+    borderTopLeftRadius: isTablet ? 50 : 45,
+    borderTopRightRadius: isTablet ? 50 : 45,
+    paddingHorizontal: wp(isTablet ? 10 : 8),
+    paddingTop: hp(isTablet ? 2.5 : 2),
+    paddingBottom: hp(isTablet ? 12 : 10),
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -70,54 +66,53 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   handleBar: {
-    width: 102,
-    height: 8,
+    width: wp(isTablet ? 30 : 27),
+    height: hp(isTablet ? 1.2 : 1),
     backgroundColor: '#E9E9E9',
     borderRadius: 5,
     alignSelf: 'center',
-    marginBottom: 80,
+    marginBottom: hp(isTablet ? 12 : 10),
   },
   contentContainer: {
     alignItems: 'center',
   },
   textContainer: {
     alignItems: 'center',
-    marginBottom: 80,
+    marginBottom: hp(isTablet ? 12 : 10),
   },
   title: {
-    fontSize: 17,
+    fontSize: fs(isTablet ? 22 : isSmallDevice ? 15 : 17),
     fontWeight: '400',
     color: '#332218',
     textAlign: 'center',
     letterSpacing: -0.41,
-    lineHeight: 22,
-    marginBottom: 15,
+    lineHeight: fs(isTablet ? 30 : isSmallDevice ? 20 : 22),
+    marginBottom: hp(isTablet ? 2.5 : 1.8),
     fontFamily: 'Montserrat-Regular',
   },
   description: {
-    fontSize: 12,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 11 : 12),
     fontWeight: '400',
     color: '#332218',
     opacity: 0.6,
     textAlign: 'center',
     letterSpacing: -0.12,
-    lineHeight: 'normal',
     fontFamily: 'Montserrat-Regular',
   },
   continueButton: {
     backgroundColor: '#000000',
     borderRadius: 30,
-    width: 315,
-    height: 60,
+    width: wp(isTablet ? 70 : 84),
+    height: hp(isTablet ? 8 : 7.5),
     justifyContent: 'center',
     alignItems: 'center',
   },
   continueButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: fs(isTablet ? 20 : isSmallDevice ? 14 : 16),
     fontWeight: 'bold',
     textAlign: 'center',
-    lineHeight: 22.5,
+    lineHeight: fs(isTablet ? 28 : 22.5),
     fontFamily: 'Montserrat-Bold',
   },
 });

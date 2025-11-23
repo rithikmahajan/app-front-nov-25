@@ -46,7 +46,13 @@ import {
 import { 
   getResponsiveValue, 
   getResponsiveFontSize, 
-  getResponsiveSpacing 
+  getResponsiveSpacing,
+  wp,
+  hp,
+  fs,
+  device,
+  isTablet,
+  isSmallDevice
 } from '../utils/responsive';
 
 // Helper function to get first image URL
@@ -199,11 +205,14 @@ const SwipeableBagItem = React.memo(({ item, index, onOpenQuantityModal, onOpenS
 
 // VoucherShape Component - SVG voucher with dashed border
 const VoucherShape = ({ children }) => {
+  const voucherWidth = getResponsiveValue(345, 400, 450);
+  const voucherHeight = getResponsiveValue(137, 150, 165);
+  
   return (
-    <View style={styles.voucherShapeContainer}>
+    <View style={[styles.voucherShapeContainer, { width: voucherWidth, height: voucherHeight }]}>
       <Svg 
-        width={345} 
-        height={137} 
+        width={voucherWidth} 
+        height={voucherHeight} 
         viewBox="0 0 345 137" 
         style={styles.voucherSvg}
       >
@@ -230,17 +239,31 @@ const VoucherShape = ({ children }) => {
 };
 
 // Lightning Icon Component
-const LightningIcon = () => (
-  <Svg width="18" height="27" viewBox="0 0 18 27" fill="none" style={{ marginHorizontal: 4 }}>
-    <Path 
-      d="M9.50586 21.6914L6.50586 26.9736L5.51465 24.6504L8.51562 19.3682L9.50586 21.6914ZM6.47754 8.43555L9.36035 12.2012L11.5215 8.58594H13.8506L8.16406 18.1094H7.7793L7.99805 18.3867L4.06543 24.9727H1.73535L8.22266 14.1094H9.7207L9.00977 13.207L7.59863 13.1885L3.93262 8.40137L6.47754 8.43555ZM13.4385 14.8955L10.4375 20.1777L9.44727 17.8545L12.4473 12.5723L13.4385 14.8955ZM17.3711 8.09961L14.3701 13.3818L13.3799 11.0586L16.3799 5.77637L17.3711 8.09961ZM16.9131 2.30371L14.0156 7.63965L12.9805 5.33496L15.8789 0L16.9131 2.30371ZM2.54492 2.61133L6.20996 7.39746L3.66602 7.36328L0 2.57617L2.54492 2.61133Z" 
-      fill="#848688"
-    />
-  </Svg>
-);
+const LightningIcon = () => {
+  const iconStyle = {
+    marginHorizontal: getResponsiveSpacing(4)
+  };
+  
+  return (
+    <Svg 
+      width={getResponsiveValue(18, 20, 22)} 
+      height={getResponsiveValue(27, 30, 33)} 
+      viewBox="0 0 18 27" 
+      fill="none" 
+      style={iconStyle}
+    >
+      <Path 
+        d="M9.50586 21.6914L6.50586 26.9736L5.51465 24.6504L8.51562 19.3682L9.50586 21.6914ZM6.47754 8.43555L9.36035 12.2012L11.5215 8.58594H13.8506L8.16406 18.1094H7.7793L7.99805 18.3867L4.06543 24.9727H1.73535L8.22266 14.1094H9.7207L9.00977 13.207L7.59863 13.1885L3.93262 8.40137L6.47754 8.43555ZM13.4385 14.8955L10.4375 20.1777L9.44727 17.8545L12.4473 12.5723L13.4385 14.8955ZM17.3711 8.09961L14.3701 13.3818L13.3799 11.0586L16.3799 5.77637L17.3711 8.09961ZM16.9131 2.30371L14.0156 7.63965L12.9805 5.33496L15.8789 0L16.9131 2.30371ZM2.54492 2.61133L6.20996 7.39746L3.66602 7.36328L0 2.57617L2.54492 2.61133Z" 
+        fill="#848688"
+      />
+    </Svg>
+  );
+};
 
 // PromoCodeItem Component - Individual promo code card
 const PromoCodeItem = React.memo(({ promoCode, onApplyPromo, onRemovePromo, isSelected }) => {
+  const dashedLineWidth = getResponsiveValue(316, 360, 400);
+  
   const handleApplyPress = useCallback(() => {
     onApplyPromo?.(promoCode);
   }, [onApplyPromo, promoCode]);
@@ -283,11 +306,16 @@ const PromoCodeItem = React.memo(({ promoCode, onApplyPromo, onRemovePromo, isSe
           <Text style={styles.voucherCode}>{promoCode.code}</Text>
           
           <View style={styles.dashedLineContainer}>
-            <Svg width={316} height={1} viewBox="0 0 316 1" style={styles.dashedLineSvg}>
+            <Svg 
+              width={dashedLineWidth} 
+              height={1} 
+              viewBox={`0 0 ${dashedLineWidth} 1`} 
+              style={styles.dashedLineSvg}
+            >
               <Line
                 x1="0.5"
                 y1="0.5"
-                x2="315.5"
+                x2={dashedLineWidth - 0.5}
                 y2="0.5"
                 stroke="#000000"
                 strokeWidth={1}
@@ -1688,7 +1716,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingTop: 0, // Remove default padding
   },
   header: {
     flexDirection: 'row',
@@ -1711,7 +1738,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   headerRight: {
-    width: getResponsiveValue(68, 78, 88),
+    width: getResponsiveValue(68, 80, 90),
     alignItems: 'flex-end',
     justifyContent: 'center',
   },
@@ -1720,7 +1747,6 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flex: 1,
-    paddingTop: 0, // Remove padding to start right after header
     backgroundColor: '#FFFFFF',
   },
   emptyScrollContent: {
@@ -1739,21 +1765,21 @@ const styles = StyleSheet.create({
     marginBottom: getResponsiveSpacing(8),
   },
   productImageContainer: {
-    width: getResponsiveValue(140, 154, 180),
-    height: getResponsiveValue(140, 154, 180),
+    width: getResponsiveValue(140, 160, 180),
+    height: getResponsiveValue(140, 160, 180),
   },
   productImagePlaceholder: {
-    height: getResponsiveValue(140, 154, 180),
-    width: getResponsiveValue(140, 154, 180),
-    backgroundColor: '#F0F0F0', // Lighter background for placeholder
-    borderRadius: 0, // Remove border radius to match Figma
+    height: getResponsiveValue(140, 160, 180),
+    width: getResponsiveValue(140, 160, 180),
+    backgroundColor: '#F0F0F0',
+    borderRadius: 0,
     justifyContent: 'center',
     alignItems: 'center',
   },
   productImage: {
-    height: getResponsiveValue(140, 154, 180),
-    width: getResponsiveValue(140, 154, 180),
-    borderRadius: 0, // Remove border radius to match Figma
+    height: getResponsiveValue(140, 160, 180),
+    width: getResponsiveValue(140, 160, 180),
+    borderRadius: 0,
   },
   imagePlaceholderText: {
     color: '#999999',
@@ -1761,7 +1787,7 @@ const styles = StyleSheet.create({
   },
   productDetailsContainer: {
     flex: 1,
-    paddingTop: 0, // Removed top padding
+    paddingTop: 0,
   },
   productInfo: {
     gap: getResponsiveSpacing(3),
@@ -1792,13 +1818,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat',
   },
   removeButton: {
-    marginTop: 8,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    marginTop: getResponsiveSpacing(8),
+    paddingVertical: getResponsiveSpacing(4),
+    paddingHorizontal: getResponsiveSpacing(8),
     alignSelf: 'flex-start',
   },
   removeButtonText: {
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     fontWeight: '400',
     color: '#FF3B30',
     textDecorationLine: 'underline',
@@ -1807,179 +1833,179 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    height: 24,
-    paddingHorizontal: 24, // Match the product container padding
-    marginBottom: 0, // Remove bottom margin
+    height: getResponsiveValue(24, 28, 32),
+    paddingHorizontal: getResponsiveSpacing(24),
+    marginBottom: 0,
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16, // Increased gap to match Figma
+    gap: getResponsiveSpacing(16),
   },
   quantityText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
-    lineHeight: 19.2,
+    lineHeight: getResponsiveFontSize(19.2),
     fontFamily: 'Montserrat',
   },
   dropdownButton: {
-    padding: 4,
+    padding: getResponsiveSpacing(4),
   },
   sizeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16, // Increased gap to match Figma
+    gap: getResponsiveSpacing(16),
   },
   sizeText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
-    lineHeight: 19.2,
+    lineHeight: getResponsiveFontSize(19.2),
     fontFamily: 'Montserrat',
   },
   priceContainer: {
     alignItems: 'flex-end',
     flexDirection: 'column',
-    gap: 2,
+    gap: getResponsiveSpacing(2),
   },
   priceRowContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: getResponsiveSpacing(8),
   },
   price: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
     textAlign: 'right',
-    lineHeight: 19.2,
+    lineHeight: getResponsiveFontSize(19.2),
     fontFamily: 'Montserrat',
   },
   salePrice: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '600',
-    color: '#E53E3E', // Red for sale price
+    color: '#E53E3E',
     textAlign: 'right',
-    lineHeight: 19.2,
+    lineHeight: getResponsiveFontSize(19.2),
     fontFamily: 'Montserrat',
   },
   originalPrice: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontWeight: '400',
     color: '#999999',
     textAlign: 'right',
     textDecorationLine: 'line-through',
-    lineHeight: 16.8,
+    lineHeight: getResponsiveFontSize(16.8),
     fontFamily: 'Montserrat',
   },
   deliveryContainer: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    gap: 8,
-    marginTop: 0, // Remove extra spacing
+    paddingHorizontal: getResponsiveSpacing(24),
+    paddingVertical: getResponsiveSpacing(16),
+    gap: getResponsiveSpacing(8),
+    marginTop: 0,
   },
   deliveryTitle: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
-    lineHeight: 19.2,
+    lineHeight: getResponsiveFontSize(19.2),
     fontFamily: 'Montserrat',
   },
   deliveryDate: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '400',
     color: '#000000',
     letterSpacing: -0.4,
-    lineHeight: 16,
+    lineHeight: getResponsiveFontSize(16),
     fontFamily: 'Montserrat',
   },
   deliveryLocationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: getResponsiveSpacing(16),
+    paddingVertical: getResponsiveSpacing(16),
     backgroundColor: '#FFFFFF',
   },
   deliveryLocationContent: {
     flex: 1,
   },
   deliveryLocationTitle: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.4,
-    lineHeight: 19.2,
+    lineHeight: getResponsiveFontSize(19.2),
     fontFamily: 'Montserrat',
-    marginBottom: 2,
+    marginBottom: getResponsiveSpacing(2),
   },
   deliveryLocationSubtitle: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontWeight: '400',
     color: '#767676',
     letterSpacing: -0.35,
-    lineHeight: 16.8,
+    lineHeight: getResponsiveFontSize(16.8),
     fontFamily: 'Montserrat',
   },
   deliveryLocationArrow: {
-    fontSize: 20,
+    fontSize: getResponsiveFontSize(20),
     fontWeight: '400',
     color: '#767676',
-    marginLeft: 8,
+    marginLeft: getResponsiveSpacing(8),
   },
   deliveryLocationText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '400',
     color: '#000000',
     letterSpacing: -0.4,
-    lineHeight: 16,
+    lineHeight: getResponsiveFontSize(16),
     fontFamily: 'Montserrat',
   },
   editLocationText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
     textDecorationLine: 'underline',
     letterSpacing: -0.4,
-    lineHeight: 16,
+    lineHeight: getResponsiveFontSize(16),
     fontFamily: 'Montserrat',
   },
   deliveryOptionsContainer: {
-    marginTop: 8,
+    marginTop: getResponsiveSpacing(8),
   },
   deliverySelector: {
-    marginHorizontal: 16,
-    marginVertical: 8,
+    marginHorizontal: getResponsiveSpacing(16),
+    marginVertical: getResponsiveSpacing(8),
   },
   selectedDeliveryText: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontWeight: '400',
     color: '#666666',
     letterSpacing: -0.3,
-    lineHeight: 16,
+    lineHeight: getResponsiveFontSize(16),
     fontFamily: 'Montserrat',
   },
   applyPointsContainer: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    height: 64,
+    paddingHorizontal: getResponsiveSpacing(24),
+    paddingVertical: getResponsiveSpacing(16),
+    height: getResponsiveValue(64, 72, 80),
     justifyContent: 'center',
   },
   pointsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: getResponsiveSpacing(4),
   },
   pointsCheckbox: {
-    width: 20,
-    height: 20,
+    width: getResponsiveValue(20, 22, 24),
+    height: getResponsiveValue(20, 22, 24),
     borderWidth: 1,
     borderColor: '#BCBCBC',
     borderRadius: 3,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
+    marginRight: getResponsiveSpacing(8),
   },
   pointsCheckboxDisabled: {
     borderColor: '#E0E0E0',
@@ -1991,17 +2017,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pointsText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.4,
     fontFamily: 'Montserrat-Medium',
   },
   availablePoints: {
-    fontSize: 10,
+    fontSize: getResponsiveFontSize(10),
     fontWeight: '400',
     color: '#6C6C6C',
-    marginLeft: 28,
+    marginLeft: getResponsiveSpacing(28),
     fontFamily: 'Montserrat-Regular',
   },
   availablePointsError: {
@@ -2012,9 +2038,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 24, // Increased to match Figma
-    height: 64, // Fixed height to match Figma
+    paddingHorizontal: getResponsiveSpacing(24),
+    paddingVertical: getResponsiveSpacing(24),
+    height: getResponsiveValue(64, 72, 80),
   },
   promoToggleLeft: {
     flex: 1,
@@ -2022,51 +2048,50 @@ const styles = StyleSheet.create({
   promoToggleRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: getResponsiveSpacing(12),
   },
   promoToggleText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
     letterSpacing: -0.4,
     fontFamily: 'Montserrat',
   },
   promoSavingsText: {
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     fontWeight: '400',
     color: '#34C759',
-    marginTop: 4,
+    marginTop: getResponsiveSpacing(4),
     fontFamily: 'Montserrat',
   },
   removePromoButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: getResponsiveSpacing(12),
+    paddingVertical: getResponsiveSpacing(6),
     borderRadius: 4,
     borderWidth: 1,
     borderColor: '#FF3B30',
     backgroundColor: '#FFFFFF',
   },
   removePromoText: {
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     fontWeight: '500',
     color: '#FF3B30',
     fontFamily: 'Montserrat',
   },
   promoToggleIcon: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     color: '#000000',
-    width: 14,
-    height: 14,
+    width: getResponsiveValue(14, 16, 18),
+    height: getResponsiveValue(14, 16, 18),
   },
-  // Replace the old promo code styles with voucher styles
   voucherWrapper: {
     alignItems: 'center',
-    marginBottom: 12,
-    paddingHorizontal: 16, // Added horizontal padding
+    marginBottom: getResponsiveSpacing(12),
+    paddingHorizontal: getResponsiveSpacing(16),
   },
   voucherShapeContainer: {
-    width: 345, // Updated to match Figma
-    height: 137,
+    width: getResponsiveValue(345, 400, 450),
+    height: getResponsiveValue(137, 150, 165),
     position: 'relative',
   },
   voucherSvg: {
@@ -2075,38 +2100,38 @@ const styles = StyleSheet.create({
     left: 0,
   },
   voucherContent: {
-    width: 345, // Updated to match Figma
-    height: 137,
+    width: getResponsiveValue(345, 400, 450),
+    height: getResponsiveValue(137, 150, 165),
     position: 'relative',
   },
   voucherCode: {
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     fontWeight: '400',
     color: '#6C6C6C',
     fontFamily: 'Montserrat-Regular',
     textAlign: 'left',
-    lineHeight: 14.4,
+    lineHeight: getResponsiveFontSize(14.4),
     position: 'absolute',
-    left: 24,
-    top: 49,
+    left: getResponsiveSpacing(24),
+    top: getResponsiveValue(49, 55, 60),
   },
   voucherTitle: {
-    fontSize: 25,
+    fontSize: getResponsiveFontSize(25),
     fontWeight: '600',
     color: '#3E3E3E',
     fontFamily: 'Montserrat-SemiBold',
     textTransform: 'uppercase',
-    lineHeight: 30,
+    lineHeight: getResponsiveFontSize(30),
     position: 'absolute',
-    left: 24,
-    top: 14,
+    left: getResponsiveSpacing(24),
+    top: getResponsiveValue(14, 16, 18),
   },
   dashedLineContainer: {
     position: 'absolute',
-    width: 316, // Updated to match Figma
+    width: getResponsiveValue(316, 360, 400),
     height: 1,
-    left: 15,
-    top: 85,
+    left: getResponsiveValue(15, 20, 25),
+    top: getResponsiveValue(85, 95, 105),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -2114,115 +2139,115 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '359.798deg' }],
   },
   voucherDate: {
-    fontSize: 10,
+    fontSize: getResponsiveFontSize(10),
     fontWeight: 'normal',
     color: '#6C6C6C',
     fontFamily: 'Montserrat-Regular',
     textAlign: 'left',
-    lineHeight: 12,
+    lineHeight: getResponsiveFontSize(12),
     position: 'absolute',
-    right: 24, // Changed from left to right for date positioning
-    top: 16,
-    width: 110,
+    right: getResponsiveSpacing(24),
+    top: getResponsiveValue(16, 18, 20),
+    width: getResponsiveValue(110, 120, 130),
   },
   voucherExpiry: {
-    fontSize: 10,
+    fontSize: getResponsiveFontSize(10),
     fontWeight: 'normal',
     color: '#6C6C6C',
     fontFamily: 'Montserrat-Regular',
     textAlign: 'left',
     position: 'absolute',
-    left: 24,
-    bottom: 10,
+    left: getResponsiveSpacing(24),
+    bottom: getResponsiveValue(10, 12, 14),
   },
   voucherApplyButton: {
     position: 'absolute',
     left: '50%',
-    transform: [{ translateX: -23.5 }], // Half of "Apply" text width
-    top: 100, // Adjusted for better vertical centering in bottom section
+    transform: [{ translateX: -23.5 }],
+    top: getResponsiveValue(100, 110, 120),
     paddingVertical: 0,
     paddingHorizontal: 0,
     backgroundColor: 'transparent',
   },
   voucherApplyText: {
     color: '#7F7F7F',
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     fontFamily: 'Montserrat-Medium',
     textAlign: 'center',
-    lineHeight: 19.2,
+    lineHeight: getResponsiveFontSize(19.2),
   },
   voucherApplyButtonSelected: {
     backgroundColor: 'transparent',
   },
   voucherApplyTextSelected: {
-    color: '#EA4335', // Red color for remove button
+    color: '#EA4335',
   },
   promoCodesContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingHorizontal: getResponsiveSpacing(16),
+    paddingBottom: getResponsiveSpacing(12),
   },
   promoLoadingContainer: {
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+    paddingHorizontal: getResponsiveSpacing(24),
+    paddingVertical: getResponsiveSpacing(20),
     alignItems: 'center',
   },
   promoLoadingText: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontWeight: '400',
     color: '#767676',
     fontFamily: 'Montserrat',
   },
   promoErrorContainer: {
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+    paddingHorizontal: getResponsiveSpacing(24),
+    paddingVertical: getResponsiveSpacing(20),
     alignItems: 'center',
   },
   promoErrorText: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontWeight: '400',
     color: '#FF6B6B',
     fontFamily: 'Montserrat',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: getResponsiveSpacing(8),
   },
   promoRetryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: getResponsiveSpacing(16),
+    paddingVertical: getResponsiveSpacing(8),
   },
   promoRetryText: {
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     fontWeight: '500',
     color: '#007AFF',
     fontFamily: 'Montserrat',
     textDecorationLine: 'underline',
   },
   promoEmptyContainer: {
-    paddingHorizontal: 24,
-    paddingVertical: 30,
+    paddingHorizontal: getResponsiveSpacing(24),
+    paddingVertical: getResponsiveSpacing(30),
     alignItems: 'center',
   },
   promoEmptyText: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     fontWeight: '500',
     color: '#767676',
     fontFamily: 'Montserrat',
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: getResponsiveSpacing(4),
   },
   promoEmptySubtext: {
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     fontWeight: '400',
     color: '#999999',
     fontFamily: 'Montserrat',
     textAlign: 'center',
   },
   priceBreakdownContainer: {
-    paddingHorizontal: 25, // Adjusted to match Figma positioning
-    paddingTop: 4,
-    paddingBottom: 16,
-    gap: 10,
-    marginTop: 0, // Remove spacing
+    paddingHorizontal: getResponsiveSpacing(25),
+    paddingTop: getResponsiveSpacing(4),
+    paddingBottom: getResponsiveSpacing(16),
+    gap: getResponsiveSpacing(10),
+    marginTop: 0,
   },
   priceRow: {
     flexDirection: 'row',
@@ -2230,58 +2255,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   priceLabel: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '400',
     color: '#767676',
     letterSpacing: -0.4,
-    lineHeight: 16,
+    lineHeight: getResponsiveFontSize(16),
     fontFamily: 'Montserrat',
   },
   priceValue: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '400',
     color: '#767676',
     textAlign: 'right',
     letterSpacing: -0.32,
-    lineHeight: 16,
+    lineHeight: getResponsiveFontSize(16),
     fontFamily: 'Montserrat',
   },
   totalRow: {
-    marginTop: 8,
+    marginTop: getResponsiveSpacing(8),
   },
   totalLabel: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
-    lineHeight: 19.2,
+    lineHeight: getResponsiveFontSize(19.2),
     fontFamily: 'Montserrat',
   },
   totalValue: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#000000',
     textAlign: 'right',
-    lineHeight: 19.2,
+    lineHeight: getResponsiveFontSize(19.2),
     fontFamily: 'Montserrat',
   },
   paymentIconsContainer: {
-    paddingHorizontal: 26, // Match Figma positioning
-    paddingVertical: 12,
-    marginBottom: 0, // Remove bottom margin
+    paddingHorizontal: getResponsiveSpacing(26),
+    paddingVertical: getResponsiveSpacing(12),
+    marginBottom: 0,
   },
   paymentIconsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: getResponsiveSpacing(4),
     flexWrap: 'wrap',
   },
   codText: {
-    fontSize: 10,
+    fontSize: getResponsiveFontSize(10),
     fontWeight: '800',
     color: '#848688',
     letterSpacing: -0.25,
-    marginLeft: 8,
+    marginLeft: getResponsiveSpacing(8),
     fontFamily: 'Montserrat',
   },
   bottomSpacing: {
@@ -2291,7 +2316,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: getResponsiveSpacing(16),
     paddingVertical: getResponsiveSpacing(16),
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 0, // Remove any border
+    borderTopWidth: 0,
     paddingBottom: getResponsiveSpacing(32),
   },
   checkoutButton: {
@@ -2301,7 +2326,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: getResponsiveSpacing(51),
     alignItems: 'center',
     justifyContent: 'center',
-    width: '100%', // Full width
+    width: '100%',
   },
   checkoutButtonText: {
     fontSize: getResponsiveFontSize(16),
@@ -2310,7 +2335,6 @@ const styles = StyleSheet.create({
     lineHeight: getResponsiveFontSize(19.2),
     fontFamily: 'Montserrat',
   },
-  // Empty bag styles
   emptyBagContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -2349,22 +2373,21 @@ const styles = StyleSheet.create({
     lineHeight: getResponsiveFontSize(19.2),
     fontFamily: 'Montserrat',
   },
-  // Swipe-to-delete styles
   swipeableContainer: {
     position: 'relative',
     overflow: 'hidden',
     backgroundColor: '#FFFFFF',
-    marginBottom: 8, // Add spacing between items
+    marginBottom: getResponsiveSpacing(8),
   },
   deleteButtonContainer: {
     position: 'absolute',
     right: 0,
     top: 0,
     bottom: 0,
-    width: 99, // Match Figma width
+    width: getResponsiveValue(99, 110, 120),
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#D1A1A1', // Pink background as shown in Figma
+    backgroundColor: '#D1A1A1',
     zIndex: 1,
   },
   deleteButton: {
@@ -2374,9 +2397,9 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   deleteButtonText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
-    color: '#CA3327', // Red text color as shown in Figma
+    color: '#CA3327',
     fontFamily: 'Montserrat',
   },
   swipeableItem: {

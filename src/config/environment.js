@@ -64,29 +64,21 @@ class EnvironmentConfig {
    * Get the appropriate API URL based on environment and platform
    * This is the SINGLE SOURCE OF TRUTH for API URLs
    * 
-   * NOTE: For Android emulator to work, backend MUST listen on 0.0.0.0
-   * See: BACKEND_TEAM_FIX_NEEDED.md for details
+   * IMPORTANT: For Android development, use `adb reverse tcp:8001 tcp:8001`
+   * This allows Android to use localhost:8001 (simpler than 10.0.2.2)
    */
   getApiUrl() {
     if (this.isDevelopment) {
-      // Development mode - platform-specific URLs
-      if (this.platform.isAndroid) {
-        // Android emulator uses 10.0.2.2 to access host machine
-        // Backend must listen on 0.0.0.0 (not localhost) for this to work
-        const url = 'http://10.0.2.2:8001/api';
-        if (__DEV__) {
-          console.log('🤖 Android Emulator URL:', url);
-          console.log('⚠️  Backend must listen on 0.0.0.0 (see BACKEND_TEAM_FIX_NEEDED.md)');
+      // Development mode - use localhost backend from .env.development
+      // Both iOS Simulator AND Android (with adb reverse) can use localhost directly
+      if (__DEV__) {
+        const platform = this.platform.isAndroid ? '🤖 Android' : '📱 iOS';
+        console.log(`${platform} Development URL:`, this.api.baseUrl);
+        if (this.platform.isAndroid) {
+          console.log('� Using adb reverse: Run `adb reverse tcp:8001 tcp:8001` if needed');
         }
-        return url;
-      } else {
-        // iOS Simulator - can use localhost directly
-        const url = 'http://localhost:8001/api';
-        if (__DEV__) {
-          console.log('📱 iOS Simulator URL:', url);
-        }
-        return url;
       }
+      return this.api.baseUrl; // Returns http://localhost:8001/api for both platforms
     }
     
     // Production - use production backend from .env.production

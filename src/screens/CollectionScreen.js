@@ -8,7 +8,6 @@ import {
   FlatList,
   Modal,
   Animated,
-  Dimensions,
   SafeAreaView,
   StatusBar,
   Alert,
@@ -21,10 +20,21 @@ import { FontSizes, FontWeights, Spacing, BorderRadius } from '../constants';
 import { GlobalSearchIcon, FilterIcon, HeartIcon } from '../assets/icons';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { ProductGridSkeleton, CategoryCardSkeleton } from '../components/SkeletonLoader';
-// import { useBag } from '../contexts/BagContext'; // Removed as cart button is no longer displayed
 import { apiService } from '../services/apiService';
+import {
+  getResponsiveFontSize,
+  getResponsiveSpacing,
+  getResponsiveValue,
+  wp,
+  hp,
+  fs,
+  device,
+  isTablet,
+  isSmallDevice,
+  getScreenDimensions,
+} from '../utils/responsive';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = getScreenDimensions();
 
 // Enhanced Animated Heart Button Component with improved feedback
 const AnimatedHeartButton = ({ productId, onToggle, isFavorite, style }) => {
@@ -331,7 +341,7 @@ const CollectionScreen = ({ navigation, route }) => {
   // Use the BagContext (commented out as cart button is removed)
   // const { addToBag } = useBag();
 
-  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const slideAnim = useRef(new Animated.Value(screenHeight)).current;
 
   // Fetch subcategories on component mount
   useEffect(() => {
@@ -507,7 +517,7 @@ const CollectionScreen = ({ navigation, route }) => {
 
   const closeFilterModal = () => {
     Animated.timing(slideAnim, {
-      toValue: SCREEN_HEIGHT,
+      toValue: screenHeight,
       duration: 250,
       useNativeDriver: true,
     }).start(() => {
@@ -1012,7 +1022,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: BorderRadius.xl,
     borderTopRightRadius: BorderRadius.xl,
-    maxHeight: SCREEN_HEIGHT * 0.8,
+    maxHeight: screenHeight * 0.8,
     paddingBottom: 20,
   },
   modalHandle: {
@@ -1043,7 +1053,7 @@ const styles = StyleSheet.create({
   },
   filterContent: {
     paddingHorizontal: 16,
-    maxHeight: SCREEN_HEIGHT * 0.6,
+    maxHeight: screenHeight * 0.6,
   },
   filterSection: {
     paddingVertical: Spacing.lg,

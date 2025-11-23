@@ -20,6 +20,7 @@
  * ```
  */
 
+import React from 'react';
 import { Dimensions, Platform } from 'react-native';
 
 /**
@@ -28,6 +29,39 @@ import { Dimensions, Platform } from 'react-native';
  */
 export const getScreenDimensions = () => {
   return Dimensions.get('window');
+};
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = getScreenDimensions();
+
+/**
+ * Width percentage - converts percentage to actual width
+ * @param {string} widthPercent - Width percentage (e.g., '50%')
+ * @returns {number} Actual width in pixels
+ */
+export const wp = (widthPercent) => {
+  const elemWidth = typeof widthPercent === 'number' ? widthPercent : parseFloat(widthPercent);
+  return (SCREEN_WIDTH * elemWidth) / 100;
+};
+
+/**
+ * Height percentage - converts percentage to actual height
+ * @param {string} heightPercent - Height percentage (e.g., '50%')
+ * @returns {number} Actual height in pixels
+ */
+export const hp = (heightPercent) => {
+  const elemHeight = typeof heightPercent === 'number' ? heightPercent : parseFloat(heightPercent);
+  return (SCREEN_HEIGHT * elemHeight) / 100;
+};
+
+/**
+ * Font size scaler - scales font based on device width
+ * @param {number} size - Base font size
+ * @returns {number} Scaled font size
+ */
+export const fs = (size) => {
+  const scale = SCREEN_WIDTH / 375; // Base on iPhone X width
+  const newSize = size * scale;
+  return Math.round(newSize);
 };
 
 /**
@@ -47,6 +81,13 @@ export const DeviceSize = (() => {
     isAndroid: Platform.OS === 'android',
   };
 })();
+
+/**
+ * Simple device detection helpers
+ */
+export const device = DeviceSize;
+export const isTablet = DeviceSize.isTablet;
+export const isSmallDevice = DeviceSize.isSmallPhone;
 
 /**
  * Get responsive value based on device size

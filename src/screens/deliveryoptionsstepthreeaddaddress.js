@@ -8,7 +8,6 @@ import {
   StatusBar,
   ScrollView,
   Animated,
-  Dimensions,
   TextInput,
   PanResponder,
   Alert,
@@ -19,8 +18,9 @@ import { Colors } from '../constants/colors';
 import { useAddress } from '../contexts/AddressContext';
 import ChevronDownIcon from '../assets/icons/ChevronDownIcon';
 import GlobalBackButton from '../components/GlobalBackButton';
+import { getResponsiveFontSize, getResponsiveSpacing, getResponsiveValue, getScreenDimensions } from '../utils/responsive';
 
-const { height: screenHeight } = Dimensions.get('window');
+const { height: screenHeight } = getScreenDimensions().height;
 
 // Indian states and union territories data
 const indianStates = [
@@ -1241,11 +1241,11 @@ const styles = StyleSheet.create({
   },
   dragHandle: {
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: getResponsiveSpacing(12),
   },
   dragIndicator: {
-    width: 40,
-    height: 4,
+    width: getResponsiveValue(40, 45, 50),
+    height: getResponsiveValue(4, 4.5, 5),
     backgroundColor: Colors.gray200,
     borderRadius: 2,
   },
@@ -1253,13 +1253,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingVertical: getResponsiveSpacing(24),
     borderBottomWidth: 1,
     borderBottomColor: '#cdcdcd',
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontFamily: 'Montserrat-Medium',
     color: '#000000',
     letterSpacing: -0.5,
@@ -1270,36 +1270,36 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   closeButton: {
-    width: 28,
-    height: 28,
+    width: getResponsiveValue(28, 32, 36),
+    height: getResponsiveValue(28, 32, 36),
     justifyContent: 'center',
     alignItems: 'center',
   },
   closeIcon: {
-    fontSize: 18,
+    fontSize: getResponsiveFontSize(18),
     color: Colors.black,
     fontWeight: 'bold',
   },
   content: {
     flex: 1,
-    marginBottom: 80, // Space for fixed button
+    marginBottom: getResponsiveSpacing(80),
   },
   scrollContent: {
-    paddingBottom: 20, // Normal padding since button is fixed
+    paddingBottom: getResponsiveSpacing(20),
   },
 
   formContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    gap: 16,
-    paddingBottom: 10,
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingTop: getResponsiveSpacing(24),
+    gap: getResponsiveSpacing(16),
+    paddingBottom: getResponsiveSpacing(10),
   },
   inputContainer: {
     borderWidth: 1,
     borderColor: '#979797',
     borderRadius: 12,
-    paddingHorizontal: 19,
-    height: 47,
+    paddingHorizontal: getResponsiveSpacing(19),
+    height: getResponsiveValue(47, 54, 60),
     backgroundColor: Colors.white,
     justifyContent: 'center',
   },
@@ -1314,7 +1314,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(52, 199, 89, 0.02)',
   },
   input: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     color: '#000000',
     fontFamily: 'Montserrat-Regular',
     letterSpacing: -0.35,
@@ -1332,7 +1332,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   stateValue: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     color: '#000000',
     fontFamily: 'Montserrat-Medium',
     letterSpacing: -0.35,
@@ -1346,33 +1346,33 @@ const styles = StyleSheet.create({
   countrySection: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: 12,
+    paddingRight: getResponsiveSpacing(12),
   },
   flagContainer: {
-    marginRight: 8,
+    marginRight: getResponsiveSpacing(8),
   },
   flagEmoji: {
-    fontSize: 20,
+    fontSize: getResponsiveFontSize(20),
   },
   countryCode: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     color: '#000000',
     fontFamily: 'Montserrat-Medium',
     letterSpacing: -0.35,
-    marginRight: 6,
+    marginRight: getResponsiveSpacing(6),
   },
   chevronContainer: {
-    marginLeft: 4,
+    marginLeft: getResponsiveSpacing(4),
   },
   separator: {
     width: 1,
-    height: 24,
+    height: getResponsiveValue(24, 26, 28),
     backgroundColor: '#E0E0E0',
-    marginRight: 12,
+    marginRight: getResponsiveSpacing(12),
   },
   mobileInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     color: '#000000',
     fontFamily: 'Montserrat-Regular',
     letterSpacing: -0.35,
@@ -1380,9 +1380,9 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    paddingBottom: 30,
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingVertical: getResponsiveSpacing(20),
+    paddingBottom: getResponsiveSpacing(30),
   },
   fixedButtonContainer: {
     position: 'absolute',
@@ -1390,9 +1390,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: Colors.white,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    paddingBottom: 34, // Safe area padding for iPhone bottom
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingVertical: getResponsiveSpacing(16),
+    paddingBottom: getResponsiveSpacing(34),
     borderTopWidth: 1,
     borderTopColor: 'rgba(0, 0, 0, 0.1)',
     shadowColor: '#000',
@@ -1407,7 +1407,7 @@ const styles = StyleSheet.create({
   doneButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    paddingVertical: 18,
+    paddingVertical: getResponsiveSpacing(18),
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -1423,16 +1423,16 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   doneButtonText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontFamily: 'Montserrat-Medium',
     color: '#FFFFFF',
     letterSpacing: -0.5,
   },
   errorText: {
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     color: '#CA3327',
-    marginTop: 4,
-    marginLeft: 4,
+    marginTop: getResponsiveSpacing(4),
+    marginLeft: getResponsiveSpacing(4),
     fontWeight: '400',
   },
   // State Modal Styles
@@ -1441,11 +1441,11 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: screenHeight * 0.7,
-    paddingBottom: 34,
+    paddingBottom: getResponsiveSpacing(34),
   },
   stateItem: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingVertical: getResponsiveSpacing(16),
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
@@ -1453,7 +1453,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FA',
   },
   stateItemText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     color: '#000000',
     fontFamily: 'Montserrat-Regular',
     letterSpacing: -0.35,
@@ -1476,31 +1476,31 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: screenHeight * 0.7,
-    paddingBottom: 34,
+    paddingBottom: getResponsiveSpacing(34),
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingVertical: getResponsiveSpacing(16),
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: getResponsiveFontSize(18),
     fontFamily: 'Montserrat-Medium',
     color: '#000000',
     letterSpacing: -0.5,
   },
   modalCloseText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     color: '#007AFF',
     fontFamily: 'Montserrat-Medium',
   },
   phonePrefixItem: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingVertical: getResponsiveSpacing(16),
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
@@ -1508,29 +1508,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FA',
   },
   phonePrefixText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     color: '#000000',
     fontFamily: 'Montserrat-Regular',
     letterSpacing: -0.35,
   },
   addressTypeContainer: {
-    marginTop: 8,
+    marginTop: getResponsiveSpacing(8),
   },
   addressTypeLabel: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     color: '#000000',
     fontFamily: 'Montserrat-Medium',
-    marginBottom: 12,
+    marginBottom: getResponsiveSpacing(12),
     letterSpacing: -0.35,
   },
   addressTypeOptions: {
     flexDirection: 'row',
-    gap: 12,
+    gap: getResponsiveSpacing(12),
   },
   addressTypeOption: {
     flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: getResponsiveSpacing(12),
+    paddingHorizontal: getResponsiveSpacing(16),
     borderWidth: 1,
     borderColor: '#979797',
     borderRadius: 12,
@@ -1542,7 +1542,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FA',
   },
   addressTypeText: {
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     color: '#979797',
     fontFamily: 'Montserrat-Regular',
     letterSpacing: -0.35,

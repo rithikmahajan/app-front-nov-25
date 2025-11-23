@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import { Colors, FontFamilies } from '../constants';
 import HeartIcon from '../assets/icons/HeartIcon';
 import { useFavorites } from '../contexts/FavoritesContext';
 import FavouritesContent from './favouritescontent';
+import { wp, hp, fs, isTablet } from '../utils/responsive';
 
 const FavouritesScreen = React.memo(({ navigation }) => {
   const { favorites } = useFavorites();
@@ -46,7 +47,7 @@ const FavouritesScreen = React.memo(({ navigation }) => {
           {/* Heart Icon */}
           <View style={styles.heartIconContainer}>
             <View style={styles.heartIconCircle}>
-              <HeartIcon size={35} color="#14142B" filled={false} />
+              <HeartIcon size={isTablet ? 45 : 35} color="#14142B" filled={false} />
             </View>
           </View>
 
@@ -94,16 +95,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingHorizontal: wp(4.3),
+    paddingTop: hp(1.9),
+    paddingBottom: hp(1.5),
     backgroundColor: Colors.white,
   },
   headerLeft: {
-    width: 68,
+    width: wp(18.1),
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 20 : 16),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
@@ -112,21 +113,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerRight: {
-    width: 68,
+    width: wp(18.1),
   },
   content: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: wp(5.3),
   },
   heartIconContainer: {
-    marginBottom: 20,
+    marginBottom: hp(2.4),
   },
   heartIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: wp(isTablet ? 20 : 16),
+    height: wp(isTablet ? 20 : 16),
+    borderRadius: wp(isTablet ? 10 : 8),
     borderWidth: 2,
     borderColor: Colors.black,
     alignItems: 'center',
@@ -136,46 +137,46 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 20 : 16),
     fontFamily: FontFamilies.montserrat,
     fontWeight: '400',
     color: Colors.black,
     textAlign: 'center',
     letterSpacing: -0.384,
-    lineHeight: 24,
-    marginBottom: 8,
+    lineHeight: fs(isTablet ? 30 : 24),
+    marginBottom: hp(1),
   },
   boldText: {
     fontWeight: '400',
     fontFamily: FontFamilies.montserrat,
   },
   descriptionText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 20 : 16),
     fontFamily: FontFamilies.montserrat,
     fontWeight: '400',
     color: Colors.black,
     textAlign: 'center',
     letterSpacing: -0.384,
-    lineHeight: 24,
+    lineHeight: fs(isTablet ? 30 : 24),
   },
   buttonContainer: {
-    paddingHorizontal: 24,
-    paddingBottom: 34,
+    paddingHorizontal: wp(6.4),
+    paddingBottom: hp(4.1),
   },
   addFavouritesButton: {
     backgroundColor: Colors.black,
-    borderRadius: 100,
-    paddingVertical: 16,
-    paddingHorizontal: 51,
+    borderRadius: wp(26.7),
+    paddingVertical: hp(1.9),
+    paddingHorizontal: wp(13.6),
     alignItems: 'center',
     justifyContent: 'center',
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 20 : 16),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.white,
-    lineHeight: 19.2,
+    lineHeight: fs(isTablet ? 24 : 19.2),
   },
 });
 

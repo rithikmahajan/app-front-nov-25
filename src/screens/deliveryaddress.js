@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Modal,
-  Dimensions,
   Animated,
   PanResponder,
   ScrollView,
@@ -14,8 +13,12 @@ import {
   Platform,
 } from 'react-native';
 import { useAddress } from '../contexts/AddressContext';
-
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+import {
+  getResponsiveFontSize,
+  getResponsiveSpacing,
+  getResponsiveValue,
+  getScreenDimensions,
+} from '../utils/responsive';
 
 // Circle Checkbox Component
 const CircleCheckbox = ({ checked, onPress }) => {
@@ -33,7 +36,8 @@ const CircleCheckbox = ({ checked, onPress }) => {
 };
 
 const DeliveryAddressModal = ({ visible, onClose, navigation, asScreen = false, route }) => {
-  const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const screenHeight = getScreenDimensions().height;
+  const translateY = useRef(new Animated.Value(screenHeight)).current;
   const { addresses, loading, selectedAddress, selectAddress } = useAddress();
   const [localSelectedId, setLocalSelectedId] = useState(selectedAddress?._id || null);
 
@@ -56,12 +60,12 @@ const DeliveryAddressModal = ({ visible, onClose, navigation, asScreen = false, 
       }).start();
     } else {
       Animated.timing(translateY, {
-        toValue: SCREEN_HEIGHT,
+        toValue: screenHeight,
         duration: 250,
         useNativeDriver: true,
       }).start();
     }
-  }, [visible, translateY]);
+  }, [visible, translateY, screenHeight]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -88,14 +92,14 @@ const DeliveryAddressModal = ({ visible, onClose, navigation, asScreen = false, 
 
   const handleClose = useCallback(() => {
     Animated.timing(translateY, {
-      toValue: SCREEN_HEIGHT,
+      toValue: screenHeight,
       duration: 250,
       useNativeDriver: true,
     }).start(() => {
       if (onClose) onClose();
       if (navigation) navigation.goBack();
     });
-  }, [translateY, onClose, navigation]);
+  }, [translateY, onClose, navigation, screenHeight]);
 
     const handleAddAddress = useCallback(() => {
     console.log('🔵 handleAddAddress called');
@@ -373,8 +377,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: SCREEN_HEIGHT * 0.85,
-    paddingBottom: 34, // Safe area for home indicator
+    maxHeight: getScreenDimensions().height * 0.85,
+    paddingBottom: getResponsiveSpacing(34),
   },
   modalContainerFullScreen: {
     flex: 1,
@@ -386,37 +390,37 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   handleBar: {
-    width: 36,
-    height: 4,
+    width: getResponsiveValue(36, 40, 44),
+    height: getResponsiveValue(4, 5, 6),
     backgroundColor: '#E4E4E4',
     borderRadius: 2,
     alignSelf: 'center',
-    marginTop: 8,
-    marginBottom: 8,
+    marginTop: getResponsiveSpacing(8),
+    marginBottom: getResponsiveSpacing(8),
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    height: 64,
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingVertical: getResponsiveSpacing(24),
+    height: getResponsiveValue(64, 72, 80),
   },
   headerTitle: {
     fontFamily: 'Montserrat',
     fontWeight: '500',
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     color: '#000000',
     letterSpacing: -0.4,
   },
   closeButton: {
-    width: 32,
-    height: 32,
+    width: getResponsiveValue(32, 36, 40),
+    height: getResponsiveValue(32, 36, 40),
     alignItems: 'center',
     justifyContent: 'center',
   },
   closeButtonText: {
-    fontSize: 24,
+    fontSize: getResponsiveFontSize(24),
     color: '#000000',
     fontWeight: '300',
   },
@@ -424,34 +428,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    marginHorizontal: 20,
-    marginBottom: 16,
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingVertical: getResponsiveSpacing(16),
+    marginHorizontal: getResponsiveSpacing(20),
+    marginBottom: getResponsiveSpacing(16),
   },
   addAddressPlus: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     color: '#000000',
     fontWeight: '500',
-    marginRight: 8,
+    marginRight: getResponsiveSpacing(8),
   },
   addAddressText: {
     fontFamily: 'Montserrat',
     fontWeight: '500',
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     color: '#000000',
     letterSpacing: -0.4,
   },
   sectionHeader: {
     borderTopWidth: 1,
     borderTopColor: '#E4E4E4',
-    paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingVertical: getResponsiveSpacing(24),
   },
   sectionTitle: {
     fontFamily: 'Montserrat',
     fontWeight: '500',
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     color: '#000000',
     letterSpacing: -0.4,
   },
@@ -459,50 +463,50 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   addressListContent: {
-    paddingBottom: 16,
+    paddingBottom: getResponsiveSpacing(16),
   },
   loadingContainer: {
-    padding: 40,
+    padding: getResponsiveSpacing(40),
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyContainer: {
-    padding: 40,
+    padding: getResponsiveSpacing(40),
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyText: {
     fontFamily: 'Montserrat',
     fontWeight: '500',
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     color: '#000000',
-    marginBottom: 8,
+    marginBottom: getResponsiveSpacing(8),
   },
   emptySubtext: {
     fontFamily: 'Montserrat',
     fontWeight: '400',
-    fontSize: 14,
+    fontSize: getResponsiveFontSize(14),
     color: '#767676',
   },
   addressItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingVertical: getResponsiveSpacing(24),
     borderTopWidth: 1,
     borderTopColor: '#E4E4E4',
-    gap: 22,
+    gap: getResponsiveSpacing(22),
   },
   addressItemLast: {
     borderBottomWidth: 0,
   },
   checkboxContainer: {
-    width: 20,
-    height: 20,
+    width: getResponsiveValue(20, 23, 26),
+    height: getResponsiveValue(20, 23, 26),
   },
   checkbox: {
-    width: 20,
-    height: 20,
+    width: getResponsiveValue(20, 23, 26),
+    height: getResponsiveValue(20, 23, 26),
     borderRadius: 30,
     borderWidth: 1.5,
     borderColor: '#CDCDCD',
@@ -515,71 +519,71 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
   },
   checkmark: {
-    width: 14,
-    height: 14,
+    width: getResponsiveValue(14, 16, 18),
+    height: getResponsiveValue(14, 16, 18),
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkmarkText: {
     color: '#FFFFFF',
-    fontSize: 10,
+    fontSize: getResponsiveFontSize(10),
     fontWeight: 'bold',
   },
   addressInfo: {
     flex: 1,
-    gap: 8,
+    gap: getResponsiveSpacing(8),
   },
   addressTypeBadge: {
     backgroundColor: '#F5F5F5',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: getResponsiveSpacing(8),
+    paddingVertical: getResponsiveSpacing(4),
     borderRadius: 4,
     alignSelf: 'flex-start',
   },
   addressTypeText: {
     fontFamily: 'Montserrat',
     fontWeight: '500',
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     color: '#000000',
     letterSpacing: -0.3,
   },
   addressName: {
     fontFamily: 'Montserrat',
     fontWeight: '400',
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     color: '#000000',
     letterSpacing: -0.4,
   },
   addressDetails: {
     fontFamily: 'Montserrat',
     fontWeight: '400',
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     color: '#767676',
     letterSpacing: -0.4,
   },
   editButton: {
-    paddingLeft: 8,
+    paddingLeft: getResponsiveSpacing(8),
   },
   editButtonText: {
     fontFamily: 'Montserrat',
     fontWeight: '400',
-    fontSize: 12,
+    fontSize: getResponsiveFontSize(12),
     color: '#000000',
     letterSpacing: -0.3,
     textAlign: 'right',
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 14,
+    paddingHorizontal: getResponsiveSpacing(20),
+    paddingVertical: getResponsiveSpacing(16),
+    gap: getResponsiveSpacing(14),
   },
   continueButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
     borderWidth: 1,
     borderColor: '#000000',
-    paddingVertical: 16,
-    paddingHorizontal: 51,
+    paddingVertical: getResponsiveSpacing(16),
+    paddingHorizontal: getResponsiveSpacing(51),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -590,7 +594,7 @@ const styles = StyleSheet.create({
   continueButtonText: {
     fontFamily: 'Montserrat',
     fontWeight: '500',
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     color: '#FFFFFF',
     letterSpacing: -0.4,
   },

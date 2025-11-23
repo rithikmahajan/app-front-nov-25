@@ -14,8 +14,8 @@ import { Colors, FontFamilies } from '../constants';
 import GlobalBackButton from '../components/GlobalBackButton';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { yoraaAPI } from '../services/yoraaAPI';
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
-// Simple trash icon component without SVG dependency
 const TrashIcon = ({ size = 20 }) => (
   <View style={{
     width: size,
@@ -163,13 +163,12 @@ const FavouritesContentEditView = ({ navigation }) => {
   };
 
   const renderProductItem = ({ item, index }) => {
-    const isLeftColumn = index % 2 === 0;
     const isRemoving = removingItems.has(item.id);
     
     return (
       <View style={[
         styles.productContainer,
-        isLeftColumn ? styles.leftProduct : styles.rightProduct,
+        isTablet ? styles.leftProduct : (index % 2 === 0 ? styles.leftProduct : styles.rightProduct),
       ]}>
         {/* Product Image */}
         <View style={styles.imageContainer}>
@@ -279,7 +278,8 @@ const FavouritesContentEditView = ({ navigation }) => {
       <FlatList
         data={wishlistItems}
         renderItem={renderProductItem}
-        numColumns={2}
+        numColumns={isTablet ? 3 : 2}
+        key={isTablet ? 'tablet-3-col' : 'phone-2-col'}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.productsContainer}
         columnWrapperStyle={styles.row}
@@ -298,27 +298,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: wp(isTablet ? 6 : 5.3),
+    paddingVertical: hp(isTablet ? 2.5 : 2),
     borderBottomWidth: 1,
     borderBottomColor: Colors.lightGray,
   },
   title: {
-    fontSize: 18,
+    fontSize: fs(isTablet ? 22 : isSmallDevice ? 16 : 18),
     fontFamily: FontFamilies.medium,
     color: Colors.text,
   },
   clearAllButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: wp(isTablet ? 4 : 3.2),
+    paddingVertical: hp(isTablet ? 1 : 0.7),
   },
   clearAllText: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 12 : 14),
     fontFamily: FontFamilies.medium,
     color: Colors.primary,
   },
   spacer: {
-    width: 24,
+    width: wp(isTablet ? 8 : 6.4),
   },
   loadingContainer: {
     flex: 1,
@@ -326,8 +326,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
+    marginTop: hp(isTablet ? 2.5 : 2),
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontFamily: FontFamilies.regular,
     color: Colors.text,
   },
@@ -335,28 +335,28 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: wp(isTablet ? 12 : 10.6),
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontFamily: FontFamilies.regular,
     color: Colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: hp(isTablet ? 4 : 3),
   },
   shopButton: {
     backgroundColor: Colors.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingHorizontal: wp(isTablet ? 8 : 6.4),
+    paddingVertical: hp(isTablet ? 2 : 1.5),
     borderRadius: 8,
   },
   shopButtonText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontFamily: FontFamilies.medium,
     color: Colors.white,
   },
   productsContainer: {
-    padding: 16,
+    padding: wp(isTablet ? 5 : 4.2),
   },
   row: {
     justifyContent: 'space-between',
@@ -364,8 +364,8 @@ const styles = StyleSheet.create({
   productContainer: {
     backgroundColor: Colors.white,
     borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
+    padding: wp(isTablet ? 4 : 3.2),
+    marginBottom: hp(isTablet ? 2.5 : 2),
     shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -373,16 +373,16 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   leftProduct: {
-    width: '48%',
+    width: isTablet ? '32%' : '48%',
   },
   rightProduct: {
-    width: '48%',
+    width: isTablet ? '32%' : '48%',
   },
   imageContainer: {
     position: 'relative',
-    height: 120,
+    height: hp(isTablet ? 20 : isSmallDevice ? 13 : 15),
     borderRadius: 8,
-    marginBottom: 8,
+    marginBottom: hp(isTablet ? 1.5 : 1),
   },
   productImage: {
     width: '100%',
@@ -398,18 +398,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   placeholderText: {
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 10 : 12),
     fontFamily: FontFamilies.regular,
     color: Colors.textSecondary,
   },
   deleteButton: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    top: hp(isTablet ? 1.2 : 1),
+    right: wp(isTablet ? 3 : 2),
     backgroundColor: Colors.white,
     borderRadius: 16,
-    width: 32,
-    height: 32,
+    width: wp(isTablet ? 10 : 8.5),
+    height: wp(isTablet ? 10 : 8.5),
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: Colors.black,
@@ -422,10 +422,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   productName: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 12 : 14),
     fontFamily: FontFamilies.medium,
     color: Colors.text,
-    marginBottom: 4,
+    marginBottom: hp(isTablet ? 0.8 : 0.5),
   },
   priceContainer: {
     flexDirection: 'row',
@@ -433,15 +433,15 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   productPrice: {
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 12 : 14),
     fontFamily: FontFamilies.bold,
     color: Colors.primary,
   },
   originalPrice: {
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 10 : 12),
     fontFamily: FontFamilies.regular,
     color: Colors.textSecondary,
-    marginLeft: 4,
+    marginLeft: wp(isTablet ? 1.5 : 1),
   },
 });
 

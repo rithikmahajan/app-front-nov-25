@@ -12,6 +12,7 @@ import {
 import Svg, { Path } from 'react-native-svg';
 import { Colors, FontFamilies } from '../constants';
 import { useBag } from '../contexts/BagContext';
+import { wp, hp, fs, isTablet } from '../utils/responsive';
 
 const FavouritesAddedToBagConfirmationModal = ({ navigation, route }) => {
   const { height: screenHeight } = Dimensions.get('window');
@@ -153,7 +154,7 @@ const FavouritesAddedToBagConfirmationModal = ({ navigation, route }) => {
           
           {/* Success Icon */}
           <View style={styles.successIconContainer}>
-            <Svg width="81" height="81" viewBox="0 0 81 81" fill="none">
+            <Svg width={isTablet ? 100 : 81} height={isTablet ? 100 : 81} viewBox="0 0 81 81" fill="none">
               <Path 
                 opacity="0.1" 
                 d="M40.5 81C62.8675 81 81 62.8675 81 40.5C81 18.1325 62.8675 0 40.5 0C18.1325 0 0 18.1325 0 40.5C0 62.8675 18.1325 81 40.5 81Z" 
@@ -201,15 +202,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    paddingBottom: 34,
-    height: 467,
+    paddingBottom: hp(4.1),
+    height: hp(isTablet ? 60 : 57),
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 22,
+    paddingHorizontal: wp(5.9),
   },
   drawerHandleContainer: {
     width: '100%',
-    height: 40, // Increased from 20 to 40 for better touch target
+    height: hp(4.9),
     alignItems: 'center',
     justifyContent: 'center',
     position: 'absolute',
@@ -217,43 +218,43 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   drawerHandle: {
-    width: 64,
-    height: 6,
+    width: wp(17.1),
+    height: hp(0.7),
     backgroundColor: '#E6E6E6',
     borderRadius: 40,
-    marginTop: 12, // Increased margin to center better in larger container
+    marginTop: hp(1.5),
   },
   successIconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+    marginBottom: hp(2.9),
   },
   addedToBagText: {
-    fontSize: 24,
+    fontSize: fs(isTablet ? 28 : 24),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.black,
     textAlign: 'center',
     letterSpacing: -0.96,
-    lineHeight: 28.8,
-    marginBottom: 120,
+    lineHeight: fs(isTablet ? 34 : 28.8),
+    marginBottom: hp(14.6),
   },
   viewBagButton: {
     backgroundColor: Colors.black,
-    borderRadius: 100,
-    width: 331,
-    height: 61,
+    borderRadius: wp(26.7),
+    width: wp(88.3),
+    height: hp(7.4),
     alignItems: 'center',
     justifyContent: 'center',
     position: 'absolute',
-    bottom: 34,
+    bottom: hp(4.1),
   },
   viewBagButtonText: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 20 : 16),
     fontWeight: '500',
     fontFamily: FontFamilies.montserrat,
     color: Colors.white,
-    lineHeight: 19.2,
+    lineHeight: fs(isTablet ? 24 : 19.2),
   },
 });
 

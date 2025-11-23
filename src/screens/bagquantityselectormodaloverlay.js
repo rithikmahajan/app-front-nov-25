@@ -5,20 +5,31 @@ import {
   StyleSheet,
   TouchableOpacity,
   Modal,
-  Dimensions,
   Animated,
   PanResponder,
   ScrollView,
 } from 'react-native';
+import {
+  getResponsiveFontSize,
+  getResponsiveSpacing,
+  getResponsiveValue,
+  wp,
+  hp,
+  fs,
+  device,
+  isTablet,
+  isSmallDevice,
+  getScreenDimensions
+} from '../utils/responsive';
 
-const { height: screenHeight } = Dimensions.get('window');
+const { height: screenHeight } = getScreenDimensions();
 
 const BagQuantitySelectorModalOverlay = ({ visible, onClose, item, productDetails, onQuantityChange }) => {
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [isRemoveSelected, setIsRemoveSelected] = useState(false);
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const scrollViewRef = useRef(null);
-  const ITEM_HEIGHT = 44; // Height of each item in the picker
+  const ITEM_HEIGHT = getResponsiveValue(44, 50, 56);
 
   // Get available quantity for the current item's size from product details
   const getAvailableQuantity = () => {
@@ -63,12 +74,10 @@ const BagQuantitySelectorModalOverlay = ({ visible, onClose, item, productDetail
         toValue: screenHeight,
         useNativeDriver: true,
         tension: 100,
-        friction: 8,
-      }).start();
-    }
-  }, [visible, item?.quantity, translateY]);
-
-  const handleClose = () => {
+      friction: 8,
+    }).start();
+  }
+}, [visible, item?.quantity, translateY, ITEM_HEIGHT]);  const handleClose = () => {
     Animated.spring(translateY, {
       toValue: screenHeight,
       useNativeDriver: true,
@@ -218,25 +227,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    paddingBottom: 34, // Safe area bottom
-    height: 372,
+    paddingBottom: getResponsiveSpacing(34),
+    height: getResponsiveValue(372, 420, 480),
   },
   handleBarContainer: {
-    paddingVertical: 10,
+    paddingVertical: getResponsiveSpacing(10),
     alignItems: 'center',
   },
   handleBar: {
-    width: 40,
-    height: 4,
+    width: getResponsiveValue(40, 45, 50),
+    height: getResponsiveValue(4, 5, 6),
     backgroundColor: '#767676',
     borderRadius: 30,
-    marginTop: 4,
-    marginBottom: 10,
+    marginTop: getResponsiveSpacing(4),
+    marginBottom: getResponsiveSpacing(10),
   },
   quantityContainer: {
     flex: 1,
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: getResponsiveSpacing(20),
     position: 'relative',
   },
   selectionIndicator: {
@@ -244,8 +253,8 @@ const styles = StyleSheet.create({
     top: '50%',
     left: 0,
     right: 0,
-    height: 44,
-    marginTop: -22,
+    height: getResponsiveValue(44, 50, 56),
+    marginTop: getResponsiveValue(-22, -25, -28),
     zIndex: 1,
     justifyContent: 'space-between',
   },
@@ -258,7 +267,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.03)',
   },
   scrollView: {
-    height: 220,
+    height: getResponsiveValue(220, 250, 280),
   },
   scrollContent: {
     alignItems: 'center',
@@ -269,7 +278,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pickerItemText: {
-    fontSize: 20,
+    fontSize: getResponsiveFontSize(20),
     color: '#000000',
     fontWeight: '400',
   },
@@ -279,14 +288,14 @@ const styles = StyleSheet.create({
   doneButton: {
     backgroundColor: '#000000',
     borderRadius: 100,
-    marginHorizontal: 23,
-    paddingVertical: 16,
+    marginHorizontal: getResponsiveSpacing(23),
+    paddingVertical: getResponsiveSpacing(16),
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: getResponsiveSpacing(20),
   },
   doneButtonText: {
-    fontSize: 16,
+    fontSize: getResponsiveFontSize(16),
     fontWeight: '500',
     color: '#FFFFFF',
   },

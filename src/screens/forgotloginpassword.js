@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { GlobalBackButton } from '../components';
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 const ForgotLoginPassword = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -21,7 +22,6 @@ const ForgotLoginPassword = ({ navigation }) => {
 
   const handleSendCode = () => {
     if (email.trim()) {
-      // Navigate to verification code screen
       if (navigation) {
         navigation.navigate('ForgotLoginPasswordVerificationCode', { email });
       }
@@ -31,25 +31,20 @@ const ForgotLoginPassword = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        {/* Back Button */}
         <View style={styles.headerContainer}>
           <GlobalBackButton onPress={handleBack} />
         </View>
 
-        {/* Instructions Container */}
         <View style={styles.instructionsContainer}>
-          {/* Header */}
           <View style={styles.headerSection}>
             <Text style={styles.title}>Forgot password?</Text>
           </View>
 
-          {/* Description */}
           <Text style={styles.description}>
             Please enter email associated with your account and we'll send and email with instructions to reset your password
           </Text>
         </View>
 
-        {/* Email Input Field */}
         <View style={styles.emailContainer}>
           <View style={styles.emailInputWrapper}>
             <View style={styles.emailIconContainer}>
@@ -69,7 +64,6 @@ const ForgotLoginPassword = ({ navigation }) => {
           <View style={styles.divider} />
         </View>
 
-        {/* Send Code Button */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity 
             style={[styles.sendCodeButton, !email.trim() && styles.sendCodeButtonDisabled]} 
@@ -93,13 +87,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerContainer: {
-    paddingTop: 15,
-    paddingHorizontal: 33,
+    paddingTop: hp(isTablet ? 3 : 1.8),
+    paddingHorizontal: wp(isTablet ? 10 : 8.8),
   },
   instructionsContainer: {
-    paddingHorizontal: 32,
-    paddingTop: 16,
-    gap: 18,
+    paddingHorizontal: wp(isTablet ? 10 : 8.5),
+    paddingTop: hp(isTablet ? 3 : 2),
+    gap: hp(isTablet ? 3 : 2.2),
   },
   headerSection: {
     alignSelf: 'flex-start',
@@ -107,46 +101,46 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'Montserrat-Bold',
     fontWeight: '700',
-    fontSize: 24,
-    lineHeight: 48,
+    fontSize: fs(isTablet ? 32 : isSmallDevice ? 20 : 24),
+    lineHeight: fs(isTablet ? 56 : isSmallDevice ? 40 : 48),
     color: '#000000',
     textAlign: 'left',
   },
   description: {
     fontFamily: 'Montserrat-Regular',
     fontWeight: '400',
-    fontSize: 14,
-    lineHeight: 24,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 12 : 14),
+    lineHeight: fs(isTablet ? 30 : isSmallDevice ? 20 : 24),
     color: '#000000',
-    width: 308,
+    maxWidth: wp(isTablet ? 70 : 82),
     textAlign: 'left',
   },
   emailContainer: {
-    marginHorizontal: 32,
-    marginTop: 40,
+    marginHorizontal: wp(isTablet ? 10 : 8.5),
+    marginTop: hp(isTablet ? 6 : 5),
   },
   emailInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    paddingVertical: 16,
+    paddingVertical: hp(isTablet ? 2.5 : 2),
     paddingHorizontal: 0,
   },
   emailIconContainer: {
-    marginRight: 12,
+    marginRight: wp(isTablet ? 4 : 3.2),
     opacity: 0.7,
   },
   emailIcon: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 20 : isSmallDevice ? 14 : 16),
     color: '#BFBFBF',
   },
   emailInput: {
     flex: 1,
     fontFamily: 'Montserrat-Regular',
-    fontSize: 12,
-    lineHeight: 20,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 11 : 12),
+    lineHeight: fs(isTablet ? 26 : 20),
     color: '#020202',
-    paddingLeft: 28,
+    paddingLeft: wp(isTablet ? 9 : 7.4),
   },
   divider: {
     height: 1,
@@ -154,13 +148,13 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   buttonContainer: {
-    marginHorizontal: 32,
-    marginTop: 40,
+    marginHorizontal: wp(isTablet ? 10 : 8.5),
+    marginTop: hp(isTablet ? 6 : 5),
   },
   sendCodeButton: {
     backgroundColor: '#000000',
     borderRadius: 25,
-    paddingVertical: 16,
+    paddingVertical: hp(isTablet ? 2.5 : 2),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -170,8 +164,8 @@ const styles = StyleSheet.create({
   sendCodeButtonText: {
     fontFamily: 'Montserrat-Bold',
     fontWeight: '700',
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 12 : 14),
+    lineHeight: fs(isTablet ? 26 : 20),
     color: '#FFFFFF',
     textAlign: 'center',
   },

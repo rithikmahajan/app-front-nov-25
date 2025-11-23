@@ -8,18 +8,14 @@ import {
   SafeAreaView,
   StatusBar,
   Animated,
-  Dimensions,
   PanResponder,
-  ActivityIndicator,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { yoraaAPI } from '../services/yoraaAPI';
 import { FilterOptionsSkeleton } from '../components/SkeletonLoader';
-
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+import { wp, hp, fs, isTablet, isSmallDevice } from '../utils/responsive';
 
 const FiltersScreen = ({ navigation, route }) => {
-  // Dynamic filter states
   const [filters, setFilters] = useState([]);
   const [selectedFilters, setSelectedFilters] = useState({});
   const [priceRange, setPriceRange] = useState({ min: 450, max: 29950200 });
@@ -30,8 +26,7 @@ const FiltersScreen = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Animation for slide up
-  const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const slideAnim = useRef(new Animated.Value(hp(100))).current;
   const panY = useRef(new Animated.Value(0)).current;
 
   // Pan responder for drag to close
@@ -171,24 +166,18 @@ const FiltersScreen = ({ navigation, route }) => {
   };
 
   const handleGoBack = () => {
-    // Reset pan animation first
     panY.setValue(0);
     
-    // Animate slide down
     Animated.timing(slideAnim, {
-      toValue: SCREEN_HEIGHT,
+      toValue: hp(100),
       duration: 250,
       useNativeDriver: true,
     }).start(() => {
-      // Navigate back to previous screen
       if (route.params?.previousScreen) {
-        // If we have a previous screen, navigate back to it
         navigation.navigate(route.params.previousScreen, route.params?.previousParams || {});
       } else if (navigation.goBack) {
-        // Use the custom goBack function
         navigation.goBack();
       } else {
-        // Fallback to Home if no navigation options work
         navigation.navigate('Home');
       }
     });
@@ -452,181 +441,181 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   loadingText: {
-    marginTop: 10,
+    marginTop: hp(1.2),
     fontFamily: 'Montserrat-Medium',
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 12 : 14),
     color: '#000000',
   },
   skeletonWrapper: {
     backgroundColor: '#FFFFFF',
-    height: SCREEN_HEIGHT * 0.85,
+    height: hp(85),
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
   },
   headerPlaceholder: {
-    height: 20,
+    height: hp(2.5),
   },
   modalContainer: {
     backgroundColor: '#FFFFFF',
-    height: SCREEN_HEIGHT * 0.85,
+    height: hp(85),
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
   },
   header: {
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: hp(isTablet ? 3 : 2.5),
     position: 'relative',
     flexDirection: 'row',
     justifyContent: 'center',
   },
   backButton: {
     position: 'absolute',
-    left: 20,
-    top: 20,
+    left: wp(isTablet ? 6 : 5.3),
+    top: hp(2.5),
     zIndex: 1,
-    padding: 5,
+    padding: hp(0.6),
   },
   backButtonText: {
-    fontSize: 18,
+    fontSize: fs(isTablet ? 20 : 18),
     color: '#000000',
     fontWeight: '500',
   },
   dragIndicator: {
     position: 'absolute',
-    top: 10,
-    width: 40,
-    height: 4,
+    top: hp(1.2),
+    width: wp(isTablet ? 12 : 10.6),
+    height: hp(0.5),
     backgroundColor: '#E5E5E5',
     borderRadius: 2,
   },
   clearButton: {
     fontFamily: 'Montserrat-Medium',
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 10 : 12),
     fontWeight: '500',
     color: '#FF0000',
     textTransform: 'uppercase',
     letterSpacing: 1,
     position: 'absolute',
-    right: 20,
-    top: 20,
+    right: wp(isTablet ? 6 : 5.3),
+    top: hp(2.5),
     zIndex: 1,
   },
   scrollContent: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: wp(isTablet ? 6 : 5.3),
   },
   errorContainer: {
     backgroundColor: '#FFF3CD',
-    padding: 15,
-    marginVertical: 10,
+    padding: wp(isTablet ? 5 : 4),
+    marginVertical: hp(isTablet ? 1.5 : 1.2),
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#FFEAA7',
   },
   errorTitle: {
     color: '#856404',
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 12 : 14),
     fontWeight: '600',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: hp(1),
   },
   errorText: {
     color: '#856404',
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 10 : 12),
     textAlign: 'center',
-    marginBottom: 8,
-    lineHeight: 16,
+    marginBottom: hp(1),
+    lineHeight: fs(isTablet ? 20 : 16),
   },
   errorCode: {
     color: '#721C24',
-    fontSize: 11,
+    fontSize: fs(isTablet ? 13 : 11),
     fontFamily: 'Courier',
     backgroundColor: '#F8D7DA',
-    padding: 4,
-    marginVertical: 2,
+    padding: hp(0.5),
+    marginVertical: hp(0.3),
     borderRadius: 3,
   },
   errorFooter: {
     color: '#856404',
-    fontSize: 10,
+    fontSize: fs(isTablet ? 12 : 10),
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: hp(1),
     fontStyle: 'italic',
   },
   noFiltersContainer: {
     backgroundColor: '#F8F9FA',
-    padding: 20,
-    marginVertical: 10,
+    padding: wp(isTablet ? 6 : 5.3),
+    marginVertical: hp(isTablet ? 1.5 : 1.2),
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#DEE2E6',
     alignItems: 'center',
   },
   noFiltersTitle: {
-    fontSize: 16,
+    fontSize: fs(isTablet ? 18 : isSmallDevice ? 14 : 16),
     fontWeight: '600',
     color: '#495057',
-    marginBottom: 8,
+    marginBottom: hp(1),
   },
   noFiltersText: {
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 10 : 12),
     color: '#6C757D',
     textAlign: 'center',
-    lineHeight: 16,
+    lineHeight: fs(isTablet ? 20 : 16),
   },
   filterSection: {
-    paddingVertical: 20,
+    paddingVertical: hp(isTablet ? 3 : 2.5),
   },
   filterTitle: {
     fontFamily: 'Montserrat-Medium',
-    fontSize: 14,
+    fontSize: fs(isTablet ? 16 : isSmallDevice ? 12 : 14),
     fontWeight: '600',
     color: '#000000',
     textTransform: 'uppercase',
     letterSpacing: 1,
-    marginBottom: 15,
+    marginBottom: hp(isTablet ? 2.2 : 1.8),
   },
   sliderContainer: {
-    paddingHorizontal: 10,
+    paddingHorizontal: wp(isTablet ? 4 : 2.6),
   },
   slider: {
     width: '100%',
-    height: 40,
+    height: hp(isTablet ? 6 : 5),
   },
   sliderThumb: {
     backgroundColor: '#000000',
-    width: 20,
-    height: 20,
+    width: wp(isTablet ? 6 : 5.3),
+    height: wp(isTablet ? 6 : 5.3),
   },
   priceLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: hp(isTablet ? 1.5 : 1.2),
   },
   priceText: {
     fontFamily: 'Montserrat-Light',
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 10 : 12),
     color: '#000000',
   },
   filterOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: hp(isTablet ? 1.2 : 1),
   },
   colorOption: {
     alignItems: 'center',
   },
   colorCircle: {
-    width: 12,
-    height: 11,
-    marginRight: 15,
+    width: wp(isTablet ? 3.5 : 3.2),
+    height: wp(isTablet ? 3.5 : 3.2),
+    marginRight: wp(isTablet ? 5 : 4),
     borderRadius: 2,
     borderWidth: 0.5,
     borderColor: '#E5E5E5',
   },
   colorName: {
     fontFamily: 'Montserrat-Light',
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 10 : 12),
     color: '#000000',
     textTransform: 'uppercase',
   },
@@ -635,7 +624,7 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontFamily: 'Montserrat-Light',
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 10 : 12),
     color: '#000000',
     textTransform: 'uppercase',
   },
@@ -644,11 +633,11 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   sortRow: {
-    paddingVertical: 8,
+    paddingVertical: hp(isTablet ? 1.2 : 1),
   },
   sortText: {
     fontFamily: 'Montserrat-Light',
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 10 : 12),
     color: '#000000',
     textTransform: 'uppercase',
   },
@@ -657,8 +646,8 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   viewResultsButton: {
-    margin: 20,
-    height: 31,
+    margin: wp(isTablet ? 6 : 5.3),
+    height: hp(isTablet ? 5.5 : isSmallDevice ? 4.5 : 3.8),
     borderWidth: 1,
     borderColor: '#000000',
     justifyContent: 'center',
@@ -667,7 +656,7 @@ const styles = StyleSheet.create({
   },
   viewResultsText: {
     fontFamily: 'Montserrat-Medium',
-    fontSize: 12,
+    fontSize: fs(isTablet ? 14 : isSmallDevice ? 10 : 12),
     fontWeight: '500',
     color: '#000000',
     textTransform: 'uppercase',
