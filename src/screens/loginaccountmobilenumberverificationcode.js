@@ -269,15 +269,53 @@ const LoginAccountMobileNumberVerificationCode = ({ navigation, route }) => {
             await new Promise(resolve => setTimeout(resolve, waitTime));
           }
           
-          console.log('   - Getting Firebase ID token...');
-          const idToken = await user.getIdToken(/* forceRefresh */ true);
+          console.log('   - Getting Firebase ID token (force refresh)...');
+          let idToken = await user.getIdToken(/* forceRefresh */ true);
           console.log(`   - Firebase ID Token: ${idToken.substring(0, 30)}... (${idToken.length} chars)`);
+          
+          // ✅ NEW: Validate token before sending to backend
+          try {
+            const tokenParts = idToken.split('.');
+            if (tokenParts.length === 3) {
+              // Simple base64 decode for JWT payload
+              const base64Payload = tokenParts[1].replace(/-/g, '+').replace(/_/g, '/');
+              const padding = '='.repeat((4 - base64Payload.length % 4) % 4);
+              const decodedStr = global.atob ? global.atob(base64Payload + padding) : base64Payload;
+              
+              const payload = JSON.parse(decodedStr);
+              const now = Math.floor(Date.now() / 1000);
+              const tokenAge = now - (payload.iat || now);
+              const tokenTimeLeft = (payload.exp || now + 3600) - now;
+              
+              console.log('   - Token Debug Info:');
+              console.log(`     • Issued: ${payload.iat ? new Date(payload.iat * 1000).toISOString() : 'Unknown'}`);
+              console.log(`     • Expires: ${payload.exp ? new Date(payload.exp * 1000).toISOString() : 'Unknown'}`);
+              console.log(`     • Age: ${tokenAge} seconds`);
+              console.log(`     • Valid for: ${tokenTimeLeft} seconds`);
+              console.log(`     • Audience: ${payload.aud || 'Unknown'}`);
+              console.log(`     • Phone: ${payload.phone_number || 'N/A'}`);
+              
+              if (tokenTimeLeft < 60) {
+                console.warn(`⚠️ WARNING: Token expires in ${tokenTimeLeft}s - might fail!`);
+              }
+              if (tokenAge > 60) {
+                console.warn(`⚠️ WARNING: Token is ${tokenAge}s old - getting fresher token...`);
+                await user.reload();
+                idToken = await user.getIdToken(true);
+                console.log(`✅ Got fresher token`);
+              }
+            }
+          } catch (parseError) {
+            console.warn('⚠️ Could not parse token for validation (non-critical):', parseError.message);
+          }
           
           // ✅ PRODUCTION FIX: Verify API URL is correct before making request
           const apiUrl = yoraaAPI.baseURL;
           console.log('   - API Base URL:', apiUrl);
           console.log('   - Full Login URL:', `${apiUrl}/api/auth/login/firebase`);
           console.log('   - Environment:', __DEV__ ? 'DEVELOPMENT' : 'PRODUCTION');
+          console.log('   - Token Length:', idToken.length);
+          console.log('   - Token starts with:', idToken.substring(0, 20) + '...');
           
           console.log('   - Calling backend firebaseLogin API...');
           backendResponse = await yoraaAPI.firebaseLogin(idToken);

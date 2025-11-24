@@ -326,6 +326,23 @@ class YoraaAPIService {
 
       const data = await response.json();
       
+      // 🚨 AGGRESSIVE LOGGING for auth endpoints
+      if (endpoint.includes('/auth/')) {
+        console.log('🔍 AUTH ENDPOINT RESPONSE DETAILS:');
+        console.log('   - Endpoint:', endpoint);
+        console.log('   - Status:', response.status);
+        console.log('   - OK:', response.ok);
+        console.log('   - data.success:', data.success);
+        console.log('   - data.data exists:', !!data.data);
+        console.log('   - data.message:', data.message);
+        console.log('   - Full data keys:', Object.keys(data));
+        if (data.data) {
+          console.log('   - data.data keys:', Object.keys(data.data));
+          console.log('   - data.data.token exists:', !!data.data.token);
+          console.log('   - data.data.user exists:', !!data.data.user);
+        }
+      }
+      
       console.log('API Response:', { 
         status: response.status, 
         url: fullUrl,
@@ -588,6 +605,14 @@ class YoraaAPIService {
         
         const response = await this.makeRequest('/api/auth/login/firebase', 'POST', { idToken });
         
+        // 🚨 AGGRESSIVE LOGGING: Log COMPLETE response to catch backend issues
+        console.log('🔍 COMPLETE BACKEND RESPONSE:');
+        console.log('   - response.success:', response.success);
+        console.log('   - response.data exists:', !!response.data);
+        console.log('   - response.data:', JSON.stringify(response.data, null, 2));
+        console.log('   - response.message:', response.message);
+        console.log('   - Full response:', JSON.stringify(response, null, 2));
+        
         if (response.success && response.data) {
           console.log('✅ Backend authentication successful');
           
@@ -603,6 +628,13 @@ class YoraaAPIService {
           console.log(`   - Name: ${userData?.name || 'Not set'}`);
           console.log(`   - Email: ${userData?.email || 'Not set'}`);
           console.log('ℹ️ Backend automatically links accounts with same email across different providers');
+          
+          // 🚨 CRITICAL CHECK: Verify token exists
+          console.log('🔍 TOKEN CHECK:');
+          console.log('   - Token exists:', !!token);
+          console.log('   - Token type:', typeof token);
+          console.log('   - Token length:', token ? token.length : 0);
+          console.log('   - Token preview:', token ? token.substring(0, 20) + '...' : 'NULL');
           
           if (token) {
             // CRITICAL FIX: Set token in memory IMMEDIATELY (synchronously)
@@ -628,6 +660,19 @@ class YoraaAPIService {
             await storagePromise;
             console.log('✅ Token and user data stored successfully in all locations');
             
+            // 🚨 VERIFY STORAGE: Confirm token was actually stored
+            const verifyToken = await AsyncStorage.getItem('userToken');
+            console.log('🔍 STORAGE VERIFICATION:');
+            console.log('   - Token in AsyncStorage:', !!verifyToken);
+            console.log('   - Token in memory (this.userToken):', !!this.userToken);
+            console.log('   - Tokens match:', verifyToken === this.userToken);
+            
+            if (!verifyToken || verifyToken !== this.userToken) {
+              console.error('🚨 CRITICAL: Token storage verification FAILED!');
+              console.error('   - Expected:', token.substring(0, 20) + '...');
+              console.error('   - In storage:', verifyToken ? verifyToken.substring(0, 20) + '...' : 'NULL');
+            }
+            
             // Transfer guest data after successful authentication (non-blocking)
             this.transferAllGuestData().catch(transferError => {
               console.warn('⚠️ Guest data transfer failed (non-critical):', transferError);
@@ -642,9 +687,17 @@ class YoraaAPIService {
             
             return response.data;
           } else {
+            console.error('🚨 CRITICAL ERROR: No token in backend response!');
+            console.error('   - response.data.token is:', token);
+            console.error('   - response.data keys:', Object.keys(response.data || {}));
             throw new Error('No token received from backend');
           }
         } else {
+          console.error('🚨 CRITICAL ERROR: Backend response invalid!');
+          console.error('   - response.success:', response.success);
+          console.error('   - response.data:', response.data);
+          console.error('   - response.message:', response.message);
+          console.error('   - Full response structure:', JSON.stringify(response, null, 2));
           throw new Error(response.message || 'Backend authentication failed');
         }
       } catch (error) {
@@ -863,19 +916,57 @@ class YoraaAPIService {
       
       // Clear all auth-related storage
       const keysToRemove = [
+        // Auth tokens
         'userToken',
         'adminToken',
         'userData',
         'refreshToken',
         'auth_token',
+        'isAuthenticated',
+        
+        // Session data
         'guestSessionId',
         'userEmail',
         'userPhone',
-        'isAuthenticated'
+        
+        // 🆕 CRITICAL FIX: User-specific data (addresses, orders, etc.)
+        'userAddresses',        // 🚨 Address data (main key)
+        'addresses',            // 🚨 Alternative address key
+        'savedAddresses',       // 🚨 Saved addresses
+        'deliveryAddress',      // 🚨 Selected delivery address
+        'billingAddress',       // 🚨 Selected billing address
+        'selectedAddress',      // 🚨 Currently selected address
+        'addressData',          // 🚨 Any address data
+        
+        // Order data
+        'orderHistory',         // Past orders
+        'orders',               // Order list
+        'currentOrder',         // Current order
+        
+        // Shopping data
+        'cartItems',            // Shopping cart
+        'wishlistItems',        // Wishlist/favorites
+        'recentlyViewed',       // Browsing history
+        'viewedProducts',       // Product views
+        
+        // Search & browsing
+        'recentSearches',       // Search history
+        'searchHistory',        // Alternative search key
+        
+        // Notifications
+        'notifications',        // Notification data
+        'notificationSettings', // Notification preferences
+        
+        // Reviews & ratings
+        'productReviews',       // User reviews
+        'ratings',              // User ratings
+        
+        // User preferences
+        'userPreferences'       // User-level preferences
       ];
       
       await AsyncStorage.multiRemove(keysToRemove);
-      console.log('✅ Local storage cleared');
+      console.log(`✅ Local storage cleared (${keysToRemove.length} keys removed)`);
       
       // CRITICAL: Clear new auth storage service
       await authStorageService.clearAuthData();

@@ -128,10 +128,12 @@ class AuthenticationService {
       const idToken = await userCredential.user.getIdToken();
       
       // Send to backend for registration/login
+      // PRODUCTION FIX: Use 'firebase' as authProvider (not 'phone') for backend compatibility
       const backendResult = await this._authenticateWithBackend({
         idToken,
         phoneNumber: userCredential.user.phoneNumber,
-        method: 'phone'
+        method: 'firebase',  // Backend expects 'firebase', not 'phone'
+        authProvider: 'firebase'  // Explicit auth provider field
       });
 
       if (backendResult.success) {
@@ -159,6 +161,7 @@ class AuthenticationService {
 
   /**
    * 🍎 APPLE SIGN IN
+   * FIXED: Properly handle return value from appleAuthService
    */
   async signInWithApple() {
     try {
@@ -167,41 +170,45 @@ class AuthenticationService {
       console.log('╚═══════════════════════════════════════════════════════════════╝');
       console.log(`⏰ Start Time: ${new Date().toISOString()}`);
 
-      // Use existing Apple auth service
+      // Use existing Apple auth service (already handles backend auth)
       const appleResult = await appleAuthService.signInWithApple();
       
+      // Handle user cancellation (returns null)
+      if (!appleResult) {
+        console.log('ℹ️ User cancelled Apple Sign In');
+        return {
+          success: false,
+          error: 'Sign in cancelled',
+          cancelled: true
+        };
+      }
+      
+      // Handle error result
       if (!appleResult.success) {
         throw new Error(appleResult.error || 'Apple Sign In failed');
       }
 
-      // Get Firebase ID token
-      const firebaseUser = auth().currentUser;
-      if (!firebaseUser) {
-        throw new Error('Firebase user not found after Apple Sign In');
-      }
-
-      const idToken = await firebaseUser.getIdToken();
-      
-      // Send to backend
-      const backendResult = await this._authenticateWithBackend({
-        idToken,
-        email: appleResult.user.email,
-        fullName: appleResult.user.fullName,
-        method: 'apple'
+      console.log('✅ Apple auth service completed successfully');
+      console.log('📦 Backend response:', {
+        hasToken: !!appleResult.token,
+        hasUser: !!appleResult.user,
+        userId: appleResult.user?._id || appleResult.user?.id
       });
 
-      if (backendResult.success) {
-        await this._completeAuthentication(backendResult.data);
-        
-        return {
-          success: true,
-          user: backendResult.data.user,
-          token: backendResult.data.token,
-          message: 'Apple Sign In successful'
-        };
-      } else {
-        throw new Error(backendResult.error || 'Backend authentication failed');
-      }
+      // ✅ FIX: appleAuthService now returns { success, token, user }
+      // Complete authentication (store token, register FCM)
+      await this._completeAuthentication({
+        token: appleResult.token,
+        user: appleResult.user
+      });
+      
+      console.log('✅ Apple Sign In completed successfully');
+      return {
+        success: true,
+        user: appleResult.user,
+        token: appleResult.token,
+        message: 'Apple Sign In successful'
+      };
     } catch (error) {
       console.error('❌ Apple Sign In error:', error);
       return {
@@ -213,6 +220,7 @@ class AuthenticationService {
 
   /**
    * 🔵 GOOGLE SIGN IN
+   * FIXED: Properly handle return value from googleAuthService
    */
   async signInWithGoogle() {
     try {
@@ -221,42 +229,45 @@ class AuthenticationService {
       console.log('╚═══════════════════════════════════════════════════════════════╝');
       console.log(`⏰ Start Time: ${new Date().toISOString()}`);
 
-      // Use existing Google auth service
+      // Use existing Google auth service (already handles backend auth)
       const googleResult = await googleAuthService.signInWithGoogle();
       
+      // Handle user cancellation (returns null)
+      if (!googleResult) {
+        console.log('ℹ️ User cancelled Google Sign In');
+        return {
+          success: false,
+          error: 'Sign in cancelled',
+          cancelled: true
+        };
+      }
+      
+      // Handle error result
       if (!googleResult.success) {
         throw new Error(googleResult.error || 'Google Sign In failed');
       }
 
-      // Get Firebase ID token
-      const firebaseUser = auth().currentUser;
-      if (!firebaseUser) {
-        throw new Error('Firebase user not found after Google Sign In');
-      }
-
-      const idToken = await firebaseUser.getIdToken();
-      
-      // Send to backend
-      const backendResult = await this._authenticateWithBackend({
-        idToken,
-        email: googleResult.user.email,
-        fullName: googleResult.user.name,
-        photoURL: googleResult.user.photo,
-        method: 'google'
+      console.log('✅ Google auth service completed successfully');
+      console.log('📦 Backend response:', {
+        hasToken: !!googleResult.token,
+        hasUser: !!googleResult.user,
+        userId: googleResult.user?._id || googleResult.user?.id
       });
 
-      if (backendResult.success) {
-        await this._completeAuthentication(backendResult.data);
-        
-        return {
-          success: true,
-          user: backendResult.data.user,
-          token: backendResult.data.token,
-          message: 'Google Sign In successful'
-        };
-      } else {
-        throw new Error(backendResult.error || 'Backend authentication failed');
-      }
+      // ✅ FIX: googleAuthService now returns { success, token, user }
+      // Complete authentication (store token, register FCM)
+      await this._completeAuthentication({
+        token: googleResult.token,
+        user: googleResult.user
+      });
+      
+      console.log('✅ Google Sign In completed successfully');
+      return {
+        success: true,
+        user: googleResult.user,
+        token: googleResult.token,
+        message: 'Google Sign In successful'
+      };
     } catch (error) {
       console.error('❌ Google Sign In error:', error);
       return {
@@ -412,17 +423,45 @@ class AuthenticationService {
       // 4. Clear all stored auth data
       console.log('🔄 Clearing stored authentication data...');
       await AsyncStorage.multiRemove([
+        // Auth tokens
         'token',
         'user',
         'firebaseToken',
         'fcmToken',
         'fcmTokenRegistered',
         'fcmTokenRegisteredAt',
+        
+        // Shopping data
         'wishlistItems',
         'cartItems',
-        'userPreferences'
+        'userPreferences',
+        
+        // 🆕 CRITICAL FIX: Address data (privacy issue)
+        'userAddresses',
+        'addresses',
+        'savedAddresses',
+        'deliveryAddress',
+        'billingAddress',
+        'selectedAddress',
+        'addressData',
+        
+        // 🆕 Order data
+        'orderHistory',
+        'orders',
+        'currentOrder',
+        
+        // 🆕 Browsing data
+        'recentlyViewed',
+        'viewedProducts',
+        'recentSearches',
+        'searchHistory',
+        
+        // 🆕 Other user data
+        'notifications',
+        'productReviews',
+        'ratings'
       ]);
-      console.log('✅ All stored data cleared');
+      console.log('✅ All stored data cleared (including addresses, orders, and browsing history)');
 
       // 5. Reset internal state
       this.currentUser = null;
@@ -458,27 +497,38 @@ class AuthenticationService {
   async _authenticateWithBackend(authData) {
     try {
       console.log('🔄 Authenticating with backend server...');
+      console.log('📋 Auth data:', {
+        hasIdToken: !!authData.idToken,
+        method: authData.method,
+        phoneNumber: authData.phoneNumber,
+        email: authData.email
+      });
       
-      const endpoint = '/auth/firebase-login';
-      const response = await yoraaAPI.post(endpoint, authData);
+      // Use the existing yoraaAPI.firebaseLogin method which is already properly implemented
+      const response = await yoraaAPI.firebaseLogin(authData.idToken);
       
-      if (response.success && response.data.token) {
+      if (response && response.token) {
         console.log('✅ Backend authentication successful');
         return {
           success: true,
           data: {
-            token: response.data.token,
-            user: response.data.user
+            token: response.token,
+            user: response.user
           }
         };
       } else {
-        throw new Error(response.error || 'Backend authentication failed');
+        throw new Error('Backend authentication failed - no token received');
       }
     } catch (error) {
       console.error('❌ Backend authentication error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
       return {
         success: false,
-        error: error.message
+        error: error.message || 'Backend authentication failed'
       };
     }
   }

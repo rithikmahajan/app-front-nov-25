@@ -132,5 +132,21 @@ target 'YoraaApp' do
         end
       end
     end
+    
+    # Fix RCT-Folly New.h for Xcode 16 compatibility
+    `sed -i '' 's/^constexpr conditional_t<C, op_new_builtin_fn_, op_new_library_fn_> op_new_;$/inline constexpr conditional_t<C, op_new_builtin_fn_, op_new_library_fn_> op_new_{};/g' Pods/RCT-Folly/folly/lang/New.h`
+    `sed -i '' 's/^constexpr conditional_t<C, op_del_builtin_fn_, op_del_library_fn_> op_del_;$/inline constexpr conditional_t<C, op_del_builtin_fn_, op_del_library_fn_> op_del_{};/g' Pods/RCT-Folly/folly/lang/New.h`
+    puts "✅ Fixed RCT-Folly/folly/lang/New.h for Xcode 16 compatibility"
+    
+    # Fix VisionCamera iOS 13+ availability warnings
+    vision_camera_file = "Pods/VisionCamera/ios/Core/Extensions/UIApplication+interfaceOrientation.swift"
+    if File.exist?(vision_camera_file)
+      content = File.read(vision_camera_file)
+      unless content.include?("@available(iOS 13.0, *)")
+        content.gsub!(/extension UIApplication \{/, "@available(iOS 13.0, *)\nextension UIApplication {")
+        File.write(vision_camera_file, content)
+        puts "✅ Fixed VisionCamera iOS 13+ availability warnings"
+      end
+    end
   end
 end

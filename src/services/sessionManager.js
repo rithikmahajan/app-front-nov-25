@@ -141,7 +141,14 @@ class SessionManager {
         console.log('⚠️ Backend not authenticated, attempting to re-sync...');
         // Try to re-authenticate with backend
         try {
-          const idToken = await firebaseUser.getIdToken(true);
+          // CRITICAL FIX: firebaseUser from getAuth().currentUser already supports getIdToken()
+          // No change needed here, but verify the user still exists
+          if (!authInstance.currentUser) {
+            console.log('⚠️ Firebase user signed out during re-auth attempt');
+            await this.clearSession();
+            return false;
+          }
+          const idToken = await authInstance.currentUser.getIdToken(true);
           await yoraaAPI.firebaseLogin(idToken);
           
           const isNowAuthenticated = yoraaAPI.isAuthenticated();

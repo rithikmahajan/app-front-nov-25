@@ -1,0 +1,726 @@
+  $ /Users/rithikmahajan/.nvm/versions/node/v20.19.5/bin/node -p require.resolve(       'react-native/scripts/react_native_pods.rb',       {paths: [process.argv[1]]},     ) /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios
+  /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native/scripts/react_native_pods.rb
+  $ /Users/rithikmahajan/.nvm/versions/node/v20.19.5/bin/node -p require.resolve(       'react-native/scripts/cocoapods/autolinking.rb',       {paths: [process.argv[1]]},     ) /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios
+  /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native/scripts/cocoapods/autolinking.rb
+  $ /Users/rithikmahajan/.nvm/versions/node/v20.19.5/bin/node -p require.resolve(       'react-native-permissions/scripts/setup.rb',       {paths: [process.argv[1]]},     ) /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios
+  /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-permissions/scripts/setup.rb
+Using firebase.json from '/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/firebase.json'
+RNFBApp: Using overridden static_framework value of 'true'
+RNFBAuth: Using overridden static_framework value of 'true'
+RNFBMessaging: Using overridden static_framework value of 'true'
+[VisionCamera] Thank you for using VisionCamera ❤️
+[VisionCamera] If you enjoy using VisionCamera, please consider sponsoring this project: https://github.com/sponsors/mrousavy
+[VisionCamera] $VCEnableLocation is not set, enabling CLLocation APIs by default...
+[VisionCamera] $VCEnableFrameProcessors is not set, enabling Frame Processors if Worklets is installed...
+[VisionCamera] react-native-worklets-core not found - Frame Processors are disabled!
+Found 20 modules for target `YoraaApp`
+link_native_modules! {ios_packages: [{configurations: [], name: "@invertase/react-native-apple-authentication", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@invertase/react-native-apple-authentication", path: "../node_modules/@invertase/react-native-apple-authentication", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@invertase/react-native-apple-authentication/RNAppleAuthentication.podspec", script_phases: []}, {configurations: [], name: "@react-native-async-storage/async-storage", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-async-storage/async-storage", path: "../node_modules/@react-native-async-storage/async-storage", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-async-storage/async-storage/RNCAsyncStorage.podspec", script_phases: []}, {configurations: [], name: "@react-native-community/datetimepicker", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-community/datetimepicker", path: "../node_modules/@react-native-community/datetimepicker", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-community/datetimepicker/RNDateTimePicker.podspec", script_phases: []}, {configurations: [], name: "@react-native-community/netinfo", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-community/netinfo", path: "../node_modules/@react-native-community/netinfo", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-community/netinfo/react-native-netinfo.podspec", script_phases: []}, {configurations: [], name: "@react-native-community/slider", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-community/slider", path: "../node_modules/@react-native-community/slider", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-community/slider/react-native-slider.podspec", script_phases: []}, {configurations: [], name: "@react-native-firebase/app", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-firebase/app", path: "../node_modules/@react-native-firebase/app", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-firebase/app/RNFBApp.podspec", script_phases: [{"name" => "[RNFB] Core Configuration", "path" => "./ios_config.sh", "execution_position" => "after_compile", "input_files" => ["$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)"]}]}, {configurations: [], name: "@react-native-firebase/auth", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-firebase/auth", path: "../node_modules/@react-native-firebase/auth", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-firebase/auth/RNFBAuth.podspec", script_phases: []}, {configurations: [], name: "@react-native-firebase/messaging", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-firebase/messaging", path: "../node_modules/@react-native-firebase/messaging", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-firebase/messaging/RNFBMessaging.podspec", script_phases: []}, {configurations: [], name: "@react-native-google-signin/google-signin", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-google-signin/google-signin", path: "../node_modules/@react-native-google-signin/google-signin", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-google-signin/google-signin/RNGoogleSignin.podspec", script_phases: []}, {configurations: [], name: "@react-native-picker/picker", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-picker/picker", path: "../node_modules/@react-native-picker/picker", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-picker/picker/RNCPicker.podspec", script_phases: []}, {configurations: [], name: "@react-native-voice/voice", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-voice/voice", path: "../node_modules/@react-native-voice/voice", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/@react-native-voice/voice/react-native-voice.podspec", script_phases: []}, {configurations: [], name: "react-native-config", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-config", path: "../node_modules/react-native-config", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-config/react-native-config.podspec", script_phases: []}, {configurations: [], name: "react-native-gesture-handler", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-gesture-handler", path: "../node_modules/react-native-gesture-handler", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-gesture-handler/RNGestureHandler.podspec", script_phases: []}, {configurations: [], name: "react-native-image-picker", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-image-picker", path: "../node_modules/react-native-image-picker", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-image-picker/react-native-image-picker.podspec", script_phases: []}, {configurations: [], name: "react-native-permissions", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-permissions", path: "../node_modules/react-native-permissions", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-permissions/RNPermissions.podspec", script_phases: []}, {configurations: [], name: "react-native-razorpay", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-razorpay", path: "../node_modules/react-native-razorpay", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-razorpay/react-native-razorpay.podspec", script_phases: []}, {configurations: [], name: "react-native-svg", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-svg", path: "../node_modules/react-native-svg", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-svg/RNSVG.podspec", script_phases: []}, {configurations: [], name: "react-native-video", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-video", path: "../node_modules/react-native-video", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-video/react-native-video.podspec", script_phases: []}, {configurations: [], name: "react-native-vision-camera", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-vision-camera", path: "../node_modules/react-native-vision-camera", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-vision-camera/VisionCamera.podspec", script_phases: []}, {configurations: [], name: "react-native-webview", root: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-webview", path: "../node_modules/react-native-webview", podspec_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native-webview/react-native-webview.podspec", script_phases: []}], ios_project_root_path: "/Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios", react_native_path: "../node_modules/react-native"}
+RNFBApp: Using overridden static_framework value of 'true'
+Adding a custom script phase for Pod RNFBApp: [RNFB] Core Configuration
+RNFBAuth: Using overridden static_framework value of 'true'
+RNFBMessaging: Using overridden static_framework value of 'true'
+[VisionCamera] Thank you for using VisionCamera ❤️
+[VisionCamera] If you enjoy using VisionCamera, please consider sponsoring this project: https://github.com/sponsors/mrousavy
+[VisionCamera] $VCEnableLocation is not set, enabling CLLocation APIs by default...
+[VisionCamera] $VCEnableFrameProcessors is not set, enabling Frame Processors if Worklets is installed...
+[VisionCamera] react-native-worklets-core not found - Frame Processors are disabled!
+Auto-linking React Native modules for target `YoraaApp`: RNAppleAuthentication, RNCAsyncStorage, RNCPicker, RNDateTimePicker, RNFBApp, RNFBAuth, RNFBMessaging, RNGestureHandler, RNGoogleSignin, RNPermissions, RNSVG, VisionCamera, react-native-config, react-native-image-picker, react-native-netinfo, react-native-razorpay, react-native-slider, react-native-video, react-native-voice, and react-native-webview
+Framework build type is static framework
+[ReactNativeDependencies] Building from source: true
+Configuring the target with the New Architecture
+  $ /Users/rithikmahajan/.nvm/versions/node/v20.19.5/bin/node ./../node_modules/react-native/scripts/generate-codegen-artifacts.js -p /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/.. -o /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios -t ios
+  [36m[1m[Codegen][0m Analyzing /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/package.json[0m
+  [36m[1m[Codegen][0m [33mSearching for codegen-enabled libraries in the app.[0m
+  [36m[1m[Codegen][0m [33mThe "codegenConfig" field is not defined in package.json. Assuming there is nothing to generate at the app level.[0m
+  [36m[1m[Codegen][0m [33mSearching for codegen-enabled libraries in the project dependencies.[0m
+  [36m[1m[Codegen][0m Found @react-native-async-storage/async-storage[0m
+  [36m[1m[Codegen][0m Found @react-native-community/datetimepicker[0m
+  [36m[1m[Codegen][0m Found @react-native-community/slider[0m
+  [36m[1m[Codegen][0m Found @react-native-google-signin/google-signin[0m
+  [36m[1m[Codegen][0m Found @react-native-picker/picker[0m
+  [36m[1m[Codegen][0m Found react-native[0m
+  [36m[1m[Codegen][0m Found react-native-config[0m
+  [36m[1m[Codegen][0m Found react-native-gesture-handler[0m
+  [36m[1m[Codegen][0m Found react-native-image-picker[0m
+  [36m[1m[Codegen][0m Found react-native-permissions[0m
+  [36m[1m[Codegen][0m Found react-native-svg[0m
+  [36m[1m[Codegen][0m Found react-native-webview[0m
+  [36m[1m[Codegen][0m [33mSearching for codegen-enabled libraries in react-native.config.js[0m
+  [36m[1m[Codegen][0m Processing rnasyncstorage[0m
+  [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+  [36m[1m[Codegen][0m Supported Apple platforms: ios, macos, tvos, visionos for rnasyncstorage[0m
+  [36m[1m[Codegen][0m Processing RNDateTimePickerCGen[0m
+  [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+  [36m[1m[Codegen][0m Supported Apple platforms: ios, visionos for RNDateTimePickerCGen[0m
+  [36m[1m[Codegen][0m Processing RNCSlider[0m
+  [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+  [36m[1m[Codegen][0m Supported Apple platforms: ios, visionos for RNCSlider[0m
+  [36m[1m[Codegen][0m Processing RNGoogleSignInCGen[0m
+  [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+  [36m[1m[Codegen][0m Supported Apple platforms: ios for RNGoogleSignInCGen[0m
+  [36m[1m[Codegen][0m Processing rnpicker[0m
+  [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+  [36m[1m[Codegen][0m Supported Apple platforms: ios, macos, tvos for rnpicker[0m
+  [36m[1m[Codegen][0m Processing FBReactNativeSpec[0m
+  [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+  [36m[1m[Codegen][0m Processing rncore[0m
+  [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+  [36m[1m[Codegen][0m Processing RNCConfigSpec[0m
+  [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+  [36m[1m[Codegen][0m Supported Apple platforms: ios, tvos, visionos for RNCConfigSpec[0m
+  [36m[1m[Codegen][0m Processing rngesturehandler_codegen[0m
+  [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+  [36m[1m[Codegen][0m Supported Apple platforms: ios, macos, tvos, visionos for rngesturehandler_codegen[0m
+  [36m[1m[Codegen][0m Processing RNImagePickerSpec[0m
+  [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+  [36m[1m[Codegen][0m Supported Apple platforms: ios for RNImagePickerSpec[0m
+  [36m[1m[Codegen][0m Processing RNPermissionsSpec[0m
+  [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+  [36m[1m[Codegen][0m Supported Apple platforms: ios, tvos for RNPermissionsSpec[0m
+  [36m[1m[Codegen][0m Processing rnsvg[0m
+  [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+  [36m[1m[Codegen][0m Supported Apple platforms: ios, macos, tvos, visionos for rnsvg[0m
+  [36m[1m[Codegen][0m Processing RNCWebViewSpec[0m
+  [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+  [36m[1m[Codegen][0m Supported Apple platforms: ios, macos, visionos for RNCWebViewSpec[0m
+  [36m[1m[Codegen][0m Generating Native Code for rnasyncstorage - ios[0m
+  [36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+  [36m[1m[Codegen][0m Generating Native Code for RNDateTimePickerCGen - ios[0m
+  [36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+  [36m[1m[Codegen][0m Generating Native Code for RNCSlider - ios[0m
+  [36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+  [36m[1m[Codegen][0m Generating Native Code for RNGoogleSignInCGen - ios[0m
+  [36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+  [36m[1m[Codegen][0m Generating Native Code for rnpicker - ios[0m
+  [36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+  [36m[1m[Codegen][0m [33m[Codegen - FBReactNativeSpec] Skipping iOS code generation for FBReactNativeSpec as it has been generated already.[0m
+  [36m[1m[Codegen][0m [33m[Codegen - rncore] Skipping iOS code generation for rncore as it has been generated already.[0m
+  [36m[1m[Codegen][0m Generating Native Code for RNCConfigSpec - ios[0m
+  [36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+  [36m[1m[Codegen][0m Generating Native Code for rngesturehandler_codegen - ios[0m
+  [36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+  [36m[1m[Codegen][0m Generating Native Code for RNImagePickerSpec - ios[0m
+  [36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+  [36m[1m[Codegen][0m Generating Native Code for RNPermissionsSpec - ios[0m
+  [36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+  [36m[1m[Codegen][0m Generating Native Code for rnsvg - ios[0m
+  [36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+  [36m[1m[Codegen][0m Generating Native Code for RNCWebViewSpec - ios[0m
+  [36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+  [36m[1m[Codegen][0m Generating RCTThirdPartyComponentsProvider.h[0m
+  [36m[1m[Codegen][0m Generated artifact: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/RCTThirdPartyComponentsProvider.h[0m
+  [36m[1m[Codegen][0m Generating RCTThirdPartyComponentsProvider.mm[0m
+  [36m[1m[Codegen][0m Generated artifact: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/RCTThirdPartyComponentsProvider.mm[0m
+  [36m[1m[Codegen][0m Generating RCTModulesProvider.h[0m
+  [36m[1m[Codegen][0m Generated artifact: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/RCTModuleProviders.h[0m
+  [36m[1m[Codegen][0m Generating RCTModuleProviders.mm[0m
+  [36m[1m[Codegen][0m Generated artifact: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/RCTModuleProviders.mm[0m
+  [36m[1m[Codegen][0m Generating RCTAppDependencyProvider[0m
+  [36m[1m[Codegen][0m Generated artifact: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/RCTAppDependencyProvider.h[0m
+  [36m[1m[Codegen][0m Generated artifact: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/RCTAppDependencyProvider.mm[0m
+  [36m[1m[Codegen][0m Generated podspec: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/ReactAppDependencyProvider.podspec[0m
+  [36m[1m[Codegen][0m Generated podspec: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/ReactCodegen.podspec[0m
+  [36m[1m[Codegen][0m [33mDone.[0m
+[36m[1m[Codegen][0m Analyzing /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/package.json[0m
+[36m[1m[Codegen][0m [33mSearching for codegen-enabled libraries in the app.[0m
+[36m[1m[Codegen][0m [33mThe "codegenConfig" field is not defined in package.json. Assuming there is nothing to generate at the app level.[0m
+[36m[1m[Codegen][0m [33mSearching for codegen-enabled libraries in the project dependencies.[0m
+[36m[1m[Codegen][0m Found @react-native-async-storage/async-storage[0m
+[36m[1m[Codegen][0m Found @react-native-community/datetimepicker[0m
+[36m[1m[Codegen][0m Found @react-native-community/slider[0m
+[36m[1m[Codegen][0m Found @react-native-google-signin/google-signin[0m
+[36m[1m[Codegen][0m Found @react-native-picker/picker[0m
+[36m[1m[Codegen][0m Found react-native[0m
+[36m[1m[Codegen][0m Found react-native-config[0m
+[36m[1m[Codegen][0m Found react-native-gesture-handler[0m
+[36m[1m[Codegen][0m Found react-native-image-picker[0m
+[36m[1m[Codegen][0m Found react-native-permissions[0m
+[36m[1m[Codegen][0m Found react-native-svg[0m
+[36m[1m[Codegen][0m Found react-native-webview[0m
+[36m[1m[Codegen][0m [33mSearching for codegen-enabled libraries in react-native.config.js[0m
+[36m[1m[Codegen][0m Processing rnasyncstorage[0m
+[36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[36m[1m[Codegen][0m Supported Apple platforms: ios, macos, tvos, visionos for rnasyncstorage[0m
+[36m[1m[Codegen][0m Processing RNDateTimePickerCGen[0m
+[36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[36m[1m[Codegen][0m Supported Apple platforms: ios, visionos for RNDateTimePickerCGen[0m
+[36m[1m[Codegen][0m Processing RNCSlider[0m
+[36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[36m[1m[Codegen][0m Supported Apple platforms: ios, visionos for RNCSlider[0m
+[36m[1m[Codegen][0m Processing RNGoogleSignInCGen[0m
+[36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[36m[1m[Codegen][0m Supported Apple platforms: ios for RNGoogleSignInCGen[0m
+[36m[1m[Codegen][0m Processing rnpicker[0m
+[36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[36m[1m[Codegen][0m Supported Apple platforms: ios, macos, tvos for rnpicker[0m
+[36m[1m[Codegen][0m Processing FBReactNativeSpec[0m
+[36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[36m[1m[Codegen][0m Processing rncore[0m
+[36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[36m[1m[Codegen][0m Processing RNCConfigSpec[0m
+[36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[36m[1m[Codegen][0m Supported Apple platforms: ios, tvos, visionos for RNCConfigSpec[0m
+[36m[1m[Codegen][0m Processing rngesturehandler_codegen[0m
+[36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[36m[1m[Codegen][0m Supported Apple platforms: ios, macos, tvos, visionos for rngesturehandler_codegen[0m
+[36m[1m[Codegen][0m Processing RNImagePickerSpec[0m
+[36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[36m[1m[Codegen][0m Supported Apple platforms: ios for RNImagePickerSpec[0m
+[36m[1m[Codegen][0m Processing RNPermissionsSpec[0m
+[36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[36m[1m[Codegen][0m Supported Apple platforms: ios, tvos for RNPermissionsSpec[0m
+[36m[1m[Codegen][0m Processing rnsvg[0m
+[36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[36m[1m[Codegen][0m Supported Apple platforms: ios, macos, tvos, visionos for rnsvg[0m
+[36m[1m[Codegen][0m Processing RNCWebViewSpec[0m
+[36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[36m[1m[Codegen][0m Supported Apple platforms: ios, macos, visionos for RNCWebViewSpec[0m
+[36m[1m[Codegen][0m Generating Native Code for rnasyncstorage - ios[0m
+[36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+[36m[1m[Codegen][0m Generating Native Code for RNDateTimePickerCGen - ios[0m
+[36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+[36m[1m[Codegen][0m Generating Native Code for RNCSlider - ios[0m
+[36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+[36m[1m[Codegen][0m Generating Native Code for RNGoogleSignInCGen - ios[0m
+[36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+[36m[1m[Codegen][0m Generating Native Code for rnpicker - ios[0m
+[36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+[36m[1m[Codegen][0m [33m[Codegen - FBReactNativeSpec] Skipping iOS code generation for FBReactNativeSpec as it has been generated already.[0m
+[36m[1m[Codegen][0m [33m[Codegen - rncore] Skipping iOS code generation for rncore as it has been generated already.[0m
+[36m[1m[Codegen][0m Generating Native Code for RNCConfigSpec - ios[0m
+[36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+[36m[1m[Codegen][0m Generating Native Code for rngesturehandler_codegen - ios[0m
+[36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+[36m[1m[Codegen][0m Generating Native Code for RNImagePickerSpec - ios[0m
+[36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+[36m[1m[Codegen][0m Generating Native Code for RNPermissionsSpec - ios[0m
+[36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+[36m[1m[Codegen][0m Generating Native Code for rnsvg - ios[0m
+[36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+[36m[1m[Codegen][0m Generating Native Code for RNCWebViewSpec - ios[0m
+[36m[1m[Codegen][0m Generated artifacts: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios[0m
+[36m[1m[Codegen][0m Generating RCTThirdPartyComponentsProvider.h[0m
+[36m[1m[Codegen][0m Generated artifact: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/RCTThirdPartyComponentsProvider.h[0m
+[36m[1m[Codegen][0m Generating RCTThirdPartyComponentsProvider.mm[0m
+[36m[1m[Codegen][0m Generated artifact: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/RCTThirdPartyComponentsProvider.mm[0m
+[36m[1m[Codegen][0m Generating RCTModulesProvider.h[0m
+[36m[1m[Codegen][0m Generated artifact: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/RCTModuleProviders.h[0m
+[36m[1m[Codegen][0m Generating RCTModuleProviders.mm[0m
+[36m[1m[Codegen][0m Generated artifact: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/RCTModuleProviders.mm[0m
+[36m[1m[Codegen][0m Generating RCTAppDependencyProvider[0m
+[36m[1m[Codegen][0m Generated artifact: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/RCTAppDependencyProvider.h[0m
+[36m[1m[Codegen][0m Generated artifact: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/RCTAppDependencyProvider.mm[0m
+[36m[1m[Codegen][0m Generated podspec: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/ReactAppDependencyProvider.podspec[0m
+[36m[1m[Codegen][0m Generated podspec: /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/ios/build/generated/ios/ReactCodegen.podspec[0m
+[36m[1m[Codegen][0m [33mDone.[0m
+  Preparing
+
+Analyzing dependencies
+
+Inspecting targets to integrate
+  Using `ARCHS` setting to build architectures of target `Pods-YoraaApp`: (``)
+
+Finding Podfile changes
+  - DoubleConversion
+  - FBLazyVector
+  - Firebase
+  - FirebaseAppCheck
+  - RCT-Folly
+  - RCTDeprecation
+  - RCTRequired
+  - RCTTypeSafety
+  - RNAppleAuthentication
+  - RNCAsyncStorage
+  - RNCPicker
+  - RNDateTimePicker
+  - RNFBApp
+  - RNFBAuth
+  - RNFBMessaging
+  - RNGestureHandler
+  - RNGoogleSignin
+  - RNPermissions
+  - RNSVG
+  - React
+  - React-Core
+  - React-CoreModules
+  - React-Fabric
+  - React-FabricComponents
+  - React-FabricImage
+  - React-ImageManager
+  - React-Mapbuffer
+  - React-NativeModulesApple
+  - React-RCTActionSheet
+  - React-RCTAnimation
+  - React-RCTAppDelegate
+  - React-RCTBlob
+  - React-RCTFBReactNativeSpec
+  - React-RCTFabric
+  - React-RCTImage
+  - React-RCTLinking
+  - React-RCTNetwork
+  - React-RCTRuntime
+  - React-RCTSettings
+  - React-RCTText
+  - React-RCTVibration
+  - React-RuntimeApple
+  - React-RuntimeCore
+  - React-RuntimeHermes
+  - React-callinvoker
+  - React-cxxreact
+  - React-debug
+  - React-defaultsnativemodule
+  - React-domnativemodule
+  - React-featureflags
+  - React-featureflagsnativemodule
+  - React-graphics
+  - React-hermes
+  - React-idlecallbacksnativemodule
+  - React-jserrorhandler
+  - React-jsi
+  - React-jsiexecutor
+  - React-jsinspector
+  - React-jsinspectorcdp
+  - React-jsinspectornetwork
+  - React-jsinspectortracing
+  - React-jsitooling
+  - React-jsitracing
+  - React-logger
+  - React-microtasksnativemodule
+  - React-oscompat
+  - React-perflogger
+  - React-performancetimeline
+  - React-rendererconsistency
+  - React-renderercss
+  - React-rendererdebug
+  - React-rncore
+  - React-runtimeexecutor
+  - React-runtimescheduler
+  - React-timing
+  - React-utils
+  - ReactAppDependencyProvider
+  - ReactCodegen
+  - ReactCommon
+  - RecaptchaEnterprise
+  - SocketRocket
+  - VisionCamera
+  - Yoga
+  - boost
+  - fast_float
+  - fmt
+  - glog
+  - hermes-engine
+  - react-native-config
+  - react-native-image-picker
+  - react-native-netinfo
+  - react-native-razorpay
+  - react-native-slider
+  - react-native-video
+  - react-native-voice
+  - react-native-webview
+
+Fetching external sources
+-> Fetching podspec for `DoubleConversion` from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`
+-> Fetching podspec for `FBLazyVector` from `../node_modules/react-native/Libraries/FBLazyVector`
+-> Fetching podspec for `RCT-Folly` from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`
+-> Fetching podspec for `RCTDeprecation` from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`
+-> Fetching podspec for `RCTRequired` from `../node_modules/react-native/Libraries/Required`
+-> Fetching podspec for `RCTTypeSafety` from `../node_modules/react-native/Libraries/TypeSafety`
+-> Fetching podspec for `RNAppleAuthentication` from `../node_modules/@invertase/react-native-apple-authentication`
+-> Fetching podspec for `RNCAsyncStorage` from `../node_modules/@react-native-async-storage/async-storage`
+-> Fetching podspec for `RNCPicker` from `../node_modules/@react-native-picker/picker`
+-> Fetching podspec for `RNDateTimePicker` from `../node_modules/@react-native-community/datetimepicker`
+-> Fetching podspec for `RNFBApp` from `../node_modules/@react-native-firebase/app`
+RNFBApp: Using overridden static_framework value of 'true'
+-> Fetching podspec for `RNFBAuth` from `../node_modules/@react-native-firebase/auth`
+RNFBAuth: Using overridden static_framework value of 'true'
+-> Fetching podspec for `RNFBMessaging` from `../node_modules/@react-native-firebase/messaging`
+RNFBMessaging: Using overridden static_framework value of 'true'
+-> Fetching podspec for `RNGestureHandler` from `../node_modules/react-native-gesture-handler`
+-> Fetching podspec for `RNGoogleSignin` from `../node_modules/@react-native-google-signin/google-signin`
+-> Fetching podspec for `RNPermissions` from `../node_modules/react-native-permissions`
+-> Fetching podspec for `RNSVG` from `../node_modules/react-native-svg`
+-> Fetching podspec for `React` from `../node_modules/react-native/`
+-> Fetching podspec for `React-Core` from `../node_modules/react-native/`
+-> Fetching podspec for `React-CoreModules` from `../node_modules/react-native/React/CoreModules`
+-> Fetching podspec for `React-Fabric` from `../node_modules/react-native/ReactCommon`
+-> Fetching podspec for `React-FabricComponents` from `../node_modules/react-native/ReactCommon`
+-> Fetching podspec for `React-FabricImage` from `../node_modules/react-native/ReactCommon`
+-> Fetching podspec for `React-ImageManager` from `../node_modules/react-native/ReactCommon/react/renderer/imagemanager/platform/ios`
+-> Fetching podspec for `React-Mapbuffer` from `../node_modules/react-native/ReactCommon`
+-> Fetching podspec for `React-NativeModulesApple` from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`
+-> Fetching podspec for `React-RCTActionSheet` from `../node_modules/react-native/Libraries/ActionSheetIOS`
+-> Fetching podspec for `React-RCTAnimation` from `../node_modules/react-native/Libraries/NativeAnimation`
+-> Fetching podspec for `React-RCTAppDelegate` from `../node_modules/react-native/Libraries/AppDelegate`
+-> Fetching podspec for `React-RCTBlob` from `../node_modules/react-native/Libraries/Blob`
+-> Fetching podspec for `React-RCTFBReactNativeSpec` from `../node_modules/react-native/React`
+-> Fetching podspec for `React-RCTFabric` from `../node_modules/react-native/React`
+-> Fetching podspec for `React-RCTImage` from `../node_modules/react-native/Libraries/Image`
+-> Fetching podspec for `React-RCTLinking` from `../node_modules/react-native/Libraries/LinkingIOS`
+-> Fetching podspec for `React-RCTNetwork` from `../node_modules/react-native/Libraries/Network`
+-> Fetching podspec for `React-RCTRuntime` from `../node_modules/react-native/React/Runtime`
+-> Fetching podspec for `React-RCTSettings` from `../node_modules/react-native/Libraries/Settings`
+-> Fetching podspec for `React-RCTText` from `../node_modules/react-native/Libraries/Text`
+-> Fetching podspec for `React-RCTVibration` from `../node_modules/react-native/Libraries/Vibration`
+-> Fetching podspec for `React-RuntimeApple` from `../node_modules/react-native/ReactCommon/react/runtime/platform/ios`
+-> Fetching podspec for `React-RuntimeCore` from `../node_modules/react-native/ReactCommon/react/runtime`
+-> Fetching podspec for `React-RuntimeHermes` from `../node_modules/react-native/ReactCommon/react/runtime`
+-> Fetching podspec for `React-callinvoker` from `../node_modules/react-native/ReactCommon/callinvoker`
+-> Fetching podspec for `React-cxxreact` from `../node_modules/react-native/ReactCommon/cxxreact`
+-> Fetching podspec for `React-debug` from `../node_modules/react-native/ReactCommon/react/debug`
+-> Fetching podspec for `React-defaultsnativemodule` from `../node_modules/react-native/ReactCommon/react/nativemodule/defaults`
+-> Fetching podspec for `React-domnativemodule` from `../node_modules/react-native/ReactCommon/react/nativemodule/dom`
+-> Fetching podspec for `React-featureflags` from `../node_modules/react-native/ReactCommon/react/featureflags`
+-> Fetching podspec for `React-featureflagsnativemodule` from `../node_modules/react-native/ReactCommon/react/nativemodule/featureflags`
+-> Fetching podspec for `React-graphics` from `../node_modules/react-native/ReactCommon/react/renderer/graphics`
+-> Fetching podspec for `React-hermes` from `../node_modules/react-native/ReactCommon/hermes`
+-> Fetching podspec for `React-idlecallbacksnativemodule` from `../node_modules/react-native/ReactCommon/react/nativemodule/idlecallbacks`
+-> Fetching podspec for `React-jserrorhandler` from `../node_modules/react-native/ReactCommon/jserrorhandler`
+-> Fetching podspec for `React-jsi` from `../node_modules/react-native/ReactCommon/jsi`
+-> Fetching podspec for `React-jsiexecutor` from `../node_modules/react-native/ReactCommon/jsiexecutor`
+-> Fetching podspec for `React-jsinspector` from `../node_modules/react-native/ReactCommon/jsinspector-modern`
+-> Fetching podspec for `React-jsinspectorcdp` from `../node_modules/react-native/ReactCommon/jsinspector-modern/cdp`
+-> Fetching podspec for `React-jsinspectornetwork` from `../node_modules/react-native/ReactCommon/jsinspector-modern/network`
+-> Fetching podspec for `React-jsinspectortracing` from `../node_modules/react-native/ReactCommon/jsinspector-modern/tracing`
+-> Fetching podspec for `React-jsitooling` from `../node_modules/react-native/ReactCommon/jsitooling`
+-> Fetching podspec for `React-jsitracing` from `../node_modules/react-native/ReactCommon/hermes/executor/`
+-> Fetching podspec for `React-logger` from `../node_modules/react-native/ReactCommon/logger`
+-> Fetching podspec for `React-microtasksnativemodule` from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`
+-> Fetching podspec for `React-oscompat` from `../node_modules/react-native/ReactCommon/oscompat`
+-> Fetching podspec for `React-perflogger` from `../node_modules/react-native/ReactCommon/reactperflogger`
+-> Fetching podspec for `React-performancetimeline` from `../node_modules/react-native/ReactCommon/react/performance/timeline`
+-> Fetching podspec for `React-rendererconsistency` from `../node_modules/react-native/ReactCommon/react/renderer/consistency`
+-> Fetching podspec for `React-renderercss` from `../node_modules/react-native/ReactCommon/react/renderer/css`
+-> Fetching podspec for `React-rendererdebug` from `../node_modules/react-native/ReactCommon/react/renderer/debug`
+-> Fetching podspec for `React-rncore` from `../node_modules/react-native/ReactCommon`
+-> Fetching podspec for `React-runtimeexecutor` from `../node_modules/react-native/ReactCommon/runtimeexecutor`
+-> Fetching podspec for `React-runtimescheduler` from `../node_modules/react-native/ReactCommon/react/renderer/runtimescheduler`
+-> Fetching podspec for `React-timing` from `../node_modules/react-native/ReactCommon/react/timing`
+-> Fetching podspec for `React-utils` from `../node_modules/react-native/ReactCommon/react/utils`
+-> Fetching podspec for `ReactAppDependencyProvider` from `build/generated/ios`
+-> Fetching podspec for `ReactCodegen` from `build/generated/ios`
+-> Fetching podspec for `ReactCommon` from `../node_modules/react-native/ReactCommon`
+-> Fetching podspec for `VisionCamera` from `../node_modules/react-native-vision-camera`
+[VisionCamera] Thank you for using VisionCamera ❤️
+[VisionCamera] If you enjoy using VisionCamera, please consider sponsoring this project: https://github.com/sponsors/mrousavy
+[VisionCamera] $VCEnableLocation is not set, enabling CLLocation APIs by default...
+[VisionCamera] $VCEnableFrameProcessors is not set, enabling Frame Processors if Worklets is installed...
+[VisionCamera] react-native-worklets-core not found - Frame Processors are disabled!
+-> Fetching podspec for `Yoga` from `../node_modules/react-native/ReactCommon/yoga`
+-> Fetching podspec for `boost` from `../node_modules/react-native/third-party-podspecs/boost.podspec`
+-> Fetching podspec for `fast_float` from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`
+-> Fetching podspec for `fmt` from `../node_modules/react-native/third-party-podspecs/fmt.podspec`
+-> Fetching podspec for `glog` from `../node_modules/react-native/third-party-podspecs/glog.podspec`
+-> Fetching podspec for `hermes-engine` from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`
+  $ /Users/rithikmahajan/.nvm/versions/node/v20.19.5/bin/node -p require.resolve(     "react-native",     {paths: [process.argv[1]]},     ) /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native/sdks/hermes-engine
+  /Users/rithikmahajan/Desktop/may-be-safe/app-frontend-ios-android-nov10/node_modules/react-native/index.js
+[Hermes] Using release tarball from URL: https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.80.2/react-native-artifacts-0.80.2-hermes-ios-debug.tar.gz
+-> Fetching podspec for `react-native-config` from `../node_modules/react-native-config`
+-> Fetching podspec for `react-native-image-picker` from `../node_modules/react-native-image-picker`
+-> Fetching podspec for `react-native-netinfo` from `../node_modules/@react-native-community/netinfo`
+-> Fetching podspec for `react-native-razorpay` from `../node_modules/react-native-razorpay`
+-> Fetching podspec for `react-native-slider` from `../node_modules/@react-native-community/slider`
+-> Fetching podspec for `react-native-video` from `../node_modules/react-native-video`
+-> Fetching podspec for `react-native-voice` from `../node_modules/@react-native-voice/voice`
+-> Fetching podspec for `react-native-webview` from `../node_modules/react-native-webview`
+
+Resolving dependencies of `Podfile`
+  CDN: trunk Relative path: CocoaPods-version.yml exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_a_9_3.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/a/9/3/SocketRocket/0.7.1/SocketRocket.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_0_3_5.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/3/5/Firebase/12.6.0/Firebase.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/3/5/Firebase/12.4.0/Firebase.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/3/5/Firebase/12.4.0/Firebase.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/3/5/Firebase/12.4.0/Firebase.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_1_8_e.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/1/8/e/FirebaseAppCheck/12.6.0/FirebaseAppCheck.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_4_0_b.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/4/0/b/RecaptchaEnterprise/18.8.2/RecaptchaEnterprise.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/3/5/Firebase/12.4.0/Firebase.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_4_7_f.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/4/7/f/FirebaseCoreExtension/12.6.0/FirebaseCoreExtension.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_d_4_0.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/d/4/0/GoogleSignIn/9.0.0/GoogleSignIn.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/3/5/Firebase/12.4.0/Firebase.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/3/5/Firebase/12.4.0/Firebase.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_f_9_d.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/f/9/d/razorpay-pod/1.5.0/razorpay-pod.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_2_d_6.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/2/d/6/FirebaseMessaging/12.6.0/FirebaseMessaging.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/a/9/3/SocketRocket/0.7.1/SocketRocket.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/a/9/3/SocketRocket/0.7.1/SocketRocket.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/2/d/6/FirebaseMessaging/12.4.0/FirebaseMessaging.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_2_f_7.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/2/f/7/FirebaseInstallations/12.6.0/FirebaseInstallations.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_8_b_d.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/8/b/d/FirebaseCore/12.6.0/FirebaseCore.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_0_8_4.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_0_6_a.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/6/a/GoogleDataTransport/10.1.0/GoogleDataTransport.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_6_1_e.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/6/1/e/nanopb/3.30910.0/nanopb.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/6/1/e/nanopb/3.30910.0/nanopb.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/6/1/e/nanopb/3.30910.0/nanopb.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/6/1/e/nanopb/3.30910.0/nanopb.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/f/9/d/razorpay-pod/1.5.0/razorpay-pod.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_d_7_0.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/d/7/0/razorpay-core-pod/1.0.3/razorpay-core-pod.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/d/7/0/razorpay-core-pod/1.0.3/razorpay-core-pod.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/2/f/7/FirebaseInstallations/12.4.0/FirebaseInstallations.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_0_b_5.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/b/5/PromisesObjC/2.4.0/PromisesObjC.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/b/5/PromisesObjC/2.4.0/PromisesObjC.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/6/a/GoogleDataTransport/10.1.0/GoogleDataTransport.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/8/b/d/FirebaseCore/12.4.0/FirebaseCore.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_7_9_1.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/7/9/1/FirebaseCoreInternal/12.6.0/FirebaseCoreInternal.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/1/8/e/FirebaseAppCheck/12.4.0/FirebaseAppCheck.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_3_b_6.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/3/b/6/AppCheckCore/11.2.0/AppCheckCore.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_e_9_8.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/e/9/8/FirebaseAppCheckInterop/12.6.0/FirebaseAppCheckInterop.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_e_2_1.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/e/2/1/FirebaseAnalytics/12.6.0/FirebaseAnalytics.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/e/2/1/FirebaseAnalytics/12.4.0/FirebaseAnalytics.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/e/2/1/FirebaseAnalytics/12.4.0/FirebaseAnalytics.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/7/9/1/FirebaseCoreInternal/12.4.0/FirebaseCoreInternal.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/d/4/0/GoogleSignIn/8.0.0/GoogleSignIn.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_b_b_9.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/b/b/9/AppAuth/2.0.0/AppAuth.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_2_c_c.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/2/c/c/GTMAppAuth/5.0.0/GTMAppAuth.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_c_e_3.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/c/e/3/GTMSessionFetcher/5.0.0/GTMSessionFetcher.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/c/e/3/GTMSessionFetcher/3.5.0/GTMSessionFetcher.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/e/9/8/FirebaseAppCheckInterop/12.4.0/FirebaseAppCheckInterop.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/4/0/b/RecaptchaEnterprise/18.8.2/RecaptchaEnterprise.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_c_1_1.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/c/1/1/RecaptchaInterop/101.0.0/RecaptchaInterop.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_5_8_8.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/5/8/8/RecaptchaEnterpriseSDK/18.8.2/RecaptchaEnterpriseSDK.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/5/8/8/RecaptchaEnterpriseSDK/18.8.2/RecaptchaEnterpriseSDK.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_6_3_6.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/6/3/6/FirebaseAuth/12.6.0/FirebaseAuth.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/b/b/9/AppAuth/1.7.6/AppAuth.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/b/b/9/AppAuth/1.7.6/AppAuth.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/b/b/9/AppAuth/1.7.6/AppAuth.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/c/1/1/RecaptchaInterop/101.0.0/RecaptchaInterop.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_e_3_b.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/e/3/b/GoogleAppMeasurement/12.6.0/GoogleAppMeasurement.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/e/3/b/GoogleAppMeasurement/12.4.0/GoogleAppMeasurement.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/4/7/f/FirebaseCoreExtension/12.4.0/FirebaseCoreExtension.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/6/3/6/FirebaseAuth/12.4.0/FirebaseAuth.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_4_2_7.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/4/2/7/FirebaseAuthInterop/12.6.0/FirebaseAuthInterop.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/c/e/3/GTMSessionFetcher/3.5.0/GTMSessionFetcher.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/4/7/f/FirebaseCoreExtension/12.4.0/FirebaseCoreExtension.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/c/1/1/RecaptchaInterop/101.0.0/RecaptchaInterop.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/2/c/c/GTMAppAuth/4.1.1/GTMAppAuth.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/c/e/3/GTMSessionFetcher/3.5.0/GTMSessionFetcher.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/b/b/9/AppAuth/1.7.6/AppAuth.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/e/3/b/GoogleAppMeasurement/12.4.0/GoogleAppMeasurement.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/e/3/b/GoogleAppMeasurement/12.4.0/GoogleAppMeasurement.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: all_pods_versions_f_8_0.txt exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/f/8/0/GoogleAdsOnDeviceConversion/3.2.0/GoogleAdsOnDeviceConversion.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/3/b/6/AppCheckCore/11.2.0/AppCheckCore.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/0/8/4/GoogleUtilities/8.1.0/GoogleUtilities.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/f/8/0/GoogleAdsOnDeviceConversion/3.1.0/GoogleAdsOnDeviceConversion.podspec.json exists! Returning local because checking is only performed in repo update
+  CDN: trunk Relative path: Specs/4/2/7/FirebaseAuthInterop/12.4.0/FirebaseAuthInterop.podspec.json exists! Returning local because checking is only performed in repo update
+
+Comparing resolved specification to the sandbox manifest
+  A AppAuth
+  A AppCheckCore
+  A DoubleConversion
+  A FBLazyVector
+  A Firebase
+  A FirebaseAnalytics
+  A FirebaseAppCheck
+  A FirebaseAppCheckInterop
+  A FirebaseAuth
+  A FirebaseAuthInterop
+  A FirebaseCore
+  A FirebaseCoreExtension
+  A FirebaseCoreInternal
+  A FirebaseInstallations
+  A FirebaseMessaging
+  A GTMAppAuth
+  A GTMSessionFetcher
+  A GoogleAdsOnDeviceConversion
+  A GoogleAppMeasurement
+  A GoogleDataTransport
+  A GoogleSignIn
+  A GoogleUtilities
+  A PromisesObjC
+  A RCT-Folly
+  A RCTDeprecation
+  A RCTRequired
+  A RCTTypeSafety
+  A RNAppleAuthentication
+  A RNCAsyncStorage
+  A RNCPicker
+  A RNDateTimePicker
+  A RNFBApp
+  A RNFBAuth
+  A RNFBMessaging
+  A RNGestureHandler
+  A RNGoogleSignin
+  A RNPermissions
+  A RNSVG
+  A React
+  A React-Core
+  A React-CoreModules
+  A React-Fabric
+  A React-FabricComponents
+  A React-FabricImage
+  A React-ImageManager
+  A React-Mapbuffer
+  A React-NativeModulesApple
+  A React-RCTActionSheet
+  A React-RCTAnimation
+  A React-RCTAppDelegate
+  A React-RCTBlob
+  A React-RCTFBReactNativeSpec
+  A React-RCTFabric
+  A React-RCTImage
+  A React-RCTLinking
+  A React-RCTNetwork
+  A React-RCTRuntime
+  A React-RCTSettings
+  A React-RCTText
+  A React-RCTVibration
+  A React-RuntimeApple
+  A React-RuntimeCore
+  A React-RuntimeHermes
+  A React-callinvoker
+  A React-cxxreact
+  A React-debug
+  A React-defaultsnativemodule
+  A React-domnativemodule
+  A React-featureflags
+  A React-featureflagsnativemodule
+  A React-graphics
+  A React-hermes
+  A React-idlecallbacksnativemodule
+  A React-jserrorhandler
+  A React-jsi
+  A React-jsiexecutor
+  A React-jsinspector
+  A React-jsinspectorcdp
+  A React-jsinspectornetwork
+  A React-jsinspectortracing
+  A React-jsitooling
+  A React-jsitracing
+  A React-logger
+  A React-microtasksnativemodule
+  A React-oscompat
+  A React-perflogger
+  A React-performancetimeline
+  A React-rendererconsistency
+  A React-renderercss
+  A React-rendererdebug
+  A React-rncore
+  A React-runtimeexecutor
+  A React-runtimescheduler
+  A React-timing
+  A React-utils
+  A ReactAppDependencyProvider
+  A ReactCodegen
+  A ReactCommon
+  A RecaptchaEnterprise
+  A RecaptchaEnterpriseSDK
+  A RecaptchaInterop
+  A SocketRocket
+  A VisionCamera
+  A Yoga
+  A boost
+  A fast_float
+  A fmt
+  A glog
+  A hermes-engine
+  A nanopb
+  A razorpay-core-pod
+  A razorpay-pod
+  A react-native-config
+  A react-native-image-picker
+  A react-native-netinfo
+  A react-native-razorpay
+  A react-native-slider
+  A react-native-video
+  A react-native-voice
+  A react-native-webview
+
+Downloading dependencies
+
+-> Installing AppAuth (1.7.6)
+  > Copying AppAuth from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/AppAuth/1.7.6-d4f13` to `Pods/AppAuth`
+
+-> Installing AppCheckCore (11.2.0)
+  > Copying AppCheckCore from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/AppCheckCore/11.2.0-cc8fd` to `Pods/AppCheckCore`
+
+-> Installing DoubleConversion (1.1.6)
+  > Copying DoubleConversion from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/External/DoubleConversion/77f51e588bfe0e5c4fa6e9c580da62c6-cb417` to `Pods/DoubleConversion`
+
+-> Installing FBLazyVector (0.80.2)
+
+-> Installing Firebase (12.4.0)
+  > Copying Firebase from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/Firebase/12.4.0-f07b1` to `Pods/Firebase`
+
+-> Installing FirebaseAnalytics (12.4.0)
+  > Copying FirebaseAnalytics from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/FirebaseAnalytics/12.4.0-0fc2b` to `Pods/FirebaseAnalytics`
+
+-> Installing FirebaseAppCheck (12.4.0)
+  > Copying FirebaseAppCheck from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/FirebaseAppCheck/12.4.0-73721` to `Pods/FirebaseAppCheck`
+
+-> Installing FirebaseAppCheckInterop (12.4.0)
+  > Copying FirebaseAppCheckInterop from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/FirebaseAppCheckInterop/12.4.0-f734c` to `Pods/FirebaseAppCheckInterop`
+
+-> Installing FirebaseAuth (12.4.0)
+  > Copying FirebaseAuth from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/FirebaseAuth/12.4.0-4a2ae` to `Pods/FirebaseAuth`
+
+-> Installing FirebaseAuthInterop (12.4.0)
+  > Copying FirebaseAuthInterop from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/FirebaseAuthInterop/12.4.0-858e6` to `Pods/FirebaseAuthInterop`
+
+-> Installing FirebaseCore (12.4.0)
+  > Copying FirebaseCore from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/FirebaseCore/12.4.0-bb595` to `Pods/FirebaseCore`
+
+-> Installing FirebaseCoreExtension (12.4.0)
+  > Copying FirebaseCoreExtension from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/FirebaseCoreExtension/12.4.0-7e1f7` to `Pods/FirebaseCoreExtension`
+
+-> Installing FirebaseCoreInternal (12.4.0)
+  > Copying FirebaseCoreInternal from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/FirebaseCoreInternal/12.4.0-d7f5a` to `Pods/FirebaseCoreInternal`
+
+-> Installing FirebaseInstallations (12.4.0)
+  > Copying FirebaseInstallations from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/FirebaseInstallations/12.4.0-ae9f4` to `Pods/FirebaseInstallations`
+
+-> Installing FirebaseMessaging (12.4.0)
+  > Copying FirebaseMessaging from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/FirebaseMessaging/12.4.0-d3397` to `Pods/FirebaseMessaging`
+
+-> Installing GTMAppAuth (4.1.1)
+  > Copying GTMAppAuth from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/GTMAppAuth/4.1.1-f69bd` to `Pods/GTMAppAuth`
+
+-> Installing GTMSessionFetcher (3.5.0)
+  > Copying GTMSessionFetcher from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/GTMSessionFetcher/3.5.0-5aea5` to `Pods/GTMSessionFetcher`
+
+-> Installing GoogleAdsOnDeviceConversion (3.1.0)
+  > Copying GoogleAdsOnDeviceConversion from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/GoogleAdsOnDeviceConversion/3.1.0-e03a3` to `Pods/GoogleAdsOnDeviceConversion`
+
+-> Installing GoogleAppMeasurement (12.4.0)
+  > Copying GoogleAppMeasurement from `/Users/rithikmahajan/Library/Caches/CocoaPods/Pods/Release/GoogleAppMeasurement/12.4.0-1e718` to `Pods/GoogleAppMeasurement`
+
+-> Installing GoogleDataTransport (10.1.0)

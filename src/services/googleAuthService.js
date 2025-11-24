@@ -176,7 +176,12 @@ class GoogleAuthService {
       console.log('\n🔄 STEP 7: Authenticating with Yoraa backend...');
       try {
         console.log('   - Getting Firebase ID token...');
-        const firebaseIdToken = await userCredential.user.getIdToken(true);
+        // CRITICAL FIX: Use auth().currentUser instead of userCredential.user
+        const currentUser = auth().currentUser;
+        if (!currentUser) {
+          throw new Error('Firebase user not found after Google sign-in');
+        }
+        const firebaseIdToken = await currentUser.getIdToken(true);
         console.log(`   - Firebase ID Token: ${firebaseIdToken.substring(0, 30)}... (${firebaseIdToken.length} chars)`);
         
         console.log('   - Calling backend firebaseLogin API...');
@@ -263,7 +268,12 @@ class GoogleAuthService {
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           console.log('   - Getting fresh Firebase ID token...');
-          const retryIdToken = await userCredential.user.getIdToken(/* forceRefresh */ true);
+          // CRITICAL FIX: Use auth().currentUser instead of userCredential.user
+          const currentUserRetry = auth().currentUser;
+          if (!currentUserRetry) {
+            throw new Error('Firebase user no longer authenticated');
+          }
+          const retryIdToken = await currentUserRetry.getIdToken(/* forceRefresh */ true);
           console.log(`   - Fresh Firebase ID Token obtained (${retryIdToken.length} chars)`);
           
           console.log('   - Retrying backend firebaseLogin API...');
@@ -286,7 +296,25 @@ class GoogleAuthService {
           console.error('⚠️⚠️⚠️ CRITICAL: User logged in to Firebase but NOT authenticated with backend!');
           console.error('This WILL cause "not authenticated" status to display in the app');
           
-          // ✅ CRITICAL: Throw error to stop the flow
+          // ✅ CRITICAL FIX: Rollback Firebase authentication to prevent inconsistent state
+          console.error('🔄 ROLLBACK: Signing out from Firebase due to backend auth failure...');
+          
+          try {
+            await auth().signOut();
+            console.log('✅ Firebase sign-out successful (rollback complete)');
+          } catch (signOutError) {
+            console.error('❌ Failed to sign out from Firebase during rollback:', signOutError);
+          }
+          
+          // Clear any partial authentication data
+          try {
+            await yoraaAPI.clearAuthTokens();
+            console.log('✅ Cleared partial auth tokens');
+          } catch (clearError) {
+            console.error('❌ Failed to clear auth tokens:', clearError);
+          }
+          
+          // ✅ CRITICAL: Throw user-friendly error
           throw new Error('Backend authentication failed after retry. Please try again or contact support.');
         }
       }
@@ -295,14 +323,40 @@ class GoogleAuthService {
       console.log(`⏰ End Time: ${new Date().toISOString()}`);
       console.log('╚═══════════════════════════════════════════════════════════════╝\n');
       
-      return userCredential;
+      // ✅ FIX: Return backend data in expected format for authenticationService
+      console.log('\n📦 Preparing return object for authenticationService...');
+      
+      // Get backend token and user data (already stored by yoraaAPI.firebaseLogin)
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      const backendToken = await yoraaAPI.getUserToken();
+      const userDataStr = await AsyncStorage.getItem('userData');
+      const backendUser = userDataStr ? JSON.parse(userDataStr) : null;
+      
+      console.log('   - Backend Token:', backendToken ? '✅ EXISTS' : '❌ MISSING');
+      console.log('   - Backend User:', backendUser ? '✅ EXISTS' : '❌ MISSING');
+      
+      if (!backendToken) {
+        throw new Error('Backend token not found after successful authentication');
+      }
+      
+      return {
+        success: true,
+        token: backendToken,
+        user: backendUser || {
+          uid: userCredential.user.uid,
+          email: userCredential.user.email,
+          displayName: userCredential.user.displayName
+        },
+        firebaseUser: userCredential.user,  // Include for reference
+        message: 'Google Sign In successful'
+      };
     } catch (error) {
       // Handle specific error cases
       // User canceled the sign-in
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log('ℹ️ User canceled Google Sign In (not an error)');
         console.log('╚═══════════════════════════════════════════════════════════════╝\n');
-        // Silently handle cancellation - don't throw error
+        // Return null for cancellation (not an error)
         return null;
       }
       
@@ -318,18 +372,22 @@ class GoogleAuthService {
       console.error('❌ Stack Trace:', error.stack);
       console.log('╚═══════════════════════════════════════════════════════════════╝\n');
       
+      // ✅ FIX: Return error object in expected format
+      let errorMessage = error.message || 'Google Sign In failed';
+      
       if (error.code === statusCodes.IN_PROGRESS) {
-        throw new Error('Google Sign In is already in progress');
+        errorMessage = 'Google Sign In is already in progress';
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        throw new Error('Google Play Services not available. Please update Google Play Services and try again.');
-      } else {
-        // More detailed error for Android
-        if (Platform.OS === 'android') {
-          throw new Error(`Google Sign In failed on Android: ${error.message || error.code || 'Unknown error'}`);
-        } else {
-          throw new Error(`Google Sign In failed: ${error.message}`);
-        }
+        errorMessage = 'Google Play Services not available. Please update Google Play Services and try again.';
+      } else if (Platform.OS === 'android') {
+        errorMessage = `Google Sign In failed on Android: ${error.message || error.code || 'Unknown error'}`;
       }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        errorCode: error.code
+      };
     }
   }
 

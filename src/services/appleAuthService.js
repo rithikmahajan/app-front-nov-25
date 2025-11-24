@@ -168,7 +168,12 @@ class AppleAuthService {
       
       try {
         console.log('   - Getting Firebase ID token...');
-        const firebaseIdToken = await user.getIdToken(/* forceRefresh */ true);
+        // CRITICAL FIX: Use auth().currentUser instead of user from credential
+        const currentUser = auth().currentUser;
+        if (!currentUser) {
+          throw new Error('Firebase user not found after Apple sign-in');
+        }
+        const firebaseIdToken = await currentUser.getIdToken(/* forceRefresh */ true);
         console.log(`   - Firebase ID Token: ${firebaseIdToken.substring(0, 30)}... (${firebaseIdToken.length} chars)`);
         
         console.log('   - Calling backend firebaseLogin API...');
@@ -331,7 +336,12 @@ class AppleAuthService {
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           console.log('   - Getting fresh Firebase ID token...');
-          const retryIdToken = await userCredential.user.getIdToken(/* forceRefresh */ true);
+          // CRITICAL FIX: Use auth().currentUser instead of userCredential.user
+          const currentUserRetry = auth().currentUser;
+          if (!currentUserRetry) {
+            throw new Error('Firebase user no longer authenticated');
+          }
+          const retryIdToken = await currentUserRetry.getIdToken(/* forceRefresh */ true);
           console.log(`   - Fresh Firebase ID Token obtained (${retryIdToken.length} chars)`);
           
           console.log('   - Retrying backend firebaseLogin API...');
@@ -386,7 +396,33 @@ class AppleAuthService {
       yoraaAPI.setSignInLock(false);
       console.log('🔓 Sign-in lock released - authentication complete');
       
-      return userCredential;
+      // ✅ FIX: Return backend data in expected format for authenticationService
+      console.log('\n📦 Preparing return object for authenticationService...');
+      
+      // Get backend token and user data (already stored by yoraaAPI.firebaseLogin)
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      const backendToken = await yoraaAPI.getUserToken();
+      const userDataStr = await AsyncStorage.getItem('userData');
+      const backendUser = userDataStr ? JSON.parse(userDataStr) : null;
+      
+      console.log('   - Backend Token:', backendToken ? '✅ EXISTS' : '❌ MISSING');
+      console.log('   - Backend User:', backendUser ? '✅ EXISTS' : '❌ MISSING');
+      
+      if (!backendToken) {
+        throw new Error('Backend token not found after successful authentication');
+      }
+      
+      return {
+        success: true,
+        token: backendToken,
+        user: backendUser || {
+          uid: userCredential.user.uid,
+          email: userCredential.user.email,
+          displayName: userCredential.user.displayName
+        },
+        firebaseUser: userCredential.user,  // Include for reference
+        message: 'Apple Sign In successful'
+      };
     } catch (error) {
       // CRITICAL: Release sign-in lock on ANY error
       yoraaAPI.setSignInLock(false);
@@ -397,7 +433,7 @@ class AppleAuthService {
       if (error.code === '1001' || error.code === 1001 || error.code === 'ERR_REQUEST_CANCELED') {
         console.log('ℹ️ User canceled Apple Sign In (not an error)');
         console.log('╚═══════════════════════════════════════════════════════════════╝\n');
-        // Silently handle cancellation - don't throw error
+        // Return null for cancellation (not an error)
         return null;
       }
       
@@ -412,15 +448,12 @@ class AppleAuthService {
       console.error('❌ Stack Trace:', error.stack);
       console.log('╚═══════════════════════════════════════════════════════════════╝\n');
       
-      if (error.code === 'ERR_REQUEST_NOT_HANDLED') {
-        throw new Error('Apple Sign In not handled');
-      } else if (error.code === 'ERR_REQUEST_NOT_INTERACTIVE') {
-        throw new Error('Apple Sign In not interactive');
-      } else if (error.code === 'ERR_REQUEST_UNKNOWN') {
-        throw new Error('Unknown Apple Sign In error');
-      }
-      
-      throw new Error(error.message || 'Apple Sign In failed');
+      // ✅ FIX: Return error object in expected format
+      return {
+        success: false,
+        error: error.message || 'Apple Sign In failed',
+        errorCode: error.code
+      };
     }
   }
 

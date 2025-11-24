@@ -208,7 +208,12 @@ class FirebasePhoneAuthService {
 
       // Get Firebase ID token for backend authentication
       console.log('\n🔄 STEP 3: Getting Firebase ID token...');
-      const idToken = await userCredential.user.getIdToken(true);
+      // CRITICAL FIX: Use auth().currentUser instead of userCredential.user
+      const currentUser = auth().currentUser;
+      if (!currentUser) {
+        throw new Error('Firebase user not found after phone authentication');
+      }
+      const idToken = await currentUser.getIdToken(true);
       console.log(`✅ Firebase ID Token obtained: ${idToken.substring(0, 30)}... (${idToken.length} chars)`);
 
       console.log(`⏰ End Time: ${new Date().toISOString()}`);
@@ -305,7 +310,12 @@ class FirebasePhoneAuthService {
         const userCredential = await auth().signInWithCredential(credential);
         
         // Get Firebase ID token for backend authentication
-        const idToken = await userCredential.user.getIdToken(true);
+        // CRITICAL FIX: Use auth().currentUser instead of userCredential.user
+        const currentUser = auth().currentUser;
+        if (!currentUser) {
+          throw new Error('Firebase user not found after credential sign-in');
+        }
+        const idToken = await currentUser.getIdToken(true);
         
         return {
           success: true,

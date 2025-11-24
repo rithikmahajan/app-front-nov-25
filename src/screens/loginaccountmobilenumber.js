@@ -14,6 +14,7 @@ import {
   Platform,
 } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
+import auth from '@react-native-firebase/auth';
 import GlobalBackButton from '../components/GlobalBackButton';
 import { AppleIcon, GoogleIcon, CaretDownIcon } from '../assets/icons';
 import appleAuthService from '../services/appleAuthService';
@@ -505,8 +506,13 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
         
         // Check Firebase authentication state
         console.log('\n🔍 STEP 2: Verifying Firebase Auth State');
-        const firebaseUser = userCredential.user;
-        const firebaseToken = await firebaseUser.getIdToken(true);
+        // CRITICAL FIX: Use auth().currentUser.getIdToken() instead of firebaseUser.getIdToken()
+        // In React Native Firebase, getIdToken() must be called on the currentUser from auth()
+        const currentUser = auth().currentUser;
+        if (!currentUser) {
+          throw new Error('Firebase user not found after authentication');
+        }
+        const firebaseToken = await currentUser.getIdToken(true);
         console.log(`✅ Firebase Token Retrieved: ${firebaseToken.substring(0, 20)}...`);
         console.log(`📝 Token Length: ${firebaseToken.length} characters`);
         
@@ -621,8 +627,13 @@ const LoginAccountMobileNumber = ({ navigation, route }) => {
         
         // Check Firebase authentication state
         console.log('\n🔍 STEP 2: Verifying Firebase Auth State');
-        const firebaseUser = userCredential.user;
-        const firebaseToken = await firebaseUser.getIdToken(true);
+        // CRITICAL FIX: Use auth().currentUser.getIdToken() instead of firebaseUser.getIdToken()
+        // In React Native Firebase, getIdToken() must be called on the currentUser from auth()
+        const currentUser = auth().currentUser;
+        if (!currentUser) {
+          throw new Error('Firebase user not found after authentication');
+        }
+        const firebaseToken = await currentUser.getIdToken(true);
         console.log(`✅ Firebase Token Retrieved: ${firebaseToken.substring(0, 20)}...`);
         console.log(`📝 Token Length: ${firebaseToken.length} characters`);
         

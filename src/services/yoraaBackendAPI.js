@@ -458,7 +458,14 @@ class YoraaBackendAPI {
   async authenticateWithFirebase(firebaseUser, isNewUser = false) {
     try {
       console.log('🔐 Authenticating with Firebase...');
-      const idToken = await firebaseUser.getIdToken();
+      // CRITICAL FIX: In React Native Firebase, firebaseUser from userCredential doesn't have getIdToken()
+      // We need to use auth().currentUser instead
+      const auth = require('@react-native-firebase/auth').default;
+      const currentUser = auth().currentUser;
+      if (!currentUser) {
+        throw new Error('Firebase user not authenticated');
+      }
+      const idToken = await currentUser.getIdToken();
       
       let response;
       if (isNewUser) {
