@@ -15,11 +15,14 @@
         </trust-anchors>
     </domain-config>
     
-    <!-- Local Development (HTTP allowed) -->
+    <!-- Local Development (HTTP allowed for Android Emulator) -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">localhost</domain>
         <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">10.0.2.15</domain>
+        <domain includeSubdomains="true">10.0.3.2</domain>
         <domain includeSubdomains="true">192.168.1.1</domain>
+        <domain includeSubdomains="true">192.168.0.1</domain>
     </domain-config>
     
     <!-- Contabo Storage (HTTPS required) -->

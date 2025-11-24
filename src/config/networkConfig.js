@@ -17,20 +17,20 @@ export const NetworkConfig = {
     WEBSOCKET_URL: 'ws://localhost:8001',
   },
   production: {
-    API_URL: 'http://185.193.19.244:8080/api',
-    WEBSOCKET_URL: 'ws://185.193.19.244:8080',
+    API_URL: 'https://api.yoraa.in.net/api',                  // ✅ FIXED: Use production domain with HTTPS
+    WEBSOCKET_URL: 'wss://api.yoraa.in.net',                  // ✅ FIXED: Secure WebSocket
   }
 };
 
 // Auto-detect the appropriate API URL based on platform and environment
 export const getApiUrl = () => {
-  // 🔧 Development: Use localhost:8001, Production: Use VPS server port 8080
+  // 🔧 Development: Use localhost:8001, Production: Use production HTTPS domain
   if (__DEV__) {
     return Platform.OS === 'android' 
       ? 'http://10.0.2.2:8001/api'  // Android emulator maps localhost to 10.0.2.2
       : 'http://localhost:8001/api'; // iOS simulator uses localhost directly
   }
-  return 'http://185.193.19.244:8080/api';
+  return 'https://api.yoraa.in.net/api'; // ✅ FIXED: Production domain with HTTPS
 };
 
 // Network connectivity checker

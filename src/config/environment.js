@@ -3,10 +3,14 @@ import { Platform } from 'react-native';
 
 class EnvironmentConfig {
   constructor() {
+    // 🔧 FORCE DEVELOPMENT MODE: Always use development when running from Xcode/Metro
+    // Check if running in debug/development mode
+    const isDebugMode = __DEV__ || Config.APP_ENV === 'development' || Config.DEBUG_MODE === 'true';
+    
     // Get environment from react-native-config or fallback to __DEV__
-    this.env = Config.APP_ENV || (__DEV__ ? 'development' : 'production');
-    this.isDevelopment = this.env === 'development' || __DEV__;
-    this.isProduction = this.env === 'production' && !__DEV__;
+    this.env = isDebugMode ? 'development' : (Config.APP_ENV || 'production');
+    this.isDevelopment = this.env === 'development';
+    this.isProduction = this.env === 'production';
     
     // 🎯 API Configuration - Read from .env files
     // .env.development: API_BASE_URL=http://localhost:8001/api
@@ -68,23 +72,19 @@ class EnvironmentConfig {
    * This allows Android to use localhost:8001 (simpler than 10.0.2.2)
    */
   getApiUrl() {
+    // 🔧 FORCE LOCAL BACKEND IN DEVELOPMENT
     if (this.isDevelopment) {
-      // Development mode - use localhost backend from .env.development
-      // Both iOS Simulator AND Android (with adb reverse) can use localhost directly
-      if (__DEV__) {
-        const platform = this.platform.isAndroid ? '🤖 Android' : '📱 iOS';
-        console.log(`${platform} Development URL:`, this.api.baseUrl);
-        if (this.platform.isAndroid) {
-          console.log('� Using adb reverse: Run `adb reverse tcp:8001 tcp:8001` if needed');
-        }
+      const localUrl = 'http://localhost:8001/api';
+      const platform = this.platform.isAndroid ? '🤖 Android' : '📱 iOS';
+      console.log(`${platform} Development URL:`, localUrl);
+      if (this.platform.isAndroid) {
+        console.log('⚙️  Using adb reverse: Run `adb reverse tcp:8001 tcp:8001` if needed');
       }
-      return this.api.baseUrl; // Returns http://localhost:8001/api for both platforms
+      return localUrl; // Always return localhost:8001 in development
     }
     
-    // Production - use production backend from .env.production
-    if (!__DEV__) {
-      console.log('🚀 Production URL:', this.api.backendUrl);
-    }
+    // Production - use production backend
+    console.log('🚀 Production URL:', this.api.backendUrl);
     return this.api.backendUrl;
   }
 

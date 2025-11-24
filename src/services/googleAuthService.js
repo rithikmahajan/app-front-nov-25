@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import Config from 'react-native-config';
-import auth, { GoogleAuthProvider, getAuth, signInWithCredential } from '@react-native-firebase/auth';
+import auth from '@react-native-firebase/auth';
 
 let GoogleSignin, statusCodes;
 
@@ -152,12 +152,12 @@ class GoogleAuthService {
       
       // Create a Google credential with the token
       console.log('\n🔄 STEP 5: Creating Firebase credential...');
-      const googleCredential = GoogleAuthProvider.credential(idToken);
+      const googleCredential = auth.GoogleAuthProvider.credential(idToken);
       console.log('✅ Firebase credential created');
       
-      // Sign in with the credential
+      // Sign in with the credential using React Native Firebase's native method
       console.log('\n🔄 STEP 6: Signing in to Firebase...');
-      const userCredential = await signInWithCredential(getAuth(), googleCredential);
+      const userCredential = await auth().signInWithCredential(googleCredential);
       
       console.log('✅ Firebase Sign In successful');
       console.log('👤 Firebase User Details:');
